@@ -20,15 +20,6 @@ var util = {
         return util.truncate(url, 25);
     },
 
-    getByKey: function(key, list, _keyattr) {
-        var keyattr = _keyattr || "id";
-        for (var i=0; i<list.length; i++) {
-            var li_el = list[i];
-            if (li_el[keyattr] == key) {
-                return li_el;
-            }
-        }
-    },
 
     updateByKey: function(item, items, _keyattr, _do_delete) {
         var success = false;
@@ -266,16 +257,6 @@ var util = {
         }
     },
 
-    objToArray: function(obj) {
-        var arr = [];
-        for (var key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                arr.push(obj[key]);
-            }
-        }
-        return arr;
-    },
-
     arrToObj: function(arr, keyname) {
         var obj = {};
         arr.forEach(function(item, i, arr) {
@@ -308,20 +289,6 @@ var util = {
         } else {
             element["on" + eventName] = callback;
         }
-    },
-
-    basicCompare: function(o1, o2) {
-        for (var val in o1) {
-            if (o1.hasOwnProperty(val)) {
-                if (o2[val] === undefined || o1[val] != o2[val]) return false;
-            }
-        }
-        for (var val in o2) {
-            if (o2.hasOwnProperty(val)) {
-                if (o1[val] === undefined || o1[val] != o2[val]) return false;
-            }
-        }
-        return true;
     },
 
     applySentenceCase: function(str) {
@@ -564,21 +531,6 @@ var util = {
         return list;
     },
 
-    printAmount: function(amount, currency) {
-        let currencyDecimals = {
-            KES: 0,
-            USD: 2
-        };
-        let decimals;
-        if (currency) {
-            decimals = currencyDecimals[currency];
-        }
-        var res = "--";
-        if (!isNaN(amount)) res = util.fixedNumber(amount, decimals);
-        res = currency + " " + res;
-        return res;
-    },
-
     fromCents: function(cents) {
         return cents / 100.0;
     },
@@ -620,22 +572,6 @@ var util = {
         // Returns value standardized to given type
         if (type == "number") value = parseFloat(value);
         return value;
-    },
-
-    removeItemsById(collection, id_list, _id_prop) {
-        var id_prop = _id_prop || "id";
-        return collection.filter(function(x) { return id_list.indexOf(x[id_prop]) == -1; } )
-    },
-
-    findItemById(collection, id, _id_prop) {
-        var id_prop = _id_prop || "id";
-        return collection.find(x => x && x[id_prop] === id);
-    },
-
-    findIndexById(collection, id, _id_prop) {
-        var id_prop = _id_prop || "id";
-        var ids = collection.map(function(x) {return (x != null) ? x[id_prop] : null; });
-        return ids.indexOf(id);
     },
 
     set_title(title) {

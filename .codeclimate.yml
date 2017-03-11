@@ -29,5 +29,6 @@ ratings:
   - "**.py"
 exclude_paths:
 - "tests/"
+- "testing/"
 - "static/"
 - "pytz/"
