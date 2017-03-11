@@ -38,7 +38,7 @@ export default class MiniJournalWidget extends React.Component {
         historical_incomplete_dates: [],
         position: null // {lat, lon}
       };
-      this.WINDOW_START_HR = 22;
+      this.WINDOW_START_HR = 10;//22;
       this.WINDOW_END_HR = 4;
       this.MAX_TASKS = 3;
   }

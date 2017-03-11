@@ -146,10 +146,10 @@ export default class Manage extends React.Component {
                 'entity_name': "Events",
                 'attributes': [
                     { name: 'id', label: "ID", editable: false, fixed: true },
-                    { name: 'title', label: "Title", editable: true, showInList: false },
+                    { name: 'title', label: "Title", editable: true, showInList: true },
                     { name: 'date_start', label: "Date Start", editable: true, showInList: false },
                     { name: 'date_end', label: "Date End", editable: true, showInList: false },
-                    { name: 'color', label: "Color (hex)", editable: true }
+                    { name: 'color', label: "Color (hex)", editable: true, showInList: false }
                 ],
                 'fetch_params': {},
                 'unique_key': 'id',
@@ -179,7 +179,7 @@ export default class Manage extends React.Component {
                     { name: 'id', label: "ID", editable: false, fixed: true },
                     { name: 'title', label: "Title", editable: true },
                     { name: 'subhead', label: "Subhead", editable: true },
-                    { name: 'url1', label: "URL 1", editable: true },
+                    { name: 'url1', label: "URL 1", editable: true, showInList: false },
                     { name: 'url2', label: "URL 2", editable: true, showInList: false }
                 ],
                 'fetch_params': {},
@@ -204,6 +204,7 @@ export default class Manage extends React.Component {
                     ], default_value: 'text' },
                 { name: 'chart', title: 'Is Charted', type: 'checkbox' },
                 { name: 'tag_segment_chart', title: 'Tag Segment Chart?', type: 'checkbox' },
+                { name: 'chart_default', title: 'Enabled by Default in Chart', type: 'checkbox' },
                 { name: 'color', title: 'Chart Series Color (hex)', type: 'text' },
                 { name: 'parse_tags', title: 'Enable @mentions and #hashtags', type: 'checkbox' }
             ];
@@ -254,7 +255,7 @@ export default class Manage extends React.Component {
 
                     <p className="lead">
                         Flashcards appear on the main dashboard in the more menu.
-                        You can concifugre flashcards to pull data from Google Spreadsheets.
+                        You can configure flashcards to pull data from Google Spreadsheets.
                     </p>
 
                     <ReactJsonEditor title="Flashcards"
