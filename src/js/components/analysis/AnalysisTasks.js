@@ -104,7 +104,7 @@ export default class AnalysisTasks extends React.Component {
         return (
             <div>
 
-                <h4>Tasks</h4>
+                <h4>Top Tasks</h4>
 
                 <Bar data={taskData} options={taskOptions} width={1000} height={450}/>
 

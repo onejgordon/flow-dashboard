@@ -178,7 +178,7 @@ export default class AnalysisJournals extends React.Component {
     generate_marker(e) {
         let {color_scale_question} = this.state;
         let color = 'FFF';
-        if (color_scale_question) {
+        if (color_scale_question && e.value != null) {
             color = util.colorInterpolate({
                 color1: 'ff0000',
                 color2: '00ff00',

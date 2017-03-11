@@ -153,6 +153,7 @@ export default class Analysis extends React.Component {
                     goals: goals,
                     journals: journals,
                     tasks: tasks,
+                    productivity: productivity,
                     habits: habits,
                     habitdays: habitdays,
                     iso_dates: iso_dates,
