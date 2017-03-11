@@ -10,6 +10,9 @@ engines:
       - python
   eslint:
     enabled: true
+    config:
+      extensions:
+      - .es6
   fixme:
     enabled: true
   radon:
