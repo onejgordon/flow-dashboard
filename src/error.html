@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:fb="http://www.facebook.com/2008/fbml">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>{{ SITENAME }} | Error!</title>
+<link type="text/css" rel="stylesheet" href="/static/main.css" />
+</head>
+
+<body>
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="middle">
+    <span id="title"><a href="/">{{ SITENAME }}</a></span>
+  </div>
+</div>
+
+<!-- CONTAINER -->
+<div id="container">
+  <div class="middle">
+<h1>Sorry, an error has occurred</h1>
+
+<p>Rest assured, we're working on the problem!</p>
+
+  {% if traceback %}
+  <p id="trace"><pre>{{ traceback|escape }}</pre></p>
+  {% endif %}
+    </div>
+</div>
+
+<div id="footer">
+  <p align="center">Copyright &copy; {{ YEAR }}, {{ SITENAME }}</p>
+</div>
+
+</body>
+
+</html>

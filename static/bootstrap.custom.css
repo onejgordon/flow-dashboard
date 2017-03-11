@@ -1,0 +1,109 @@
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  color: white;
+  font-weight: 100;
+}
+
+nav#main_nav {
+  background: #fff;
+  background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f3f3f3)); /* for webkit browsers */
+  background: -moz-linear-gradient(top,  #fff,  #f3f3f3); /* for firefox 3.6+ */
+  border-bottom: 1px solid #ccc;
+}
+
+#main_nav.tight {
+  margin-bottom: 0px;
+}
+
+#main_nav a.dropdown-toggle {
+}
+
+#main_nav > a, #main_nav > span, #main_nav > .dropdown > a {
+}
+
+#main_nav .navbar-brand {
+  font-weight: bold;
+}
+
+#main_nav .navbar-btn {
+  margin-right: 10px;
+}
+
+#main_nav.navbar-default .navbar-nav > li > a {
+
+}
+
+#main_nav a.dropdown-toggle:hover, #main_nav .navbar-nav > li > a:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+#main_nav .dropdown.open .dropdown-toggle {
+    background: rgba(255,255,255,0.5);
+}
+
+#main_nav a {
+  cursor: pointer;
+}
+
+#main_nav {
+    background: rgba(255,255,255,0.2);
+    border-bottom: none;
+}
+
+
+a#avatarLink {
+  line-height: 40px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+input[type=text] {
+  font-family: sans-serif;
+}
+
+/* My alerts / growls */
+
+div[data-growl=container].alert {
+  font-size: 1.25em;
+  padding: 18px;
+}
+
+.alert-dark {
+  color: white;
+  background-color: black;
+  border-color: black;
+
+}
+.alert-dark hr {
+  border-top-color: gray;
+}
+.alert-dark .alert-link {
+  color: #FFC63F;
+}
+
+.alert-success {
+  color: white;
+  background-color: #1AC15C;
+  border-color: #1CD566;
+}
+.alert-success hr {
+  border-top-color: #22FF78;
+}
+.alert-success .alert-link {
+  color: #FFF8CE;
+}
+
+/* Buttons */
+
+.btn {
+  text-shadow: none;
+}
+
+.btn.btn-primary {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(0,0,0,0.45);
+}
+
+.btn.btn-google {
+  color: white;
+  background: #CC3735;
+}

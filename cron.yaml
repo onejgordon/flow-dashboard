@@ -1,0 +1,9 @@
+cron:
+
+- description: sync with pocket & goodreads
+  url: /cron/readables/sync
+  schedule: every sunday 20:30
+
+- description: sync with github
+  url: /cron/productivity/sync
+  schedule: every day 00:00

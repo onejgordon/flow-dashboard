@@ -1,0 +1,22 @@
+# Use Dockerized infrastructure
+sudo: false
+language: python
+# Cache our Gcloud SDK between commands
+cache:
+  directories:
+  - "$HOME/google-cloud-sdk/"
+env:
+# Make sure App Engine SDK is in the Python path
+- GAE_PYTHONPATH=${HOME}/.cache/google_appengine PATH=$PATH:${HOME}/google-cloud-sdk/bin PYTHONPATH=${PYTHONPATH}:${GAE_PYTHONPATH} CLOUDSDK_CORE_DISABLE_PROMPTS=1
+before_install:
+# Install Google App Engine Python SDK
+- if [ ! -d "${GAE_PYTHONPATH}" ]; then
+    python scripts/fetch_gae_sdk.py $(dirname "${GAE_PYTHONPATH}");
+  fi
+install:
+# Install the Python dependencies
+- pip install -t lib -r requirements.txt
+- pip install -r local.requirements.txt
+script:
+# Run the unit tests & end to end tests
+- python ./runtests.py ${GAE_PYTHONPATH} testing/ all

@@ -1,0 +1,2 @@
+# Install with pip install -t lib -r requirements.txt (into lib/)
+beautifulsoup4

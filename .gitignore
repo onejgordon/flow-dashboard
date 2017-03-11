@@ -1,0 +1,11 @@
+*.pyc
+node_modules/*
+*.swp
+lib/*
+!lib/__init___.py
+*.DS_Store
+.DS_Store
+*.pyc
+dist/*
+secrets.py
+src/js/constants/client_secrets.js

@@ -1,0 +1,318 @@
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  color: white;
+  font-weight: 100;
+}
+
+h3 {
+    font-size: 1.4em;
+}
+
+p.lead {
+  font-size: 1.2em;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+a:link, a:visited, a:active {
+    color: #4FECF9;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a:hover {
+    color: white;
+    text-decoration: none;
+}
+
+body {
+    font-family: 'Roboto', Helvetica, sans-serif;
+    font-weight: 300;
+    margin: 0;
+    padding: 0;
+    background: #252626;
+}
+
+#footer {
+    color: gray;
+    text-align: center;
+    padding: 10px;
+    min-height: 200px;
+    margin-top: 30px;
+}
+
+#container {
+    min-height: 600px;
+}
+
+.map {
+    min-height: 250px;
+    margin: 10px 0;
+}
+
+/* Major Layout */
+
+.vpad {
+    margin: 10px 0;
+}
+
+.app-content {
+
+}
+
+/* Main */
+
+
+.loadStatus {
+    margin: 50px auto;
+    width: 200px;
+}
+
+.loadStatus .message {
+    display: block;
+    text-align: center;
+    color: #D2D2D4;
+    font-size: 23px;
+}
+
+.loadStatus .holder {
+    display: block;
+    width: 200px;
+    padding: 10px;
+    margin: 20px auto;
+}
+
+.loadStatus .nil {
+    display: block;
+    margin: 0 auto;
+}
+
+.loader.large {
+    display: block;
+    height: 50px;
+    margin: 0 auto;
+}
+
+.loader.large.hidden {
+    display: none;
+}
+
+.goalDate {
+    color: white;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.goalList {
+    font-size: 1.3em;
+}
+
+.goalList > li {
+    list-style-type: square;
+    transition: .4s linear color;
+}
+
+.goalList > li:hover {
+    color: white;
+}
+
+.dateProgressBar {
+    display: block;
+    height: 2px;
+    background: #777;
+    position: relative;
+    margin: 5px 0;
+}
+
+.dateProgressBar .progress {
+    position: absolute;
+    background: #4FECF9;
+    left: 0px;
+    top: 0px;
+    display: block;
+    height: 100%;
+    transition: .2s linear all;
+    -webkit-transition: .4s linear all;
+}
+
+/* Project progress */
+
+.progressBoxes {
+    display: block;
+    width: 99%;
+    margin: 0px auto;
+}
+
+.progressBox_o {
+    display: block;
+    float: left;
+    padding: 2px;
+}
+
+.progressBox_i {
+    display: block;
+    height: 5px;
+    background: #888;
+    cursor: pointer;
+}
+
+.progressBox_i.active {
+    background: #4FECF9;
+}
+
+.progressBox_i:hover {
+    background: white;
+}
+
+.HabitWidget > table, .HabitWidget tr, .HabitWidget td, .HabitWidget th {
+    background-color: none;
+}
+
+.HabitWidget th, .HabitWidget td {
+    text-align: center;
+}
+
+.HabitWidget th {
+    color: #888;
+    font-size: 0.8em;
+}
+
+.HabitWidget th.current-habit-week {
+    color: white;
+}
+
+.HabitWidget span.target.target-reached {
+    color: #22FF7A;
+    font-weight: bold;
+}
+
+.HabitWidget span.target.target-reached {
+    color: #F8BA1D;
+}
+
+.LifeTimeline {
+  display: block;
+}
+
+
+
+.LifeTimeline > .week {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin: 2px;
+  padding: 0;
+  opacity: 0.5;
+  background: #555;
+  transition: .4s linear opacity;
+  position: relative;
+}
+
+
+.LifeTimeline > .week.future {
+  opacity: 0.2;
+}
+
+.LifeTimeline > .week > .singleEvents {
+  left: 4px;
+  top: 4px;
+  border-radius: 3.5px;
+  width: 7px;
+  height: 7px;
+  background: #303030;
+  position: absolute;
+}
+
+.LifeTimeline > .week:hover {
+  opacity: 1.0;
+}
+
+.empty {
+    text-align: center;
+    font-size: 1.8em;
+    opacity: 0.5;
+    margin: 10px;
+}
+
+/* Splash */
+
+#splash {
+}
+
+/* Pace */
+
+.pace {
+  -webkit-pointer-events: none;
+  pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.pace-inactive {
+  display: none;
+}
+
+.pace .pace-progress {
+  background: #29d;
+  position: fixed;
+  z-index: 2000;
+  top: 0;
+  right: 100%;
+  width: 100%;
+  height: 2px;
+}
+
+.pace .pace-progress-inner {
+  display: block;
+  position: absolute;
+  right: 0px;
+  width: 100px;
+  height: 100%;
+  box-shadow: 0 0 10px #29d, 0 0 5px #29d;
+  opacity: 1.0;
+  -webkit-transform: rotate(3deg) translate(0px, -4px);
+  -moz-transform: rotate(3deg) translate(0px, -4px);
+  -ms-transform: rotate(3deg) translate(0px, -4px);
+  -o-transform: rotate(3deg) translate(0px, -4px);
+  transform: rotate(3deg) translate(0px, -4px);
+}
+
+.pace .pace-activity {
+  display: block;
+  position: fixed;
+  z-index: 2000;
+  top: 25px;
+  right: 25px;
+  width: 14px;
+  height: 14px;
+  border: solid 2px transparent;
+  border-top-color: #29d;
+  border-left-color: #29d;
+  border-radius: 10px;
+  -webkit-animation: pace-spinner 400ms linear infinite;
+  -moz-animation: pace-spinner 400ms linear infinite;
+  -ms-animation: pace-spinner 400ms linear infinite;
+  -o-animation: pace-spinner 400ms linear infinite;
+  animation: pace-spinner 400ms linear infinite;
+}
+
+@-webkit-keyframes pace-spinner {
+  0% { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
+}
+@-moz-keyframes pace-spinner {
+  0% { -moz-transform: rotate(0deg); transform: rotate(0deg); }
+  100% { -moz-transform: rotate(360deg); transform: rotate(360deg); }
+}
+@-o-keyframes pace-spinner {
+  0% { -o-transform: rotate(0deg); transform: rotate(0deg); }
+  100% { -o-transform: rotate(360deg); transform: rotate(360deg); }
+}
+@-ms-keyframes pace-spinner {
+  0% { -ms-transform: rotate(0deg); transform: rotate(0deg); }
+  100% { -ms-transform: rotate(360deg); transform: rotate(360deg); }
+}
+@keyframes pace-spinner {
+  0% { transform: rotate(0deg); transform: rotate(0deg); }
+  100% { transform: rotate(360deg); transform: rotate(360deg); }
+}
