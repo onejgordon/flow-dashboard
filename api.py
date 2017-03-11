@@ -275,6 +275,7 @@ class EventAPI(handlers.JsonRequestHandler):
     def list(self, d):
         page, max, offset = tools.paging_params(self.request)
         events = Event.Fetch(self.user, limit=max, offset=offset)
+        self.success = True
         self.set_response({
             'events': [event.json() for event in events]
         }, debug=True)
