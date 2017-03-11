@@ -17,6 +17,8 @@ engines:
     enabled: true
   radon:
     enabled: true
+    config:
+      python_version: 2
 ratings:
   paths:
   - "**.css"
