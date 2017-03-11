@@ -509,12 +509,18 @@ class MiniJournal(UserAccessible):
     location = ndb.GeoPtProperty()
 
     def json(self):
-        return {
+        res = {
             'id': self.key.id(),
             'iso_date': tools.iso_date(self.date),
             'data': tools.getJson(self.data),
             'tags': [tag.id() for tag in self.tags]
         }
+        if self.location:
+            res.update({
+                'lat': self.location.lat,
+                'lon': self.location.lon
+            })
+        return res
 
     @staticmethod
     def Create(user, date):

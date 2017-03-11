@@ -11,6 +11,12 @@ var Manage = require('components/Manage');
 var Analysis = require('components/Analysis');
 var Integrations = require('components/Integrations');
 
+// Analysis
+var AnalysisGoals = require('components/analysis/AnalysisGoals');
+var AnalysisJournals = require('components/analysis/AnalysisJournals');
+var AnalysisTasks = require('components/analysis/AnalysisTasks');
+var AnalysisMisc = require('components/analysis/AnalysisMisc');
+
 var NotFound = require('components/NotFound');
 
 var Router = require('react-router');
@@ -30,7 +36,13 @@ module.exports = (
       <Route path="timeline" component={Timeline} />
       <Route path="manage" component={Manage} />
       <Route path="integrations" component={Integrations} />
-      <Route path="analysis" component={Analysis} />
+      <Route path="analysis" component={Analysis}>
+        <IndexRedirect to="/app/analysis/goals" />
+        <Route path="goals" component={AnalysisGoals} />
+        <Route path="journals" component={AnalysisJournals} />
+        <Route path="tasks" component={AnalysisTasks} />
+        <Route path="misc" component={AnalysisMisc} />
+      </Route>
     </Route>
     <Route path="*" component={NotFound} />
   </Route>
