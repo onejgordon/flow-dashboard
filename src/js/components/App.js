@@ -12,8 +12,9 @@ var AppConstants = require('constants/AppConstants');
 var UserActions = require('actions/UserActions');
 var UserStore = require('stores/UserStore');
 import connectToStores from 'alt-utils/lib/connectToStores';
-import {authDecorator} from 'utils/component-utils';
+import {G_OAUTH_CLIENT_ID} from 'constants/client_secrets';
 var api = require('utils/api');
+import gapi from 'gapi-client';
 
 @connectToStores
 export default class Private extends React.Component {
@@ -36,9 +37,41 @@ export default class Private extends React.Component {
   }
 
   componentDidMount() {
+    gapi.load('client:auth2', this.init_google.bind(this));
   }
 
   componentWillUnmount() {
+  }
+
+  init_google() {
+    var auth2 = gapi.auth2.init({
+      client_id: G_OAUTH_CLIENT_ID,
+      scope: 'profile'
+    });
+    auth2.isSignedIn.listen(this.signinChanged.bind(this));
+    auth2.currentUser.listen(this.userChanged.bind(this));
+  }
+
+  signinChanged(val) {
+    console.log('Signin state changed to ', val);
+  }
+
+  userChanged(gUser) {
+    if (gUser && gUser.isSignedIn()) {
+      var profile = gUser.getBasicProfile();
+      var id_token = gUser.getAuthResponse().id_token;
+      console.log(profile);
+      let {user} = this.props;
+      let new_user = !user || profile.getEmail() != user.email;
+      console.log('new_user', new_user);
+      if (new_user) {
+        let data = {token: id_token};
+        api.post('/api/auth/google_login', data, (res) => {
+            UserActions.storeUser(res.user);
+            browserHistory.push('/app/dashboard');
+        })
+      }
+    }
   }
 
   signout() {
@@ -74,12 +107,8 @@ export default class Private extends React.Component {
 
   render() {
     let {user} = this.props;
-    var is_admin = user ? user.level == AppConstants.USER_ADMIN : false;
-    var can_write = user ? user.level > AppConstants.USER_READ : false;
-    var wide = this.props.wide;
-    let {YEAR, SITENAME} = AppConstants;
+    let {SITENAME} = AppConstants;
     let LOGO = <img src="/images/logo_white.png" className="center-block" width="50" style={{marginTop: "7px"}} />
-    var _user_section;
     return (
       <div>
         <AppBar

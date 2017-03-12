@@ -1,8 +1,6 @@
 var alt = require('config/alt');
 var UserActions = require('actions/UserActions');
-import {findItemById, findIndexById} from 'utils/store-utils';
 import { browserHistory } from 'react-router';
-import {defer} from 'lodash';
 var AppConstants = require('constants/AppConstants');
 
 class UserStore {
@@ -14,7 +12,8 @@ class UserStore {
         this.exportPublicMethods({
             get_user: this.get_user,
             admin: this.admin,
-            bank_connected: this.bank_connected
+            bank_connected: this.bank_connected,
+            request_scopes: this.request_scopes
         });
     }
 
@@ -24,6 +23,25 @@ class UserStore {
         console.log("Stored user "+user.email);
         // api.updateToken(user.token);
         localStorage.setItem(AppConstants.USER_STORAGE_KEY, JSON.stringify(user));
+    }
+
+    request_scopes(scopes_array, cb, cb_fail) {
+        var auth2 = gapi.auth2.getAuthInstance();
+        var guser = auth2.currentUser.get();
+        let granted_scopes = guser.getGrantedScopes();
+        console.log('granted', granted_scopes);
+        let scopes_needed = [];
+        scopes_array.forEach((scope) => {
+            if (granted_scopes.indexOf(scope) == -1) scopes_needed.push(scope);
+        });
+        if (scopes_needed.length > 0) {
+            var options = new gapi.auth2.SigninOptionsBuilder({'scope': scopes_needed.join(' ')});
+            guser = auth2.currentUser.get();
+            guser.grant(options).then(cb, cb_fail);
+        } else {
+            console.log('have all requested scopes');
+            cb();
+        }
     }
 
     loadLocalUser() {
@@ -63,7 +81,12 @@ class UserStore {
         if (data.success) {
             this.clearUser();
             this.error = null;
-            browserHistory.push('/app/splash');
+            console.log('Signed out of Flow');
+            var auth2 = gapi.auth2.getAuthInstance();
+            auth2.signOut().then(function () {
+                console.log('Signed out of Google');
+                browserHistory.push('/app/splash');
+            });
         }
     }
 

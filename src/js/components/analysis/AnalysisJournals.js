@@ -1,9 +1,6 @@
 var React = require('react');
-
 var util = require('utils/util');
-
-var LoadStatus = require('components/common/LoadStatus');
-import {FontIcon, IconButton, FlatButton, AutoComplete,
+import {FlatButton, AutoComplete,
     Checkbox, DropDownMenu, MenuItem} from 'material-ui';
 import {Bar, Line} from "react-chartjs-2";
 var api = require('utils/api');
@@ -19,7 +16,6 @@ export default class AnalysisJournals extends React.Component {
     };
     constructor(props) {
         super(props);
-        let today = new Date();
         let user = props.user;
         let questions = [];
         if (user) questions = get(user, 'settings.journals.questions', []);
@@ -197,14 +193,14 @@ export default class AnalysisJournals extends React.Component {
     }
 
     change_color_scale(event, key, q) {
-        this.setState({color_scale_question: q});
+        this.setState({color_scale_question: q}, () => {
+            this.refs.map.refreshMarkers();
+        });
     }
 
     render() {
         let {journal_tag_segment, journal_segments, map_showing, } = this.state;
-        let {loaded} = this.props;
         if (!loaded) return null;
-        let today = new Date();
         let _journals_segmented, _map;
         let journalData = this.journal_data();
         let journalOptions = {
@@ -265,7 +261,6 @@ export default class AnalysisJournals extends React.Component {
         }
         if (map_showing) {
             let {color_scale_question} = this.state;
-            let dd_value = color_scale_question ? color_scale_question.name : null;
             _map = (
                 <div>
                     <label>Select pin color</label><br/>
@@ -278,7 +273,7 @@ export default class AnalysisJournals extends React.Component {
                         }) }
                     </DropDownMenu>
 
-                    <EntityMap entities={this.get_pins()} labelAtt="label" style={{height: "400px"}} markerIcon={this.generate_marker.bind(this)} />
+                    <EntityMap ref="map" entities={this.get_pins()} labelAtt="label" style={{height: "400px"}} markerIcon={this.generate_marker.bind(this)} />
                 </div>
             )
         }

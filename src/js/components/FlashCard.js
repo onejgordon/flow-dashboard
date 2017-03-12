@@ -1,11 +1,9 @@
 var React = require('react');
-import { FontIcon, IconButton, FlatButton } from 'material-ui';
-var util = require('utils/util');
-var api = require('utils/api');
-import {cyanA400} from 'material-ui/styles/colors';
-var moment = require('moment-timezone');
-var $ = require('jquery');
+import { IconButton, FlatButton } from 'material-ui';
+var UserStore = require('stores/UserStore');
+var toastr = require('toastr');
 import {G_OAUTH_CLIENT_ID, GOOGLE_API_KEY} from 'constants/client_secrets';
+import gapi from 'gapi-client';
 
 export default class FlashCard extends React.Component {
   static defaultProps = {
@@ -32,10 +30,16 @@ export default class FlashCard extends React.Component {
         all_data: null,
         flipped: false
       };
+      this.GSHEET_SCOPE = 'https://www.googleapis.com/auth/spreadsheets.readonly';
   }
 
   componentDidMount() {
     this.refresh();
+  }
+
+  handle_error(fail) {
+    console.warn(fail);
+    toastr.error('An error occurred: ' + fail);
   }
 
   flipping_enabled() {
@@ -47,25 +51,29 @@ export default class FlashCard extends React.Component {
     window.open(url, "_blank");
   }
 
-  maybe_load_gapi(cb) {
-    $.getScript("https://apis.google.com/js/api.js", () => {
-      this.maybe_load_client(cb);
-    })
-  }
-
   maybe_load_client(cb) {
+    console.log('maybe_load_client');
     if (!gapi.client) gapi.load('client', cb);
     else cb();
   }
 
-  maybe_init_sheets(cb) {
+  maybe_request_scopes(cb) {
+    UserStore.request_scopes([this.GSHEET_SCOPE], cb, this.handle_error.bind(this));
+  }
+
+  maybe_init_client(cb) {
+    console.log('maybe_init_client');
     gapi.client.init({
-      'apiKey': GOOGLE_API_KEY,
-      'discoveryDocs': ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
-      // clientId and scope are optional if auth is not required.
-      'clientId': G_OAUTH_CLIENT_ID,
-      'scope': 'https://www.googleapis.com/auth/spreadsheets.readonly',
-    }).then(cb);
+      apiKey: GOOGLE_API_KEY,
+      discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+      clientId: G_OAUTH_CLIENT_ID,
+      scope: this.GSHEET_SCOPE,
+    }).then(() => {
+      console.log('OK');
+      cb();
+    }, (error) => {
+      console.log(error);
+    });
   }
 
   have_data() {
@@ -73,7 +81,6 @@ export default class FlashCard extends React.Component {
   }
 
   save_data(data) {
-    let st = {};
     this.setState({all_data: data}, () => {
       this.get_random_row();
     })
@@ -99,16 +106,21 @@ export default class FlashCard extends React.Component {
     if (this.have_data()) this.get_random_row();
     else {
       let {data_source, colstart, colend} = this.props;
-      this.maybe_load_gapi(() => {
-        this.maybe_init_sheets(() => {
-          gapi.client.sheets.spreadsheets.values.get({
-            spreadsheetId: data_source,
-            range: `${colstart}:${colend}`,
-            majorDimension: "COLUMNS"
-          }).then((response) => {
-            var range = response.result;
-            this.save_data(range);
-          });
+      this.maybe_load_client(() => {
+        this.maybe_request_scopes(() => {
+          this.maybe_init_client(() => {
+            console.log('getting...');
+            gapi.client.sheets.spreadsheets.values.get({
+              spreadsheetId: data_source,
+              range: `${colstart}:${colend}`,
+              majorDimension: "COLUMNS"
+            }).then((response) => {
+              var range = response.result;
+              this.save_data(range);
+            }, (fail_response) => {
+              console.warn(fail_response);
+            });
+          })
         })
       });
 

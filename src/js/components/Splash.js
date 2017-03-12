@@ -20,14 +20,6 @@ export default class Splash extends React.Component {
     }
 
     success(gUser) {
-        var profile = gUser.getBasicProfile();
-        var id_token = gUser.getAuthResponse().id_token;
-        console.log(profile);
-        let data = {token: id_token};
-        var response = api.post('/api/auth/google_login', data, (res) => {
-            UserActions.storeUser(res.user);
-            browserHistory.push('/app/dashboard');
-        })
     }
 
     fail(res) {
@@ -57,7 +49,7 @@ export default class Splash extends React.Component {
                         <GoogleLogin
                             clientId={client_secrets.G_OAUTH_CLIENT_ID}
                             buttonText="Login"
-                            scope="profile email https://www.googleapis.com/auth/spreadsheets.readonly"
+                            scope="profile email"
                             onSuccess={this.success.bind(this)}
                             onFailure={this.fail.bind(this)} />
 

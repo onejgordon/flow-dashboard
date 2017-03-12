@@ -2,8 +2,8 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var util = require('utils/util');
 import {findItemById} from 'utils/store-utils';
-import merge from 'lodash';
 
+// Requires google loaded
 var g = google.maps;
 
 export default class EntityMap extends React.Component {
@@ -44,6 +44,10 @@ export default class EntityMap extends React.Component {
     }
 
     this.PIN_LOOKUP = {}; // entity id -> pin object
+  }
+
+  componentDidMount() {
+    this.initMap();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -116,7 +120,7 @@ export default class EntityMap extends React.Component {
 
   updateBounds(markers) {
     if (!markers) {
-      var markers = [];
+      markers = [];
       this.props.entities.forEach((e) => {
         let pin = this.getPin(e.id);
         if (pin) markers.push(pin);
@@ -132,14 +136,10 @@ export default class EntityMap extends React.Component {
   forAllEntities(fn, _entities) {
     var entities = _entities || this.props.entities;
     if (entities) {
-      entities.forEach(function(e, i, arr) {
+      entities.forEach((e) => {
         if (e) fn(e);
-      }, this);
+      });
     }
-  }
-
-  componentDidMount() {
-    this.initMap();
   }
 
   getEntityById(_id) {
