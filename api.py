@@ -85,9 +85,10 @@ class TaskAPI(handlers.JsonRequestHandler):
         id = self.request.get_range('id')
         params = tools.gets(self,
             strings=['title'],
-            booleans=['archived'],
+            booleans=['archived', 'wip'],
             integers=['status']
         )
+        logging.debug(params)
         if id:
             task = Task.get_by_id(int(id), parent=self.user.key)
         else:

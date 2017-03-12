@@ -1,7 +1,4 @@
 var React = require('react');
-var AppConstants = require('constants/AppConstants');
-var util = require('utils/util');
-var api = require('utils/api');
 var GoalViewer = require('components/GoalViewer');
 var ProjectViewer = require('components/ProjectViewer');
 var HabitWidget = require('components/HabitWidget');
@@ -10,10 +7,9 @@ var MiniJournalWidget = require('components/MiniJournalWidget');
 var TaskWidget = require('components/TaskWidget');
 var FlashCard = require('components/FlashCard');
 import {findItemById} from 'utils/store-utils';
-import {clone, merge, get} from 'lodash';
-import {RaisedButton, Dialog, IconButton,
-    TextField, FlatButton, FontIcon,
-    IconMenu, MenuItem, Paper} from 'material-ui';
+import {get} from 'lodash';
+import {Dialog, IconButton, FontIcon,
+    IconMenu, MenuItem} from 'material-ui';
 
 export default class Dashboard extends React.Component {
     static defaultProps = {}
@@ -24,8 +20,12 @@ export default class Dashboard extends React.Component {
         };
     }
 
-    componentDidMount() {
-        document.onkeydown = this.handle_key_down.bind(this);
+    componentWillMount() {
+        document.addEventListener("keydown", this.handle_key_down.bind(this));
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener("keydown", this.handle_key_down.bind(this));
     }
 
     handle_key_down(e) {
@@ -34,12 +34,14 @@ export default class Dashboard extends React.Component {
         let in_input = tag == 'input' || tag == 'textarea';
         if (in_input) return true;
         if (keyCode == 84) { // t
-          this.refs.taskwidget.show_new_box();
-          document.getElementById('TaskWidget').scrollIntoView();
-          return false;
+            this.refs.taskwidget.show_new_box();
+            document.getElementById('TaskWidget').scrollIntoView();
+            e.preventDefault();
+            return false;
         } else if (keyCode == 72) { // h
-          document.getElementById('HabitWidget').scrollIntoView();
-          return false;
+            document.getElementById('HabitWidget').scrollIntoView();
+            e.preventDefault();
+            return false;
         }
     }
 

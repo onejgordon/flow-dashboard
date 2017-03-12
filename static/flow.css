@@ -115,6 +115,12 @@ body {
     color: white;
 }
 
+.TaskWidget div.wip {
+  font-size: 1.3em;
+  font-weight: 100;
+  color: #F9D23D;
+}
+
 .dateProgressBar {
     display: block;
     height: 2px;

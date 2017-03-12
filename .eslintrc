@@ -4,6 +4,10 @@
     "node": true,
     "browser": true
   },
+  "parser": "babel-eslint",
+  "rules": {
+    "strict": 0
+  },
   "parserOptions": {
       ecmaVersion: 6,
       ecmaFeatures: {
