@@ -1,0 +1,88 @@
+{
+  "userSays": [
+    {
+      "id": "a2362407-405c-4194-a719-2ce985fb2fcf",
+      "data": [
+        {
+          "text": "i\u0027m done with "
+        },
+        {
+          "text": "run",
+          "alias": "habit",
+          "meta": "@sys.any",
+          "userDefined": true
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "0acd8db6-095c-4f4a-b599-41ff427ee804",
+      "data": [
+        {
+          "text": "mark "
+        },
+        {
+          "text": "run",
+          "alias": "habit",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " as complete"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "c3433c47-9bdb-4171-8bb2-d880f629b7de",
+      "data": [
+        {
+          "text": "I just finished "
+        },
+        {
+          "text": "run",
+          "alias": "habit",
+          "meta": "@sys.any",
+          "userDefined": true
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "7fb0c1c5-4935-4f8a-9d85-f5f4a71829d7",
+  "name": "Report Habit Complete",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.habit_report",
+      "affectedContexts": [],
+      "parameters": [
+        {
+          "required": true,
+          "dataType": "@sys.any",
+          "name": "habit",
+          "value": "$habit",
+          "prompts": [
+            "Which habit did you complete?"
+          ]
+        }
+      ],
+      "messages": [
+        {
+          "type": 0,
+          "speech": []
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}

@@ -3,7 +3,7 @@
 AUTHOR_NAME = "Jeremy Gordon"
 SITENAME = "Flow"
 EMAIL_PREFIX = "[ Flow ] "
-TAGLINE = "Focus on what matters"
+TAGLINE = "A personal dashboard to focus on what matters"
 
 # Emails
 APP_OWNER = "onejgordon@gmail.com"
@@ -28,7 +28,7 @@ DEFAULT_USER_SETTINGS = {
                 'response_type': "slider",
                 'chart': True,
                 'tag_segment_chart': True,
-                'rgb': [200, 0, 0]
+                'color': '#dd0000'
             }
         ]
     }

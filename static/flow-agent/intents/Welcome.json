@@ -1,0 +1,61 @@
+{
+  "userSays": [
+    {
+      "id": "93e0d482-1cfa-4771-b861-13532fb1c4d6",
+      "data": [
+        {
+          "text": "How does Flow work?"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "d9eacef2-28aa-4cfe-9cb1-f87512972e37",
+      "data": [
+        {
+          "text": "How does this work?"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "15d871d6-6699-4edd-9c6a-6add5ea04ee2",
+      "data": [
+        {
+          "text": "What\u0027s Flow?"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "f9dfbe01-3057-4c6c-9ad5-3067f625116e",
+  "name": "Welcome",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.welcome",
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": 0,
+          "speech": "With the Flow agent, you can check how you\u0027re doing, mark habits as complete, and commit to habits. Also, you can check on your goals."
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": false,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": [
+    {
+      "name": "GOOGLE_ASSISTANT_WELCOME"
+    }
+  ]
+}
