@@ -50,8 +50,8 @@ class Hacks(handlers.BaseRequestHandler):
                 db_delete.append(task.key)
             res['putting'] = len(db_put)
             res['deleting'] = len(db_delete)
-            ndb.put_multi(db_put)
             ndb.delete_multi(db_delete)
+            ndb.put_multi(db_put)
 
 
         elif hack_id == 'normalize_key_props':
