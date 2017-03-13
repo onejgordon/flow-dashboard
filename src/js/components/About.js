@@ -45,7 +45,7 @@ export default class About extends React.Component {
 
                         <h3>Visualize everything.</h3>
 
-                        <p className="lead" style={{fontSize: "1.5em"}}>Everything Flow collects can be visualized.</p>
+                        <p className="lead" style={{fontSize: "1.5em"}}>Everything you put into Flow can be visualized, including your daily journal questions, task completion, habit consistency, etc.</p>
 
                         <img src="/images/screenshots/analysis.png" className="img-responsive" />
 

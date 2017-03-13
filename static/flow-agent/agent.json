@@ -26,7 +26,7 @@
     "url": "[BASE]/api/integrations/googlehome/request",
     "username": "",
     "headers": {
-      "Auth-Key": "[secrets.G_HOME_AUTH_KEY]",
+      "Auth-Key": "[secrets.API_AI_AUTH_KEY]",
       "": ""
     },
     "available": true,

@@ -76,9 +76,7 @@ export default class MiniJournalWidget extends React.Component {
 
   check_if_not_submitted() {
     // If not yet submitted for day, show dialog
-    console.log("Checking if submitted...")
     api.get("/api/journal/today", {}, (res) => {
-      // TODO: check if journal questions completed
       if (!res.journal || (res.journal && !res.journal.data)) {
         this.open_journal_dialog();
       }

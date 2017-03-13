@@ -88,10 +88,9 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/integrations/pocket/authenticate', handler=api.IntegrationsAPI, handler_method="pocket_authenticate", methods=["POST"]),
         webapp2.Route('/api/integrations/pocket/authorize', handler=api.IntegrationsAPI, handler_method="pocket_authorize", methods=["POST"]),
         webapp2.Route('/api/integrations/pocket/disconnect', handler=api.IntegrationsAPI, handler_method="pocket_disconnect", methods=["POST"]),
-        webapp2.Route('/api/integrations/googlehome/request', handler=api.IntegrationsAPI, handler_method="ghome_request", methods=["POST"]),
 
-        # Callbacks
-        # webapp2.Route('/api/integrations/pocket/auth/callback', handler=api.IntegrationsAPI, handler_method="pocket_callback", methods=["GET"]),
+        # Agent
+        webapp2.Route('/api/agent/apiai/request', handler=api.AgentAPI, handler_method="apiai_request", methods=["POST"]),
 
         # Cron jobs (see cron.yaml)
         webapp2.Route('/cron/readables/sync', handler=tasks.SyncReadables),

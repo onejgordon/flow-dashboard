@@ -701,30 +701,52 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
             'user': self.user.json() if self.user else None
         })
 
+
+class AgentAPI(handlers.JsonRequestHandler):
+
+    AGENT_GOOGLE_ASST = 1
+    AGENT_FBOOK_MESSENGER = 2
+
+    def _get_agent_type(self):
+        # TODO
+        return AgentAPI.AGENT_GOOGLE_ASST
+
+    def _get_user(self, body):
+        originalRequest = body.get('originalRequest', {})
+        user = originalRequest.get('data', {}).get('user', {})
+        access_token = user.get('access_token')
+        user_id = User.user_id_from_aes_access_token(access_token)
+        self.user = User.get_by_id(int(user_id))
+        return self.user
+
+    def _get_action_and_params(self, body):
+        id = body.get('id')
+        logging.debug("Processing agent request with id: %s" % id)
+        result = body.get('result', {})
+        action = result.get('action')
+        parameters = result.get('parameters')
+        return (id, action, parameters)
+
     @authorized.role()
-    def ghome_request(self, d):
+    def apiai_request(self, d):
         '''
         {"id":"dd224f85-cc29-4d27-8100-e5c1a54766c4","timestamp":"2017-03-09T22:19:05.112Z","lang":"en","result":{"source":"agent","resolvedQuery":"GOOGLE_ASSISTANT_WELCOME","speech":"","action":"input.status_request","actionIncomplete":false,"parameters":{},"contexts":[{"name":"google_assistant_welcome","parameters":{},"lifespan":0}],"metadata":{"intentId":"308e5379-7d79-42dd-b66c-7c1d44e1c2fd","webhookUsed":"true","webhookForSlotFillingUsed":"false","intentName":"Genzai Status Request"},"fulfillment":{"speech":"","messages":[]},"score":1.0},"status":{"code":200,"errorType":"success"},"sessionId":"1489097945070","originalRequest":{"source":"google","data":{"surface":{"capabilities":[{"name":"actions.capability.AUDIO_OUTPUT"},{"name":"actions.capability.AUDIO_INPUT"}]},"inputs":[{"arguments":[],"intent":"assistant.intent.action.MAIN","raw_inputs":[{"query":"talk to genzai","input_type":2,"annotation_sets":[]}]}],"user":{"access_token":"KZiPjtEKbyzWTG/o76yWWPsPLdt+kk2i3kkIhkb8mPUMRJds5Tk6QH4HINydK4RN99Lib0X5OPncW7sYb8oAaA5W7VMtnvFaAsMl2VKRGhk=","user_id":"WrBcqMQhQT3X8INoUpiqFZyoALrSlgk4XSmgOTUtjy0="},"device":{},"conversation":{"conversation_id":"1489097945070","type":1}}}}
         '''
-        from secrets import G_HOME_AUTH_KEY
+        from secrets import API_AI_AUTH_KEY
         auth_key = self.request.headers.get('Auth-Key')
         res = {'source': 'Flow'}
         speech = None
-        if auth_key == G_HOME_AUTH_KEY:
+        if auth_key == API_AI_AUTH_KEY:
+            agent_type = self._get_agent_type()
             body = tools.getJson(self.request.body)
-            result = body.get('result', {})
-            originalRequest = body.get('originalRequest', {})
-            user = originalRequest.get('data', {}).get('user', {})
-            access_token = user.get('access_token')
-            user_id = User.user_id_from_aes_access_token(access_token)
-            id = body.get('id')
-            logging.debug("Processing query %s" % id)
-            if user_id:
-                self.user = User.get_by_id(int(user_id))
-                action = result.get('action')
-                parameters = result.get('parameters')
-                from services import google_assistant
-                speech = google_assistant.respond_to_action(self.user, action, parameters=parameters)
+            logging.debug(body)
+            id, action, parameters = self._get_action_and_params(body)
+            user = self._get_user(body)
+            from services import agent
+            speech = agent.respond_to_action(self.user, action,
+                                             parameters=parameters,
+                                             agent_type=agent_type)
+
         if not speech:
             speech = "Uh oh, something weird happened"
         res['speech'] = speech

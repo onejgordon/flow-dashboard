@@ -518,9 +518,6 @@ var util = {
            // You can view the information in an alert to see things working like this:
            alert("An error has occurred. Share this with the Echo Development team for assistance: " + msg + "\nurl: " + url + "\nline: " + line + extra);
 
-           // TODO: Report this error via ajax so you can keep track
-           //       of what pages have JS issues
-
            var suppressErrorAlert = true;
            // If you return true, then error alerts (like in older versions of
            // Internet Explorer) will be suppressed.
