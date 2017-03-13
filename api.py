@@ -555,6 +555,28 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
                     name = json_response.get("name", None)
         return (success, email, name)
 
+    @authorized.role()
+    def fbook_auth(self, d):
+        id_token = self.request.get('id_token')
+        account_linking_token = self.request.get('account_linking_token')
+        redirect_uri = self.request.get('redirect_uri')
+        res = {}
+        if not self.user:
+            ok, _email, name = self.validate_google_id_token(id_token)
+            if ok:
+                self.user = User.GetByEmail(_email)
+        if self.user:
+            auth_code = self.user.key.id()
+            if redirect_uri:
+                redirect_uri += '&authorization_code=%s' % auth_code
+                self.success = True
+            else:
+                self.message = "No redirect URI?"
+        else:
+            self.message = "User not found"
+        res['redirect'] = redirect_uri
+        self.set_response(res, debug=True)
+
     def logout(self):
         self.success = True
         if self.session.has_key('user'):
@@ -704,19 +726,28 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
 
 class AgentAPI(handlers.JsonRequestHandler):
 
-    AGENT_GOOGLE_ASST = 1
-    AGENT_FBOOK_MESSENGER = 2
-
-    def _get_agent_type(self):
-        # TODO
-        return AgentAPI.AGENT_GOOGLE_ASST
+    def _get_agent_type(self, body):
+        # Facebook Messenger example
+        # {u'lang': u'en', u'status': {u'errorType': u'success', u'code': 200}, u'timestamp': u'2017-03-13T14:01:49.275Z', u'sessionId': u'e6d8f9a7-4a70-4049-9214-2c61e88af68d', u'result': {u'parameters': {}, u'contexts': [{u'name': u'generic', u'parameters': {u'facebook_sender_id': u'1182039228580866'}, u'lifespan': 4}], u'resolvedQuery': u'how am i doing?', u'source': u'agent', u'score': 1.0, u'speech': u'', u'fulfillment': {u'messages': [{u'speech': u'Sure, checking', u'type': 0}], u'speech': u'Sure, checking'}, u'actionIncomplete': False, u'action': u'input.status_request', u'metadata': {u'intentId': u'308e5379-7d79-42dd-b66c-7c1d44e1c2fd', u'webhookForSlotFillingUsed': u'false', u'intentName': u'Flow Status Request', u'webhookUsed': u'true'}}, u'id': u'1de76809-1bc3-47f5-ae8e-b7003cdc0f7f', u'originalRequest': {u'source': u'facebook', u'data': {u'timestamp': 1489413704002.0, u'message': {u'text': u'how am i doing?', u'mid': u'mid.1489413704002:027a192309', u'seq': 5398}, u'recipient': {u'id': u'197271657425620'}, u'sender': {u'id': u'1182039228580866'}}}}
+        # Google Assistant Example
+        # {"id":"dd224f85-cc29-4d27-8100-e5c1a54766c4","timestamp":"2017-03-09T22:19:05.112Z","lang":"en","result":{"source":"agent","resolvedQuery":"GOOGLE_ASSISTANT_WELCOME","speech":"","action":"input.status_request","actionIncomplete":false,"parameters":{},"contexts":[{"name":"google_assistant_welcome","parameters":{},"lifespan":0}],"metadata":{"intentId":"308e5379-7d79-42dd-b66c-7c1d44e1c2fd","webhookUsed":"true","webhookForSlotFillingUsed":"false","intentName":"Genzai Status Request"},"fulfillment":{"speech":"","messages":[]},"score":1.0},"status":{"code":200,"errorType":"success"},"sessionId":"1489097945070","originalRequest":{"source":"google","data":{"surface":{"capabilities":[{"name":"actions.capability.AUDIO_OUTPUT"},{"name":"actions.capability.AUDIO_INPUT"}]},"inputs":[{"arguments":[],"intent":"assistant.intent.action.MAIN","raw_inputs":[{"query":"talk to genzai","input_type":2,"annotation_sets":[]}]}],"user":{"access_token":"KZiPjtEKbyzWTG/o76yWWPsPLdt+kk2i3kkIhkb8mPUMRJds5Tk6QH4HINydK4RN99Lib0X5OPncW7sYb8oAaA5W7VMtnvFaAsMl2VKRGhk=","user_id":"WrBcqMQhQT3X8INoUpiqFZyoALrSlgk4XSmgOTUtjy0="},"device":{},"conversation":{"conversation_id":"1489097945070","type":1}}}}
+        from services.agent import AGENT_GOOGLE_ASST, AGENT_FBOOK_MESSENGER
+        originalRequest = body.get('originalRequest', {})
+        source = originalRequest.get('source')
+        if source:
+            return {
+                'google': AGENT_GOOGLE_ASST,
+                'facebook': AGENT_FBOOK_MESSENGER
+            }.get(source)
 
     def _get_user(self, body):
         originalRequest = body.get('originalRequest', {})
         user = originalRequest.get('data', {}).get('user', {})
         access_token = user.get('access_token')
-        user_id = User.user_id_from_aes_access_token(access_token)
-        self.user = User.get_by_id(int(user_id))
+        if access_token:
+            user_id = User.user_id_from_aes_access_token(access_token)
+            if user_id:
+                self.user = User.get_by_id(int(user_id))
         return self.user
 
     def _get_action_and_params(self, body):
@@ -730,27 +761,75 @@ class AgentAPI(handlers.JsonRequestHandler):
     @authorized.role()
     def apiai_request(self, d):
         '''
-        {"id":"dd224f85-cc29-4d27-8100-e5c1a54766c4","timestamp":"2017-03-09T22:19:05.112Z","lang":"en","result":{"source":"agent","resolvedQuery":"GOOGLE_ASSISTANT_WELCOME","speech":"","action":"input.status_request","actionIncomplete":false,"parameters":{},"contexts":[{"name":"google_assistant_welcome","parameters":{},"lifespan":0}],"metadata":{"intentId":"308e5379-7d79-42dd-b66c-7c1d44e1c2fd","webhookUsed":"true","webhookForSlotFillingUsed":"false","intentName":"Genzai Status Request"},"fulfillment":{"speech":"","messages":[]},"score":1.0},"status":{"code":200,"errorType":"success"},"sessionId":"1489097945070","originalRequest":{"source":"google","data":{"surface":{"capabilities":[{"name":"actions.capability.AUDIO_OUTPUT"},{"name":"actions.capability.AUDIO_INPUT"}]},"inputs":[{"arguments":[],"intent":"assistant.intent.action.MAIN","raw_inputs":[{"query":"talk to genzai","input_type":2,"annotation_sets":[]}]}],"user":{"access_token":"KZiPjtEKbyzWTG/o76yWWPsPLdt+kk2i3kkIhkb8mPUMRJds5Tk6QH4HINydK4RN99Lib0X5OPncW7sYb8oAaA5W7VMtnvFaAsMl2VKRGhk=","user_id":"WrBcqMQhQT3X8INoUpiqFZyoALrSlgk4XSmgOTUtjy0="},"device":{},"conversation":{"conversation_id":"1489097945070","type":1}}}}
+
         '''
         from secrets import API_AI_AUTH_KEY
         auth_key = self.request.headers.get('Auth-Key')
         res = {'source': 'Flow'}
         speech = None
+        data = {}
         if auth_key == API_AI_AUTH_KEY:
-            agent_type = self._get_agent_type()
             body = tools.getJson(self.request.body)
             logging.debug(body)
+            agent_type = self._get_agent_type(body)
             id, action, parameters = self._get_action_and_params(body)
-            user = self._get_user(body)
-            from services import agent
-            speech = agent.respond_to_action(self.user, action,
-                                             parameters=parameters,
-                                             agent_type=agent_type)
+            self._get_user(body)
+            from services.agent import ConversationAgent
+            ca = ConversationAgent(type=agent_type, user=self.user)
+            speech, data = ca.respond_to_action(action, parameters=parameters)
 
         if not speech:
             speech = "Uh oh, something weird happened"
         res['speech'] = speech
         res['displayText'] = speech
-        res['data'] = {}
+        res['data'] = data
         res['contextOut'] = []
         self.json_out(res, debug=True)
+
+    def _get_fbook_user(self, body):
+        account_linking = body.get("account_linking", {})
+        sender = body.get('sender', {})
+        psid = sender.get('id')
+        if account_linking:
+            status = account_linking.get('status')
+            if status == 'linked':
+                authcode = account_linking.get('authorization_code')
+                user_id = authcode
+                self.user = User.get_by_id(int(user_id))
+                if self.user and psid:
+                    self.user.fb_id = psid
+                    self.user.put()
+        if not self.user and psid:
+            self.user = User.query().filter(User.fb_id == psid).get()
+
+    def _get_fbook_message(self, body):
+        return body.get('message', {}).get('text')
+
+    @authorized.role()
+    def fbook_request(self, d):
+        '''
+        Facebook Messenger request handling
+        '''
+        from secrets import FB_VERIFY_TOKEN
+        verify_token = self.request.get('hub.verify_token')
+        hub_challenge = self.request.get('hub.challenge')
+        reply = None
+        if verify_token and verify_token == FB_VERIFY_TOKEN:
+            if hub_challenge:
+                self.response.out.write(hub_challenge)
+                return
+
+        body = tools.getJson(self.request.body)
+
+        logging.debug(body)
+        self._get_fbook_user(body)
+        from services.agent import ConversationAgent, AGENT_FBOOK_MESSENGER
+        from services import facebook
+        ca = ConversationAgent(type=AGENT_FBOOK_MESSENGER, user=self.user)
+        action, parameters = ca.parse_message(self._get_fbook_message(body))
+        if action:
+            reply, data = ca.respond_to_action(action, parameters=parameters)
+        if reply and self.user:
+            facebook.send_message(self.user, reply)
+        self.success = True
+        self.json_out()

@@ -79,6 +79,7 @@ app = webapp2.WSGIApplication(
 
         webapp2.Route('/api/auth/google_login', handler=api.AuthenticationAPI, handler_method="google_login"),
         webapp2.Route('/api/auth/google_auth', handler=api.AuthenticationAPI, handler_method="google_auth"),
+        webapp2.Route('/api/auth/fbook_auth', handler=api.AuthenticationAPI, handler_method="fbook_auth"),
         webapp2.Route('/api/auth/logout', handler=api.AuthenticationAPI, handler_method="logout"),
 
         # Integrations
@@ -91,6 +92,7 @@ app = webapp2.WSGIApplication(
 
         # Agent
         webapp2.Route('/api/agent/apiai/request', handler=api.AgentAPI, handler_method="apiai_request", methods=["POST"]),
+        webapp2.Route('/api/agent/fbook/request', handler=api.AgentAPI, handler_method="fbook_request", methods=["POST"]),
 
         # Cron jobs (see cron.yaml)
         webapp2.Route('/cron/readables/sync', handler=tasks.SyncReadables),
