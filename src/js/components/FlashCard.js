@@ -3,7 +3,7 @@ import { IconButton, FlatButton } from 'material-ui';
 var UserStore = require('stores/UserStore');
 var toastr = require('toastr');
 import {G_OAUTH_CLIENT_ID, GOOGLE_API_KEY} from 'constants/client_secrets';
-import gapi from 'gapi-client';
+// import gapi from 'gapi-client';
 
 export default class FlashCard extends React.Component {
   static defaultProps = {
@@ -62,18 +62,26 @@ export default class FlashCard extends React.Component {
   }
 
   maybe_init_client(cb) {
-    console.log('maybe_init_client');
+    console.log('maybe_init_client...');
     gapi.client.init({
       apiKey: GOOGLE_API_KEY,
-      discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+      // discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
       clientId: G_OAUTH_CLIENT_ID,
-      scope: this.GSHEET_SCOPE,
-    }).then(() => {
-      console.log('OK');
+      scope: this.GSHEET_SCOPE
+    }).then(function() {
       cb();
-    }, (error) => {
-      console.log(error);
-    });
+    }).then((res) => {
+      console.log(res);
+    })
+  }
+
+  request_spreadsheet_data() {
+    let {data_source, colstart, colend} = this.props;
+    console.log('request_spreadsheet_data');
+    let range = `${colstart}:${colend}`;
+    return gapi.client.request({
+      path: `https://sheets.googleapis.com/v4/spreadsheets/${data_source}/values/${range}?majorDimension=COLUMNS`
+    })
   }
 
   have_data() {
@@ -109,12 +117,7 @@ export default class FlashCard extends React.Component {
       this.maybe_load_client(() => {
         this.maybe_request_scopes(() => {
           this.maybe_init_client(() => {
-            console.log('getting...');
-            gapi.client.sheets.spreadsheets.values.get({
-              spreadsheetId: data_source,
-              range: `${colstart}:${colend}`,
-              majorDimension: "COLUMNS"
-            }).then((response) => {
+            this.request_spreadsheet_data().then((response) => {
               var range = response.result;
               this.save_data(range);
             }, (fail_response) => {

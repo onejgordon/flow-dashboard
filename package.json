@@ -31,6 +31,7 @@
     "history": "^1.17.0",
     "jquery": "^2.1.4",
     "json5": "^0.5.1",
+    "load-google-maps-api": "0.0.3",
     "material-ui": "^0.16.7",
     "moment": "^2.10.6",
     "moment-timezone": "^0.4.0",

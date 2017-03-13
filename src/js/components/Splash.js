@@ -1,15 +1,9 @@
 var React = require('react');
 var AppConstants = require('constants/AppConstants');
-var util = require('utils/util');
-var api = require('utils/api');
-var UserActions = require('actions/UserActions');
 import {Link} from 'react-router';
 import GoogleLogin from 'react-google-login';
-import {clone, merge} from 'lodash';
-import {RaisedButton, Dialog, IconButton,
-    TextField, FlatButton, Paper} from 'material-ui';
+import {RaisedButton} from 'material-ui';
 var client_secrets = require('constants/client_secrets');
-import {browserHistory} from 'react-router';
 
 export default class Splash extends React.Component {
     static defaultProps = {}

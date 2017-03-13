@@ -2,19 +2,15 @@
 
 var React = require('react');
 import {Router, withRouter, Link, browserHistory} from 'react-router';
-var util = require('utils/util');
-var $ = require('jquery');
-var bootstrap = require('bootstrap');
-import { blue400,  white } from 'material-ui/styles/colors';
-import {FlatButton, RaisedButton, Avatar, FontIcon, MenuItem,
+import { FontIcon, MenuItem,
   IconButton, AppBar, Drawer, IconMenu, Divider, Subheader} from 'material-ui';
 var AppConstants = require('constants/AppConstants');
 var UserActions = require('actions/UserActions');
 var UserStore = require('stores/UserStore');
 import connectToStores from 'alt-utils/lib/connectToStores';
-import {G_OAUTH_CLIENT_ID} from 'constants/client_secrets';
+import {G_OAUTH_CLIENT_ID, GOOGLE_API_KEY} from 'constants/client_secrets';
 var api = require('utils/api');
-import gapi from 'gapi-client';
+// import gapi from 'gapi-client';
 
 @connectToStores
 export default class Private extends React.Component {
@@ -44,12 +40,14 @@ export default class Private extends React.Component {
   }
 
   init_google() {
-    var auth2 = gapi.auth2.init({
+    gapi.client.init({
+      apiKey: GOOGLE_API_KEY,
       client_id: G_OAUTH_CLIENT_ID,
       scope: 'profile'
-    });
-    auth2.isSignedIn.listen(this.signinChanged.bind(this));
-    auth2.currentUser.listen(this.userChanged.bind(this));
+    }).then(() => {
+      gapi.auth2.getAuthInstance().isSignedIn.listen(this.signinChanged.bind(this));
+      gapi.auth2.getAuthInstance().currentUser.listen(this.userChanged.bind(this));
+    })
   }
 
   signinChanged(val) {

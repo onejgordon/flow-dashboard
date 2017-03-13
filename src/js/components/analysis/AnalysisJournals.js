@@ -5,8 +5,9 @@ import {FlatButton, AutoComplete,
 import {Bar, Line} from "react-chartjs-2";
 var api = require('utils/api');
 import {get} from 'lodash';
+import {GOOGLE_API_KEY} from 'constants/client_secrets';
 var EntityMap = require('components/common/EntityMap');
-
+import loadGoogleMapsAPI from 'load-google-maps-api';
 import connectToStores from 'alt-utils/lib/connectToStores';
 
 @connectToStores
@@ -33,7 +34,8 @@ export default class AnalysisJournals extends React.Component {
             questions: questions,
             color_scale_question: chartable.length > 0 ? chartable[0] : null,
             chart_enabled_questions: chart_enabled,
-            map_showing: false
+            map_showing: false,
+            google_maps: null // Holder for Google Maps object
         };
     }
 
@@ -172,6 +174,8 @@ export default class AnalysisJournals extends React.Component {
     }
 
     generate_marker(e) {
+        let g = this.state.google_maps;
+        if (!g) return;
         let {color_scale_question} = this.state;
         let color = 'FFF';
         if (color_scale_question && e.value != null) {
@@ -184,7 +188,7 @@ export default class AnalysisJournals extends React.Component {
             });
         }
         return {
-            path: google.maps.SymbolPath.CIRCLE,
+            path: g.SymbolPath.CIRCLE,
             fillColor: '#' + color,
             fillOpacity: 1,
             strokeWeight: 3,
@@ -198,8 +202,19 @@ export default class AnalysisJournals extends React.Component {
         });
     }
 
+    show_map() {
+        loadGoogleMapsAPI({
+            key: GOOGLE_API_KEY
+        }).then((googleMaps) => {
+            this.setState({google_maps: googleMaps, map_showing: true});
+        }).catch((err) => {
+            console.error(err);
+        });
+    }
+
     render() {
-        let {journal_tag_segment, journal_segments, map_showing, } = this.state;
+        let {journal_tag_segment, journal_segments, map_showing } = this.state;
+        let {loaded} = this.props;
         if (!loaded) return null;
         let _journals_segmented, _map;
         let journalData = this.journal_data();
@@ -273,7 +288,11 @@ export default class AnalysisJournals extends React.Component {
                         }) }
                     </DropDownMenu>
 
-                    <EntityMap ref="map" entities={this.get_pins()} labelAtt="label" style={{height: "400px"}} markerIcon={this.generate_marker.bind(this)} />
+                    <EntityMap ref="map" entities={this.get_pins()}
+                            labelAtt="label"
+                            style={{height: "400px"}}
+                            google_maps={this.state.google_maps}
+                            markerIcon={this.generate_marker.bind(this)} />
                 </div>
             )
         }
@@ -302,7 +321,7 @@ export default class AnalysisJournals extends React.Component {
                 { _journals_segmented }
 
                 <div hidden={map_showing}>
-                    <FlatButton label="Show Map" onClick={this.setState.bind(this, {map_showing: true})} />
+                    <FlatButton label="Show Map" onClick={this.show_map.bind(this)} />
                 </div>
 
                 { _map }

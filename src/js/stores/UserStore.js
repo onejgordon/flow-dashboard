@@ -35,11 +35,9 @@ class UserStore {
             if (granted_scopes.indexOf(scope) == -1) scopes_needed.push(scope);
         });
         if (scopes_needed.length > 0) {
-            var options = new gapi.auth2.SigninOptionsBuilder({'scope': scopes_needed.join(' ')});
-            guser = auth2.currentUser.get();
-            guser.grant(options).then(cb, cb_fail);
+            guser.grant({'scope': scopes_needed.join(' ')}).then(cb, cb_fail);
         } else {
-            console.log('have all requested scopes');
+            console.log('we have all requested scopes');
             cb();
         }
     }

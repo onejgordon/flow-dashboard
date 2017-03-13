@@ -11,6 +11,7 @@ import {get} from 'lodash';
 import {Link} from 'react-router';
 import connectToStores from 'alt-utils/lib/connectToStores';
 
+
 @connectToStores
 export default class Analysis extends React.Component {
     static defaultProps = {};
