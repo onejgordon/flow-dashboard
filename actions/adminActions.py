@@ -41,7 +41,20 @@ class Hacks(handlers.BaseRequestHandler):
     def get(self, d):
         hack_id = self.request.get('hack_id')
         res = {}
-        if hack_id == 'normalize_key_props':
+        if hack_id == 'fix_task_ids':
+            db_put = []
+            db_delete = []
+            for task in Task.query().iter():
+                new_task = tools.clone_entity(task, parent=task.key.parent())
+                db_put.append(new_task)
+                db_delete.append(task.key)
+            res['putting'] = len(db_put)
+            res['deleting'] = len(db_delete)
+            ndb.delete_multi(db_delete)
+            ndb.put_multi(db_put)
+
+
+        elif hack_id == 'normalize_key_props':
             dbp = []
             for hd in HabitDay.query().iter():
                 habit_key = hd.habit

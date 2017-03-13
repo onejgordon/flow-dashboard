@@ -2,9 +2,8 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var util = require('utils/util');
 import {findItemById} from 'utils/store-utils';
-import merge from 'lodash';
 
-var g = google.maps;
+// Requires google loaded
 
 export default class EntityMap extends React.Component {
   static defaultProps = {
@@ -13,21 +12,8 @@ export default class EntityMap extends React.Component {
     // Each entity must be an object with properties id, lat, and lon
     visible: true,
     addClass: null,
+    google_maps: null,
     mapOpts: {},
-    focusMarkerIcon: {
-      url: "/images/map/pin_hl.png",
-      size: new g.Size(128,128),
-      origin: new g.Point(0,0),
-      anchor: new g.Point(16, 32),
-      scaledSize: new g.Size(32,32)
-    },
-    markerIcon: {
-      url: "/images/map/pin.png",
-      size: new g.Size(128,128),
-      origin: new g.Point(0,0),
-      anchor: new g.Point(16, 32),
-      scaledSize: new g.Size(32,32)
-    },
     focusEntity: null,
     labelAtt: "name",
     labelFn: null,
@@ -46,6 +32,14 @@ export default class EntityMap extends React.Component {
     this.PIN_LOOKUP = {}; // entity id -> pin object
   }
 
+  componentDidMount() {
+    this.initMap();
+  }
+
+  g() {
+    return this.props.google_maps;
+  }
+
   componentDidUpdate(prevProps, prevState) {
     var entitiesUpdated = prevProps.entities.length != this.props.entities.length;
     if (entitiesUpdated) {
@@ -62,6 +56,7 @@ export default class EntityMap extends React.Component {
   }
 
   addPin(center, title, icon, draggable) {
+    let g = this.g();
     let map = this.getMap();
     var marker = new g.Marker({
       map: map,
@@ -74,8 +69,9 @@ export default class EntityMap extends React.Component {
   }
 
   setMapBounds(markers){
+    let g = this.g();
     let map = this.getMap();
-    var latlngbounds = new google.maps.LatLngBounds();
+    var latlngbounds = new g.LatLngBounds();
     for (var i = 0; i < markers.length; i++) {
       latlngbounds.extend(markers[i].position);
     }
@@ -100,12 +96,13 @@ export default class EntityMap extends React.Component {
   }
 
   initMap() {
+    let g = this.g();
     var mapDiv = ReactDOM.findDOMNode(this.refs.map);
     var myOptions = {
         zoom: this.props.defaultZoom,
         center: this.props.center,
         disableDoubleClickZoom: false,
-        mapTypeId: google.maps.MapTypeId.ROADMAP
+        mapTypeId: g.MapTypeId.ROADMAP
     }
     util.mergeObject(myOptions, this.props.mapOpts);
     var map = new g.Map(mapDiv, myOptions);
@@ -116,7 +113,7 @@ export default class EntityMap extends React.Component {
 
   updateBounds(markers) {
     if (!markers) {
-      var markers = [];
+      markers = [];
       this.props.entities.forEach((e) => {
         let pin = this.getPin(e.id);
         if (pin) markers.push(pin);
@@ -132,14 +129,10 @@ export default class EntityMap extends React.Component {
   forAllEntities(fn, _entities) {
     var entities = _entities || this.props.entities;
     if (entities) {
-      entities.forEach(function(e, i, arr) {
+      entities.forEach((e) => {
         if (e) fn(e);
-      }, this);
+      });
     }
-  }
-
-  componentDidMount() {
-    this.initMap();
   }
 
   getEntityById(_id) {
@@ -163,6 +156,7 @@ export default class EntityMap extends React.Component {
 
   redrawPins(priorEntities) {
     var that = this;
+    let g = this.g();
     if (priorEntities) {
       this.forAllEntities((e) => { // For prior list
         let pin = this.getPin(e.id);

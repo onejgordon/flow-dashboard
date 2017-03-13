@@ -547,7 +547,6 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         g_response = urlfetch.fetch("https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=%s" % token)
         if g_response.status_code == 200:
             json_response = json.loads(g_response.content)
-            logging.debug(json_response)
             if 'aud' in json_response:
                 aud = json_response['aud']
                 if aud == secrets.GOOGLE_CLIENT_ID:

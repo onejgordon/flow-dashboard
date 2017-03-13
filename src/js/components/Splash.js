@@ -1,15 +1,9 @@
 var React = require('react');
 var AppConstants = require('constants/AppConstants');
-var util = require('utils/util');
-var api = require('utils/api');
-var UserActions = require('actions/UserActions');
 import {Link} from 'react-router';
 import GoogleLogin from 'react-google-login';
-import {clone, merge} from 'lodash';
-import {RaisedButton, Dialog, IconButton,
-    TextField, FlatButton, Paper} from 'material-ui';
+import {RaisedButton} from 'material-ui';
 var client_secrets = require('constants/client_secrets');
-import {browserHistory} from 'react-router';
 
 export default class Splash extends React.Component {
     static defaultProps = {}
@@ -20,14 +14,6 @@ export default class Splash extends React.Component {
     }
 
     success(gUser) {
-        var profile = gUser.getBasicProfile();
-        var id_token = gUser.getAuthResponse().id_token;
-        console.log(profile);
-        let data = {token: id_token};
-        var response = api.post('/api/auth/google_login', data, (res) => {
-            UserActions.storeUser(res.user);
-            browserHistory.push('/app/dashboard');
-        })
     }
 
     fail(res) {
@@ -57,7 +43,7 @@ export default class Splash extends React.Component {
                         <GoogleLogin
                             clientId={client_secrets.G_OAUTH_CLIENT_ID}
                             buttonText="Login"
-                            scope="profile email https://www.googleapis.com/auth/spreadsheets.readonly"
+                            scope="profile email"
                             onSuccess={this.success.bind(this)}
                             onFailure={this.fail.bind(this)} />
 

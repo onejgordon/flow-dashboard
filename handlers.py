@@ -63,6 +63,7 @@ class BaseRequestHandler(webapp2.RequestHandler):
                                      body=exception_traceback)
         template_values = {}
         template_values['traceback'] = exception_traceback
+        template_values['sitename'] = sitename
         self.render_template("error.html", **template_values)
 
     def log_request_params(self):
@@ -97,7 +98,7 @@ class JsonRequestHandler(BaseRequestHandler):
         self.success = False
         self.message = None
 
-    def set_response(self, data, debug=False):
+    def set_response(self, data=None, debug=False):
         res = {
             'success': self.success,
             'message': self.message
