@@ -84,8 +84,6 @@ class ConversationAgent(object):
                     speech = "%s '%s' is marked as complete." % (encourage, h.name)
                     handled = True
                     break
-                else:
-                    print habit_param_raw, "not in", h.name
             if not handled:
                 speech = "I'm not sure what you mean by '%s'" % habit_param_raw
         else:
@@ -243,7 +241,6 @@ class FacebookAgent(ConversationAgent):
             self._get_fbook_user()
         logging.debug("Authenticated user: %s" % self.user)
         self._get_request_type()
-        logging.debug("Request: %s" % self.request_type)
         self._process_request()
 
     def _link_account(self, psid, account_linking):
@@ -290,9 +287,10 @@ class FacebookAgent(ConversationAgent):
         # TODO: Memcache state (string & param, e.g. set goals)
         if self.request_type == FacebookAgent.REQ_MESSAGE:
             message = self._get_fbook_message()
-            action, parameters = self.parse_message(message)
-            if action:
-                self.reply, self.message_data = self.respond_to_action(action, parameters=parameters)
+            if message:
+                action, parameters = self.parse_message(message)
+                if action:
+                    self.reply, self.message_data = self.respond_to_action(action, parameters=parameters)
         elif self.request_type == FacebookAgent.REQ_POSTBACK:
             payload = self.md.get('postback', {}).get('payload')
             self.reply, self.message_data = self.respond_to_action(payload)
