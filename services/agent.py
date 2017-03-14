@@ -8,14 +8,19 @@ from models import Habit, HabitDay, Task, Goal, User
 from datetime import datetime
 import random
 from constants import HABIT_DONE_REPLIES, HABIT_COMMIT_REPLIES, SECURE_BASE
-import urllib
 from google.appengine.api import urlfetch
 import json
-from secrets import FB_ACCESS_TOKEN
 import tools
 import re
 import logging
 import random
+import imp
+try:
+    imp.find_module('secrets')
+except ImportError:
+    import secrets_template as secrets
+else:
+    import secrets
 
 AGENT_GOOGLE_ASST = 1
 AGENT_FBOOK_MESSENGER = 2
@@ -51,6 +56,20 @@ class ConversationAgent(object):
             else:
                 speech = "No goals yet"
             return speech
+
+    def _tasks_request(self):
+        tasks = Task.Recent(self.user)
+        n_done = 0
+        tasks_undone = []
+        for task in tasks:
+            if task.is_done():
+                n_done += 1
+            else:
+                tasks_undone.append(task.title)
+        text = "You've completed %d %s for today." % (n_done, tools.pluralize('task', n_done))
+        if tasks_undone:
+            text += " You still need to do '%s'." % (' and '.join(tasks_undone))
+        return text
 
     def _habit_report(self, habit_param_raw):
         handled = False
@@ -109,18 +128,9 @@ class ConversationAgent(object):
                         habits_committed_undone.append(habit.name)
                 if hd.done:
                     n_habits_done += 1
-        tasks = Task.Recent(self.user)
-        n_done = 0
-        tasks_undone = []
-        for task in tasks:
-            if task.is_done():
-                n_done += 1
-            else:
-                tasks_undone.append(task.title)
         address = "Alright %s. " % self.user.first_name() if self.user.name else ""
-        speech = "%sYou've completed %d %s for today." % (address, n_done, tools.pluralize('task', n_done))
-        if tasks_undone:
-            speech += " You still need to do '%s'." % (' and '.join(tasks_undone))
+        task_text = self._tasks_request()
+        speech = address + task_text
         if n_habits_done:
             speech += " Good work on doing %d %s." % (n_habits_done, tools.pluralize('habit', n_habits_done))
         if habits_committed_undone:
@@ -143,8 +153,7 @@ class ConversationAgent(object):
                 # TODO
                 speech = "Task adding isn't supported yet"
             elif action == 'input.task_view':
-                # TODO
-                speech = "Task viewing isn't supported yet"
+                speech = self._tasks_request()
             elif action == 'input.habit_add':
                 # TODO
                 speech = "Habit adding isn't supported yet"
@@ -163,6 +172,8 @@ class ConversationAgent(object):
             elif action == 'input.help_journals':
                 HELP_JOURNALS = "You can set up daily questions to track anything you want over time. Try saying 'daily report'"
                 speech = '. '.join([self._comply_banter(), HELP_JOURNALS])
+            elif action == 'GET_STARTED':
+                speech = "Welcome to Flow! With the Flow agent, you can check how you're doing, mark habits as complete, and commit to habits. Also, you can check on your goals."
         else:
             speech = "Uh oh, is your account linked?"
             if self.type == AGENT_FBOOK_MESSENGER:
@@ -192,8 +203,7 @@ class ConversationAgent(object):
     def parse_message(self, message):
         PATTERNS = {
             r'(?:what are my|remind me my|tell me my|monthly|current|my|view) goals': 'input.goals_request',
-            r'how am i doing': 'input.status_request',
-            r'tell me about my day': 'input.status_request',
+            r'(how am i doing|my status|tell me about my day)': 'input.status_request',
             r'(?:how do|tell me about|more info|learn about) (?:tasks)': 'input.help_tasks',
             r'(?:how do|tell me about|more info|learn about) (?:habits)': 'input.help_habits',
             r'(?:how do|tell me about|more info|learn about) (?:journals|journaling|daily journals)': 'input.help_journals',
@@ -225,12 +235,13 @@ class FacebookAgent(ConversationAgent):
         super(FacebookAgent, self).__init__(type=type, user=user)
         self.body = tools.getJson(request.body)
         logging.debug(self.body)
-        self.attachment = None
+        self.message_data = None
         self.reply = None
         self.md = {}  # To populate with entry.messaging[0]
         self.request_type = FacebookAgent.REQ_UNKNOWN
         if not self.user:
             self._get_fbook_user()
+        logging.debug("Authenticated user: %s" % self.user)
         self._get_request_type()
         logging.debug("Request: %s" % self.request_type)
         self._process_request()
@@ -254,7 +265,7 @@ class FacebookAgent(ConversationAgent):
                 self.md = md = messaging[0]
                 account_linking = md.get("account_linking", {})
                 sender = md.get('sender', {})
-                psid = sender.get('id')
+                self.fb_id = psid = sender.get('id')
                 if account_linking:
                     # Handle account linking
                     self._link_account(psid, account_linking)
@@ -281,31 +292,38 @@ class FacebookAgent(ConversationAgent):
             message = self._get_fbook_message()
             action, parameters = self.parse_message(message)
             if action:
-                self.reply, self.data = self.respond_to_action(action, parameters=parameters)
+                self.reply, self.message_data = self.respond_to_action(action, parameters=parameters)
         elif self.request_type == FacebookAgent.REQ_POSTBACK:
             payload = self.md.get('postback', {}).get('payload')
-            self.reply, self.data = self.respond_to_action(payload)
+            self.reply, self.message_data = self.respond_to_action(payload)
 
     def send_response(self):
-        if self.user and self.reply:
+        logging.debug("Reply: %s, User: %s, Message data: %s" % (self.reply, self.user, self.message_data))
+        if self.fb_id and self.reply:
             message_object = {
                 "text": self.reply
             }
-            if self.attachment:
-                message_object.update(self.attachment)
+            if self.message_data:
+                message_object.update(self.message_data)
             body = {
                 "recipient": {
-                    "id": self.user.fb_id
+                    "id": self.fb_id
                 },
                 "message": message_object
             }
             logging.debug(body)
-            URL = "https://graph.facebook.com/v2.6/me/messages?access_token=%s" % FB_ACCESS_TOKEN
+            from secrets import FB_ACCESS_TOKEN
+            url = "https://graph.facebook.com/v2.6/me/messages?access_token=%s" % FB_ACCESS_TOKEN
             if tools.on_dev_server():
                 logging.debug("Not sending request, on dev")
             else:
-                response = urlfetch.post(URL, json.dumps(body))
+                response = urlfetch.fetch(url,
+                                          payload=json.dumps(body),
+                                          headers={"Content-Type": "application/json"},
+                                          method="POST")
                 logging.debug(response.status_code)
+                if response.status_code != 200:
+                    logging.warning(response.content)
             return body
 
 

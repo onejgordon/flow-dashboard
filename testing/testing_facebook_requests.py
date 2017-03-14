@@ -3,9 +3,8 @@
 
 from datetime import datetime, timedelta
 from base_test_case import BaseTestCase
-from models import JournalTag, Goal, User
+from models import Goal
 from flow import app as tst_app
-from services.agent import ConversationAgent
 from models import Habit, Task
 from services.agent import FacebookAgent
 import json

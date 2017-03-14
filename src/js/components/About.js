@@ -1,13 +1,5 @@
 var React = require('react');
-var AppConstants = require('constants/AppConstants');
-var util = require('utils/util');
-var api = require('utils/api');
-var UserActions = require('actions/UserActions');
-import {Link} from 'react-router';
-import {RaisedButton, Dialog, IconButton,
-    TextField, FlatButton, Paper} from 'material-ui';
-var client_secrets = require('constants/client_secrets');
-import {browserHistory} from 'react-router';
+import {RaisedButton} from 'material-ui';
 
 export default class About extends React.Component {
     static defaultProps = {}
@@ -18,8 +10,15 @@ export default class About extends React.Component {
     }
 
     render() {
-        let SITENAME = AppConstants.SITENAME;
         let {user} = this.props;
+        let _feedback;
+        if (user) _feedback = (
+            <div>
+                <h3>Thanks for Using Flow</h3>
+
+                <p>Have feedback? Get in touch via Github, or email <a href="mailto:onejgordon@gmail.com">onejgordon@gmail.com</a>.</p>
+            </div>
+            )
         return (
             <div>
 
@@ -54,6 +53,8 @@ export default class About extends React.Component {
                         <p className="lead" style={{fontSize: "1.5em"}}>Spin up your own instance, or contribute.</p>
 
                         <a href="https://github.com/onejgordon/flow-dashboard" target="_blank"><RaisedButton label="Source on Github" /></a>
+
+                        { _feedback }
 
                     </div>
                 </div>
