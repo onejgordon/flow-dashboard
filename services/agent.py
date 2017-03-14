@@ -310,8 +310,7 @@ class FacebookAgent(ConversationAgent):
                 "message": message_object
             }
             logging.debug(body)
-            from secrets import FB_ACCESS_TOKEN
-            url = "https://graph.facebook.com/v2.6/me/messages?access_token=%s" % FB_ACCESS_TOKEN
+            url = "https://graph.facebook.com/v2.6/me/messages?access_token=%s" % secrets.FB_ACCESS_TOKEN
             if tools.on_dev_server():
                 logging.debug("Not sending request, on dev")
             else:
