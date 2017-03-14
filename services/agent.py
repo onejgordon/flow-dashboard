@@ -25,6 +25,8 @@ else:
 AGENT_GOOGLE_ASST = 1
 AGENT_FBOOK_MESSENGER = 2
 
+HELP_TEXT = "With the Flow agent, you can check how you're doing, mark habits as complete, and commit to habits. Also, you can check on your goals."
+
 
 class ConversationAgent(object):
 
@@ -171,7 +173,9 @@ class ConversationAgent(object):
                 HELP_JOURNALS = "You can set up daily questions to track anything you want over time. Try saying 'daily report'"
                 speech = '. '.join([self._comply_banter(), HELP_JOURNALS])
             elif action == 'GET_STARTED':
-                speech = "Welcome to Flow! With the Flow agent, you can check how you're doing, mark habits as complete, and commit to habits. Also, you can check on your goals."
+                speech = "Welcome to Flow! " + HELP_TEXT
+            elif action == 'input.help':
+                speech = HELP_TEXT
         else:
             speech = "Uh oh, is your account linked?"
             if self.type == AGENT_FBOOK_MESSENGER:
@@ -210,7 +214,8 @@ class ConversationAgent(object):
             r'(?:i finished|completed) [HABIT_PATTERN]': 'input.habit_report',
             r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)': 'input.habit_commit',
             r'(?:add task|set task|new task) [TASK_PATTERN]': 'input.task_add',
-            r'(?:my tasks|view tasks)': 'input.task_view'
+            r'(?:my tasks|view tasks)': 'input.task_view',
+            r'(?:help me|how does this work|what can i do|what can I say|\?\?\?)': 'input.help',
         }
         action = None
         parameters = None
@@ -220,6 +225,7 @@ class ConversationAgent(object):
                 action = pattern_action
                 if m.groupdict():
                     parameters = m.groupdict()
+                break
         return (action, parameters)
 
 

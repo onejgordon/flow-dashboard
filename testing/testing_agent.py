@@ -77,6 +77,10 @@ class AgentTestCase(BaseTestCase):
             ('commit to make dinner tonight', 'input.habit_commit', {'habit': 'make dinner'}),
             ('planning to run this evening', 'input.habit_commit', {'habit': 'run'}),
             ('im going to run later', 'input.habit_commit', {'habit': 'run'}),
+
+            # Help
+            ('what can i do', 'input.help', None),
+            ('???', 'input.help', None)
         ]
         for v in volley:
             raw_message, expected_action, expected_params = v
