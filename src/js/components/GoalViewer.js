@@ -1,5 +1,5 @@
 var React = require('react');
-import { FontIcon, Dialog, RaisedButton, FlatButton, TextField, Slider } from 'material-ui';
+import { Dialog, RaisedButton, FlatButton, TextField, Slider } from 'material-ui';
 var api = require('utils/api');
 var util = require('utils/util');
 import {clone} from 'lodash';
@@ -16,12 +16,13 @@ export default class GoalViewer extends React.Component {
       this.state = {
           annual: null,
           monthly: null,
-          set_goal_form: null,  // Which goal to show form fors
+          set_goal_form: null,  // Which goal to show form for (date str)
           form: {},
           assessment_form: {assessment: 1}
       };
       this.ASSESS_LABELS = ["Very Poorly", "Poorly", "OK", "Well", "Very Well"];
       this.ASSESSMENT_DAY = 26;
+      this.GOAL_M_FORMAT = "YYYY-MM";
   }
 
   componentDidMount() {
@@ -68,17 +69,29 @@ export default class GoalViewer extends React.Component {
       let today = new Date();
       let st = {annual: res.annual, monthly: res.monthly};
       if (!res.annual) st.set_goal_form = today.getFullYear();
-      else if (!res.monthly) st.set_goal_form = util.printDate(today.getTime(), "YYYY-MM");
+      else if (!res.monthly) st.set_goal_form = util.printDate(today.getTime(), this.GOAL_M_FORMAT);
       this.setState(st);
     });
+  }
+
+  show_goal_dialog(g) {
+      let today = new Date();
+      let form = util.spread_array(g, 'text', 'text', 4);
+      console.log(form);
+      let st = {
+        form: form
+      };
+      if (g.annual) st.set_goal_form = today.getFullYear();
+      else st.set_goal_form = util.printDate(today.getTime(), this.GOAL_M_FORMAT);
+      this.setState(st);
   }
 
   render_set_goal_form() {
     let {set_goal_form, form} = this.state;
     if (set_goal_form) {
       let _inputs = [1,2,3,4].map((idx) => {
-        let key = 'text' + (idx+1);
-        return <TextField key={key} name={key} placeholder={`Goal ${idx}`} value={form[key]} onChange={this.changeHandler.bind(this, 'form', key)} fullWidth />
+        let key = 'text' + (idx);
+        return <TextField key={key} name={key} placeholder={`Goal ${idx}`} value={form[key] || ''} onChange={this.changeHandler.bind(this, 'form', key)} fullWidth />
       });
       return (
         <div>
@@ -111,7 +124,7 @@ export default class GoalViewer extends React.Component {
     let assess_label = this.ASSESS_LABELS[(assessment_form.assessment-1)];
     return (
       <div className="goal col-sm-6" key={g.id}>
-        <div className="goalDate">{ date_printed }</div>
+        <div className="goalDate" onClick={this.show_goal_dialog.bind(this, g)}>{ date_printed }</div>
         <ProgressLine value={value} total={total} />
 
         <ul className="goalList">
