@@ -1,19 +1,9 @@
 var React = require('react');
 var AppConstants = require('constants/AppConstants');
-var util = require('utils/util');
 var api = require('utils/api');
-var GoalViewer = require('components/GoalViewer');
-var ProjectViewer = require('components/ProjectViewer');
-var HabitWidget = require('components/HabitWidget');
-var MiniJournalWidget = require('components/MiniJournalWidget');
-var UserActions = require('actions/UserActions');
-import {Link} from 'react-router';
 import GoogleLogin from 'react-google-login';
-import {clone, merge} from 'lodash';
-import {RaisedButton, Dialog, IconButton,
-    TextField, FlatButton, Paper} from 'material-ui';
 var client_secrets = require('constants/client_secrets');
-import {browserHistory} from 'react-router';
+var toastr = require('toastr');
 
 export default class Auth extends React.Component {
     static defaultProps = {}
@@ -27,14 +17,37 @@ export default class Auth extends React.Component {
         if (this.props.user) this.finish_auth();
     }
 
+    get_provider() {
+        let id = this.props.params.provider;
+        return {
+            google: {
+                uri: '/api/auth/google_auth',
+                params: ['client_id', 'redirect_uri', 'state', 'response_type'],
+                name: "Google Assistant"
+            },
+            fbook: {
+                uri: '/api/auth/fbook_auth',
+                params: ['redirect_uri', 'account_linking_token'],
+                name: "Facebook Messenger"
+            }
+        }[id]
+    }
+
     finish_auth(id_token) {
-        let type = this.props.location.query.type;
-        let {client_id, redirect_uri, state, response_type} = this.props.location.query;
-        let data = {client_id, redirect_uri, state, response_type};
-        if (id_token) data.id_token = id_token;
-        var response = api.post('/api/auth/google_auth', data, (res) => {
-            if (res.redirect) window.location = res.redirect;
-        });
+        let provider = this.get_provider();
+        if (provider) {
+            let data = {};
+            provider.params.forEach((p) => {
+                data[p] = this.props.location.query[p];
+            });
+            if (id_token) data.id_token = id_token;
+            api.post(provider.uri, data, (res) => {
+                if (res.redirect) window.location = res.redirect;
+                else if (res.error) toastr.error(res.error);
+            });
+        } else {
+            toastr.error("Provider not found");
+        }
     }
 
     success(gUser) {
@@ -49,12 +62,13 @@ export default class Auth extends React.Component {
 
     render() {
         let SITENAME = AppConstants.SITENAME;
+        let provider = this.get_provider()
         return (
             <div>
 
                 <div className="text-center">
 
-                    <h2 style={{marginTop: "140px", marginBottom: "60px"}}>To continue, sign in to {SITENAME}</h2>
+                    <h2 style={{marginTop: "140px", marginBottom: "60px"}}>To connect to {provider.name}, sign in to {SITENAME}</h2>
 
                     <GoogleLogin
                         clientId={client_secrets.G_OAUTH_CLIENT_ID}

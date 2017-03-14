@@ -1,11 +1,13 @@
 var React = require('react');
-import { FontIcon, IconButton } from 'material-ui';
+import { IconButton, Dialog, RaisedButton, TextField } from 'material-ui';
 var util = require('utils/util');
 var api = require('utils/api');
+import {clone} from 'lodash';
 import {cyanA400} from 'material-ui/styles/colors';
-var moment = require('moment-timezone');
 var AppConstants = require('constants/AppConstants')
+import {changeHandler} from 'utils/component-utils';
 
+@changeHandler
 export default class HabitWidget extends React.Component {
   static defaultProps = {
     days: 7,
@@ -16,13 +18,26 @@ export default class HabitWidget extends React.Component {
       this.state = {
           habits: [],
           habitdays: {},
-          habit_week_start: this.get_habit_week_start()
+          habit_week_start: this.get_habit_week_start(),
+          new_dialog_open: false,
+          form: {}
       };
       this.COMMIT_COLOR = '#F9D23D';
   }
 
   componentDidMount() {
     this.fetch_current();
+  }
+
+  create_habit() {
+    let {form} = this.state;
+    let params = clone(form);
+    api.post("/api/habit", params, (res) => {
+      if (res.habit) this.setState({
+        habits: this.state.habits.concat(res.habit),
+        form: {},
+        new_dialog_open: false});
+    });
   }
 
   fetch_current() {
@@ -194,12 +209,11 @@ export default class HabitWidget extends React.Component {
   }
 
   render() {
-    let {habits} = this.state;
-    return (
-      <div className="HabitWidget" id="HabitWidget">
-        <h3>Habits</h3>
-        { this.render_commitment_alert() }
-
+    let {habits, new_dialog_open, form} = this.state;
+    let no_habits = habits.length == 0;
+    let _table;
+    let actions = [<RaisedButton primary={true} label="Create Habit" onClick={this.create_habit.bind(this)} />]
+    if (!no_habits) _table = (
         <table width="100%" style={{backgroundColor: "rgba(0,0,0,0)"}}>
           <thead>
           <tr>
@@ -213,6 +227,29 @@ export default class HabitWidget extends React.Component {
           }) }
           </tbody>
         </table>
+    );
+    return (
+      <div className="HabitWidget" id="HabitWidget">
+        <h3>Habits</h3>
+
+        <Dialog
+            open={new_dialog_open}
+            title="Create Habit"
+            onRequestClose={this.setState.bind(this, {new_dialog_open: false})}
+            actions={actions}>
+
+            <TextField placeholder="Habit name" value={form.name} onChange={this.changeHandler.bind(this, 'form', 'name')} fullWidth />
+            <TextField placeholder="Weekly Target (#)" value={form.tgt_weekly} onChange={this.changeHandler.bind(this, 'form', 'tgt_weekly')} fullWidth />
+
+        </Dialog>
+
+        <div hidden={!no_habits}>
+          <div className="text-center empty">None yet, <a href="javascript:void(0)" onClick={this.setState.bind(this, {new_dialog_open: true})}>create</a> your first habit!</div>
+        </div>
+
+        { this.render_commitment_alert() }
+
+        { _table }
       </div>
     )
   }

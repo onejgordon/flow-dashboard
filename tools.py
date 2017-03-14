@@ -78,6 +78,16 @@ def server_time(timezone, dt):
         timezone = pytz.timezone(timezone)
     return timezone.localize(dt).astimezone(pytz.utc).replace(tzinfo=None)
 
+def variable_replacement(text, repl_dict=None, parens="[]"):
+    if repl_dict:
+        for key, val in repl_dict.items():
+            if key is not None:
+                key = parens[0] + key.upper() + parens[1]
+                if key in text:
+                    if val is None:
+                        val = ""
+                    text = text.replace(key, val)
+    return text
 
 def lookupDict(item_list, keyprop="key_string", valueTransform=None):
     """

@@ -31,7 +31,7 @@ module.exports = (
       <IndexRedirect to="/app/splash" />
       <Route path="splash" component={Splash} />
       <Route path="about" component={About} />
-      <Route path="auth" component={Auth} />
+      <Route path=":provider/auth" component={Auth} />
       <Route path="dashboard" component={Dashboard} />
       <Route path="timeline" component={Timeline} />
       <Route path="manage" component={Manage} />

@@ -36,11 +36,11 @@ export default class TaskLI extends React.Component {
     let menu = [];
     let done = t.status == this.DONE;
     let archived = t.archived;
-    if (!archived) menu.push({icon: 'archive', click: this.props.onArchive.bind(this, t), label: 'Archive'});
     if (!done) {
       if (t.wip) menu.push({icon: 'stop', click: this.set_wip.bind(this, false), label: 'Clear WIP'});
       else menu.push({icon: 'play_for_work', click: this.set_wip.bind(this, true), label: 'On It (Set as WIP)'});
     }
+    if (!archived) menu.push({icon: 'archive', click: this.props.onArchive.bind(this, t), label: 'Archive'});
     if (t.status == this.NOT_DONE) click = this.props.onUpdateStatus.bind(this, t, this.DONE);
     if (done) click = this.props.onUpdateStatus.bind(this, t, this.NOT_DONE);
     let st = { fill: this.TASK_COLOR };

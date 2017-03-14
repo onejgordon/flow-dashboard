@@ -147,8 +147,8 @@ export default class Manage extends React.Component {
                 'attributes': [
                     { name: 'id', label: "ID", editable: false, fixed: true },
                     { name: 'title', label: "Title", editable: true, showInList: true },
-                    { name: 'date_start', label: "Date Start", editable: true, showInList: false },
-                    { name: 'date_end', label: "Date End", editable: true, showInList: false },
+                    { name: 'date_start', label: "Date Start (YYYY-MM-DD)", editable: true, showInList: false },
+                    { name: 'date_end', label: "Date End (optional, YYYY-MM-DD)", editable: true, showInList: false },
                     { name: 'color', label: "Color (hex)", editable: true, showInList: false }
                 ],
                 'fetch_params': {},

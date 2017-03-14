@@ -18,6 +18,8 @@ GR_SECRET = ""
 # Pocket
 POCKET_CONSUMER_KEY = ""
 
+FB_ACCESS_TOKEN = ""
+
 # AES Cypher Key
 AES_CYPHER_KEY = '16 byte key ....'
 

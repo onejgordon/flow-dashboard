@@ -1,0 +1,31 @@
+{
+  "setting_type" : "call_to_actions",
+  "thread_state" : "existing_thread",
+  "call_to_actions":[
+    {
+      "type":"postback",
+      "title":"My Status",
+      "payload":"input.status_request"
+    },
+    {
+      "type":"postback",
+      "title":"Goals",
+      "payload":"input.help_goals"
+    },
+    {
+      "type":"postback",
+      "title":"Habits",
+      "payload":"input.help_habits"
+    },
+    {
+      "type":"postback",
+      "title":"Tasks",
+      "payload":"input.help_tasks"
+    },
+    {
+      "type":"web_url",
+      "title":"View Website",
+      "url":"http://flowdash.co"
+    }
+  ]
+}
