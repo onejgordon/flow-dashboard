@@ -141,7 +141,7 @@ export default class TaskWidget extends React.Component {
                       onArchive={this.archive.bind(this)} />;
           }) }
         </List>
-        : <div className="empty">All clear!</div> }
+        : <div className="empty">All clear! <a href="javascript:void(0)" onClick={this.show_new_box.bind(this)}>Add a task</a>.</div> }
         <div hidden={!show_task_progressbar}>
           <ProgressLine value={tasks_done} total={tasks_total} color={this.TASK_COLOR} />
         </div>
