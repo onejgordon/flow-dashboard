@@ -1,0 +1,38 @@
+{
+  "description": "Flow dashboard interaction for Google Home / Google Assistant",
+  "language": "en",
+  "enabledDomainFeatures": [],
+  "googleAssistant": {
+    "googleAssistantCompatible": true,
+    "invocationName": "flow dashboard",
+    "project": "genzai-app",
+    "welcomeIntentSignInRequired": true,
+    "startIntents": [],
+    "endIntentIds": [
+      "308e5379-7d79-42dd-b66c-7c1d44e1c2fd",
+      "10f72820-b50b-44e5-bd4d-0db1e55d43a1",
+      "b2019cfc-f53b-4c36-80a0-32ec1c742f22",
+      "7fb0c1c5-4935-4f8a-9d85-f5f4a71829d7"
+    ],
+    "oAuthLinking": {
+      "required": false,
+      "authorizationUrl": "[BASE]/app/auth",
+      "grantType": "IMPLICIT_GRANT"
+    },
+    "voiceType": "FEMALE_1"
+  },
+  "defaultTimezone": "",
+  "webhook": {
+    "url": "[BASE]/api/integrations/googlehome/request",
+    "username": "",
+    "headers": {
+      "Auth-Key": "[secrets.API_AI_AUTH_KEY]",
+      "": ""
+    },
+    "available": true,
+    "useForDomains": true
+  },
+  "isPrivate": true,
+  "customClassifierMode": "use.after",
+  "mlMinConfidence": 0.2
+}

@@ -1,19 +1,22 @@
 var React = require('react');
-import { FontIcon, IconButton, ListItem, List,
-  Checkbox, RaisedButton, TextField, Paper,
+import { FontIcon, IconButton, List,
+  RaisedButton, TextField, Paper,
   FlatButton, IconMenu, MenuItem } from 'material-ui';
 var util = require('utils/util');
+var UserStore = require('stores/UserStore');
 var api = require('utils/api');
 var TaskLI = require('components/list_items/TaskLI');
 import {findIndexById} from 'utils/store-utils';
-import {cyanA400} from 'material-ui/styles/colors';
 var ProgressLine = require('components/common/ProgressLine');
 var toastr = require('toastr');
 import {changeHandler} from 'utils/component-utils';
 
-
 @changeHandler
 export default class TaskWidget extends React.Component {
+  static propTypes = {
+    show_task_progressbar: React.PropTypes.bool
+  }
+
   static defaultProps = {
     show_task_progressbar: true
   }
@@ -62,22 +65,6 @@ export default class TaskWidget extends React.Component {
     });
   }
 
-  archive(task) {
-    // Toggle done on server
-    let params = {
-      id: task.id,
-      archived: 1
-    }
-    api.post("/api/task", params, (res) => {
-      if (res.task) {
-        let {tasks} = this.state;
-        let idx = findIndexById(tasks, res.task.id, 'id');
-        if (idx > -1) tasks[idx] = res.task;
-        this.setState({tasks});
-      }
-    });
-  }
-
   add_task() {
     let {form} = this.state;
     api.post("/api/task", {title: form.new_task}, (res) => {
@@ -105,30 +92,25 @@ export default class TaskWidget extends React.Component {
     return {tasks_done, tasks_total}
   }
 
-  render_task(t) {
-    let icon = this.ICONS[t.status-1];
-    let click = null;
-    let archive = null;
-    let done = t.status == this.DONE;
-    let archived = t.archived;
-    if (t.status == this.NOT_DONE) click = this.update_status.bind(this, t, this.DONE);
-    if (done) click = this.update_status.bind(this, t, this.NOT_DONE);
-    if (!archived) archive = <IconButton onClick={this.archive.bind(this, t)} tooltip="Archive" iconClassName="material-icons">archive</IconButton>
-    let st = { fill: this.TASK_COLOR };
-    let check = <Checkbox iconStyle={st} onCheck={click} checked={done} disabled={archived} />
-    let hours_until = util.hours_until(t.ts_due);
-    let _icon = <i className="glyphicon glyphicon-time" />;
-    if (hours_until < 0) _icon = <i className="glyphicon glyphicon-alert" style={{color: "#FC4750"}} />;
-    else if (hours_until <= 3) _icon = <i className="glyphicon glyphicon-hourglass" style={{color: "orange"}} />;
-    let secondary = <span>{ _icon }&nbsp;{util.from_now(t.ts_due)}</span>
-    return (
-      <ListItem key={t.id}
-        primaryText={ t.title }
-        secondaryText={secondary}
-        leftCheckbox={check}
-        style={{fontWeight: 'normal'}}
-        rightIconButton={archive} />
-    );
+  task_update(task, params) {
+    // Toggle done on server
+    params.id = task.id;
+    api.post("/api/task", params, (res) => {
+      if (res.task) {
+        let {tasks} = this.state;
+        let idx = findIndexById(tasks, res.task.id, 'id');
+        if (idx > -1) tasks[idx] = res.task;
+        this.setState({tasks});
+      }
+    });
+  }
+
+  archive(task) {
+    this.task_update(task, {archived: 1});
+  }
+
+  set_task_wip(task, is_wip) {
+    this.task_update(task, {wip: is_wip ? 1 : 0});
   }
 
   render() {
@@ -152,8 +134,9 @@ export default class TaskWidget extends React.Component {
         <ProgressLine value={current_mins} total={total_mins} />
         { tasks.length > 0 ?
         <List>
-          { tasks.map((t) => {
+          { tasks.sort((a, b) => { return b.wip - a.wip;}).map((t) => {
             return <TaskLI key={t.id} task={t}
+                      onUpdateWIP={this.set_task_wip.bind(this)}
                       onUpdateStatus={this.update_status.bind(this)}
                       onArchive={this.archive.bind(this)} />;
           }) }

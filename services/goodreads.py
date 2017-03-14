@@ -45,7 +45,7 @@ def get_books_on_shelf(user, shelf='currently-reading'):
                     name = first_author.find('name')
                     if name is not None:
                         author = name.text
-                r = Readable.CreateOrUpdate(isbn, title=title,
+                r = Readable.CreateOrUpdate(user, isbn, title=title,
                                             url=link, source='goodreads',
                                             image_url=image_url, author=author,
                                             type=READABLE.BOOK,

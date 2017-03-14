@@ -7,7 +7,7 @@
 
 Flow is a habit tracker and personal data analytics app that lets you keep focus on what matters. Flow owns none of your data. That's yours.
 
-If you just want look around, you can create an account at http://flowdash.co.
+If you just want look around or get started with Flow, you can create a free account at http://flowdash.co.
 
 To spin up your own instance, or start contributing to this repo, see below.
 
@@ -20,7 +20,7 @@ To deploy a new instance of Flow, use the following instructions.
 Download the Cloud SDK from Google.
 `https://cloud.google.com/appengine/downloads`
 
-### Create a branch or fork the repo
+### Fork the repo
 
 Branch or fork this repository into a project directory.
 
@@ -68,20 +68,14 @@ Visit `https://[project-id].appspot.com` to see the app live.
 * Projects & progress tracking
 	* Track time of each progress increment
 * Daily journal / survey
-	* How was your day?
-	* How will tomorrow be?
-	* 10 words
-	* Optional location pickup
-	* Optional activities (remembered auto-complete)
-	* Extract @mentions and #tags from configured open-ended responses (auto-complete)
-* Top tasks for tomorrow (also created from journal)
+	* Configurable questions
+	* Optional location pickup & mapping
+	* Extract @mentions and #tags from configured open-ended responses (auto-suggest)
 * Habit tracking ala habits app
 	* With weekly targets
 	* Commitments
+* Tracking top tasks for each day (submitted with journal)
 * Monthly/year goals & assessments
-* Reading widget
-	* Show currently-reading shelf on Good Reads
-* Flash card widget for spreadsheet access (e.g. random quotes, papers)
 * Store productivity metrics e.g. github commits (daily, hourly)
 	* Scrape Github commits chart
 * Keyboard shortcuts (h/t)
@@ -91,27 +85,28 @@ Visit `https://[project-id].appspot.com` to see the app live.
 	* "How am I doing"
 	* "What are my goals for this month"
 	* "Mark 'run' as complete"
+* Reading widget
+	* Show currently-reading shelf on Good Reads / Pocket
+* Flash card widget for spreadsheet access (e.g. random quotes, papers)
 
 ## Google Home Integration
 
 We've used API.AI to create an agent that integrates with Google Actions / Assistant / Home. To connect Assistant with a new instance of Flow:
 
-1. Create and deploy for preview a new agent
-2. Set up an intent to handle requests
-3. Add `/api/integrations/googlehome/request` as a webhook
-4. Add 'Actions on Google' integration
-5. Preview the integration using the web preview
+1. Visit https://api.ai
+2. Update the agent.json configuration file in static/flow-agent
+3. Fill in config params in [Brackets] with your configuration / webhook URLs, etc
+4. Import the agent.json to API.AI
+5. Go to integrations and add and authorize 'Actions on Google'
+6. Preview the integration using the web preview
 
-using API.AI.
 
 ## Planned Features
 
-* HTML5 cache manifest
 * Track happiness / activities throughout day (push), ala https://www.trackyourhappiness.org/
 * Actual book start date Readable (good reads)
 * Desktop notifs
 * Push panel data to compute engine for ML / prediction / regression
 * Project completion view (burn up)
 * Mobile app via react-native?
-* Mapped journals
 

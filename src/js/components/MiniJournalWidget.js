@@ -1,13 +1,11 @@
 var React = require('react');
 import { FontIcon, Dialog, TextField, Slider,
   FlatButton, RaisedButton, IconButton, List,
-  ListItem, AutoComplete, Chip, Paper, DropDownMenu,
+  ListItem, Paper, DropDownMenu,
   MenuItem } from 'material-ui';
 var util = require('utils/util');
 import {changeHandler} from 'utils/component-utils';
 var api = require('utils/api');
-import {clone} from 'lodash';
-import {removeItemsById} from 'utils/store-utils';
 
 @changeHandler
 export default class MiniJournalWidget extends React.Component {
@@ -78,10 +76,7 @@ export default class MiniJournalWidget extends React.Component {
 
   check_if_not_submitted() {
     // If not yet submitted for day, show dialog
-    console.log("Checking if submitted...")
     api.get("/api/journal/today", {}, (res) => {
-      console.log(res);
-      // TODO: check if journal questions completed
       if (!res.journal || (res.journal && !res.journal.data)) {
         this.open_journal_dialog();
       }
@@ -120,7 +115,6 @@ export default class MiniJournalWidget extends React.Component {
     if (tasks) {
       params.tasks = JSON.stringify(tasks)
     }
-    console.log(params);
     api.post("/api/journal", params, (res) => {
       this.dismiss();
     });
@@ -132,7 +126,6 @@ export default class MiniJournalWidget extends React.Component {
 
   fetch_tags() {
     api.get("/api/journaltag", {}, (res) => {
-      console.log(res.tags);
       this.setState({tags: res.tags});
     })
   }

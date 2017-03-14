@@ -39,7 +39,6 @@ class UserActions {
         }
     }
 
-
     update(data) {
         return (dispatch) => {
             api.post("/api/user", data, (res) => {

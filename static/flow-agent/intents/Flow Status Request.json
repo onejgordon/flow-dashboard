@@ -1,0 +1,77 @@
+{
+  "userSays": [
+    {
+      "id": "4826b06e-c011-46c6-96e3-abb7ea805be6",
+      "data": [
+        {
+          "text": "how\u0027s it going"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "900954aa-5e2c-41ff-ae98-da95ad5d4f3f",
+      "data": [
+        {
+          "text": "what\u0027s next"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "f0014521-c7fa-4053-bf6f-ecba14783cb7",
+      "data": [
+        {
+          "text": "status update"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "70928d23-32a4-43fd-9663-b3e34c142d33",
+      "data": [
+        {
+          "text": "tell me about my day"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "4d5da642-6c14-428a-a85c-277b76ba9375",
+      "data": [
+        {
+          "text": "how am i doing?"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "308e5379-7d79-42dd-b66c-7c1d44e1c2fd",
+  "name": "Flow Status Request",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.status_request",
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": 0,
+          "speech": "Sure, checking"
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}

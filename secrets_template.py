@@ -21,3 +21,5 @@ POCKET_CONSUMER_KEY = ""
 # AES Cypher Key
 AES_CYPHER_KEY = '16 byte key ....'
 
+API_AI_AUTH_KEY = ""
+API_AI_FB_CALLBACK = ""

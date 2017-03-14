@@ -1,4 +1,4 @@
-import os, time, random, urllib, string, logging, re, cgi
+import os, time, random, string, logging, re, cgi
 from datetime import datetime, timedelta, date
 from datetime import time as dttime
 import hashlib
@@ -16,6 +16,7 @@ def pluralize(item_name, count=1, suffix='s'):
         return item_name
     else:
         return item_name + suffix
+
 
 def on_dev_server():
     if 'Development' == os.environ['SERVER_SOFTWARE'][:11]:
@@ -154,7 +155,6 @@ def is_valid_email(possible_email):
             return None
 
 
-
 def removeLinebreaks(message):
     if message:
         message = message.replace('\r','').replace('\n','')
@@ -169,23 +169,6 @@ def get_first_day(dt, d_years=0, d_months=0):
 
 def get_last_day(dt):
     return get_first_day(dt, 0, 1) + timedelta(-1)
-
-def escapejs(value):
-    _js_escapes = (
-        ('\\', '\\\\'),
-        ('"', '\\"'),
-        ("'", "\\'"),
-        ('\n', '\\n'),
-        ('\r', '\\r'),
-        ('\b', '\\b'),
-        ('\f', '\\f'),
-        ('\t', '\\t'),
-        ('\v', '\\v'),
-        ('</', '<\\/'),
-        )
-    for bad, good in _js_escapes:
-        value = value.replace(bad, good)
-    return value
 
 html_escape_table = {
     "&": "&amp;",
@@ -218,18 +201,6 @@ def fromISODate(s, timestamp=False):
         pass
     return None
 
-
-def get_session_user(key='agent'):
-   session = get_current_session()
-   if session.has_key(key):
-      return session[key]
-   else:
-      return None
-
-def set_session_user(user, key='user'):
-   session = get_current_session()
-   session[key] = user
-   return session
 
 def minutes_in(dt=None):
     "# of minutes into the current day"
@@ -286,31 +257,6 @@ def week_start():
     start = datetime.combine(sunday, dttime(0,0))
     return start
 
-
-def dictFromKeys(li):
-    d = {}
-    if li:
-        for key in li:
-            d[key] = None
-    return d
-
-def toJson(d):
-    _json = None
-    if d:
-        try:
-            _json = json.dumps(d)
-        except Exception, e:
-            logging.error(e)
-    return _json
-
-def fromJson(_json):
-    if _json:
-        try:
-            return json.loads(_json)
-        except:
-            return {}
-    else:
-        return {}
 
 def trunc_chars(text, n=120):
     if text and len(text) > n:
@@ -392,9 +338,6 @@ def gets(self, strings=[], lists=[], floats=[], integers=[], booleans=[], dates=
         else:
             vals[arg] = None
     return vals
-
-def containsWord(message, word):
-    return re.search(r'\b%s\b' % word, message, flags=re.IGNORECASE) is not None
 
 
 def dedupe(seq, idfun=None):

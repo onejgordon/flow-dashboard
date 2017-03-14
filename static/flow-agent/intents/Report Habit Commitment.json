@@ -1,0 +1,102 @@
+{
+  "userSays": [
+    {
+      "id": "08a8db1c-f346-435b-9770-241987ff0f52",
+      "data": [
+        {
+          "text": "Make sure I "
+        },
+        {
+          "text": "habit",
+          "alias": "habit",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " today"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "7085f475-b226-4aee-9cf4-8f6bd12d9b21",
+      "data": [
+        {
+          "text": "I\u0027m going to "
+        },
+        {
+          "text": "habit",
+          "alias": "habit",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " today"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "91c5ed4e-875f-4aba-8b6a-1b0559f17e2a",
+      "data": [
+        {
+          "text": "Commit to "
+        },
+        {
+          "text": "habit",
+          "alias": "habit",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " "
+        },
+        {
+          "text": "today",
+          "meta": "@sys.ignore",
+          "userDefined": false
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "b2019cfc-f53b-4c36-80a0-32ec1c742f22",
+  "name": "Report Habit Commitment",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.habit_commit",
+      "affectedContexts": [],
+      "parameters": [
+        {
+          "required": true,
+          "dataType": "@sys.any",
+          "name": "habit",
+          "value": "$habit",
+          "prompts": [
+            "Which habit?"
+          ]
+        }
+      ],
+      "messages": [
+        {
+          "type": 0,
+          "speech": [
+            "On it",
+            "OK"
+          ]
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}

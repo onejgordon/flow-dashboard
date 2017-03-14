@@ -252,6 +252,7 @@ class Task(UserAccessible):
     dt_done = ndb.DateTimeProperty()
     title = ndb.TextProperty()
     status = ndb.IntegerProperty(default=TASK.NOT_DONE)
+    wip = ndb.BooleanProperty(default=False)
     archived = ndb.BooleanProperty(default=False)
 
     def json(self):
@@ -262,6 +263,7 @@ class Task(UserAccessible):
             'ts_done': tools.unixtime(self.dt_done),
             'status': self.status,
             'archived': self.archived,
+            'wip': self.wip,
             'title': self.title,
             'done': self.is_done()
         }
@@ -299,9 +301,14 @@ class Task(UserAccessible):
             self.status = params.get('status')
             if change and self.is_done():
                 self.dt_done = datetime.now()
+                self.wip = False
                 message = random.choice(TASK_DONE_REPLIES)
         if 'archived' in params:
             self.archived = params.get('archived')
+            if self.archived:
+                self.wip = False
+        if 'wip' in params:
+            self.wip = params.get('wip')
         return message
 
     def is_done(self):
@@ -509,12 +516,18 @@ class MiniJournal(UserAccessible):
     location = ndb.GeoPtProperty()
 
     def json(self):
-        return {
+        res = {
             'id': self.key.id(),
             'iso_date': tools.iso_date(self.date),
             'data': tools.getJson(self.data),
             'tags': [tag.id() for tag in self.tags]
         }
+        if self.location:
+            res.update({
+                'lat': self.location.lat,
+                'lon': self.location.lon
+            })
+        return res
 
     @staticmethod
     def Create(user, date):

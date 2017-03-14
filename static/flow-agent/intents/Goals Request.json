@@ -1,0 +1,82 @@
+{
+  "userSays": [
+    {
+      "id": "81a59864-d37b-4682-97f1-daad809b6578",
+      "data": [
+        {
+          "text": "This month",
+          "meta": "@sys.ignore",
+          "userDefined": false
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "a075bd24-5396-4ba1-ac3c-49eed29e1f04",
+      "data": [
+        {
+          "text": "What do I want to do this month?"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "5c57f315-4a2e-4ca2-aae4-da99aa50dd39",
+      "data": [
+        {
+          "text": "What are my monthly goals?"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "57ff5d97-b6b7-4e52-a9d3-b8a9b34212c4",
+      "data": [
+        {
+          "text": "Tell me about my goals?"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "72082bd4-4dc3-4886-a088-ab47d016f5ee",
+      "data": [
+        {
+          "text": "What are my goals?"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "10f72820-b50b-44e5-bd4d-0db1e55d43a1",
+  "name": "Goals Request",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.goals_request",
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": 0,
+          "speech": [
+            "Sure, let me check on that",
+            "Sure, I\u0027ll get your goals"
+          ]
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}

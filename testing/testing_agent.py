@@ -5,11 +5,11 @@ from datetime import datetime, timedelta
 from base_test_case import BaseTestCase
 from models import JournalTag, Goal, User
 from flow import app as tst_app
-from services import google_assistant
+from services import agent
 from models import Habit, Task
 
 
-class AssistantTestCase(BaseTestCase):
+class AgentTestCase(BaseTestCase):
 
     def setUp(self):
         self.set_application(tst_app)
@@ -33,19 +33,23 @@ class AssistantTestCase(BaseTestCase):
         g.Update(text=["Get it done", "Also get exercise"])
         g.put()
 
-    def test_assistant_status_query(self):
-        speech = google_assistant.respond_to_action(self.u, 'input.status_request')
+    def test_agent_status_query(self):
+        speech = agent.respond_to_action(self.u, 'input.status_request')
         self.assertEqual(speech, "Alright George. You've completed 0 tasks for today. You still need to do 'Dont forget the milk'.")
 
-    def test_assistant_goals(self):
-        speech = google_assistant.respond_to_action(self.u, 'input.goals_request')
+    def test_agent_goals(self):
+        speech = agent.respond_to_action(self.u, 'input.goals_request')
         this_month = datetime.strftime(datetime.today(), "%B %Y")
         self.assertEqual(speech, "Goals for %s. 1: Get it done. 2: Also get exercise. " % this_month)
 
-    def test_assistant_habit_report(self):
-        speech = google_assistant.respond_to_action(self.u, 'input.habit_report', parameters={'habit': 'run'})
+    def test_agent_habit_report(self):
+        speech = agent.respond_to_action(self.u, 'input.habit_report', parameters={'habit': 'run'})
         self.assertTrue("'Run' is marked as complete" in speech, speech)
 
-    def test_assistant_habit_commitment(self):
-        speech = google_assistant.respond_to_action(self.u, 'input.habit_commit', parameters={'habit': 'run'})
+    def test_agent_habit_commitment(self):
+        speech = agent.respond_to_action(self.u, 'input.habit_commit', parameters={'habit': 'run'})
         self.assertTrue("You've committed to 'Run' today" in speech, speech)
+
+    def test_agent_no_user(self):
+        speech = agent.respond_to_action(None, 'input.status_request')
+        self.assertEqual("Uh oh, is your account linked?", speech)

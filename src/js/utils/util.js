@@ -13,6 +13,37 @@ var util = {
         }
     },
 
+    colorInterpolate: function(opts) {
+        // Takes opts
+        // color1, color2 - hex without # e.g. 'FF0000'
+        // min, max, value, from which ratio is calculated
+        // OR
+        // ratio
+        var color1 = opts.color1;
+        var color2 = opts.color2;
+        var min = opts.min || 0;
+        var max = opts.max || 100;
+        var value = opts.value || 0;
+        if (value < min) value = min;
+        if (value > max) value = max;
+        var ratio = 0.0;
+        if (min!=null && max!=null && value!=null) {
+            ratio = (value - min) / (max - min);
+        } else if (opts.ratio) {
+            ratio = opts.ratio;
+        }
+        var hex = function(x) {
+            x = x.toString(16);
+            return (x.length == 1) ? '0' + x : x;
+        };
+
+        var r = Math.ceil(parseInt(color2.substring(0,2), 16) * ratio + parseInt(color1.substring(0,2), 16) * (1-ratio));
+        var g = Math.ceil(parseInt(color2.substring(2,4), 16) * ratio + parseInt(color1.substring(2,4), 16) * (1-ratio));
+        var b = Math.ceil(parseInt(color2.substring(4,6), 16) * ratio + parseInt(color1.substring(4,6), 16) * (1-ratio));
+        var res_c = hex(r) + hex(g) + hex(b);
+        return res_c;
+    },
+
     url_summary(url) {
         url = url.replace('http://','');
         url = url.replace('https://','');
@@ -486,9 +517,6 @@ var util = {
 
            // You can view the information in an alert to see things working like this:
            alert("An error has occurred. Share this with the Echo Development team for assistance: " + msg + "\nurl: " + url + "\nline: " + line + extra);
-
-           // TODO: Report this error via ajax so you can keep track
-           //       of what pages have JS issues
 
            var suppressErrorAlert = true;
            // If you return true, then error alerts (like in older versions of

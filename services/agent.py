@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# API calls to interact with Google Assistant / Actions Home
+# API calls to interact with API.AI (Google Assistant / Actions / Home, Facebook Messenger)
 
 from google.appengine.ext import ndb
 from models import Habit, HabitDay, Task, Goal
@@ -104,7 +104,8 @@ def _status_request(user):
         speech += " Don't forget you've committed to %s." % (' and '.join(habits_committed_undone))
     return speech
 
-def respond_to_action(user, action, parameters=None):
+
+def respond_to_action(user, action, parameters=None, agent_type=None):
     speech = None
     if user:
         if action == 'input.status_request':
@@ -116,6 +117,6 @@ def respond_to_action(user, action, parameters=None):
         elif action == 'input.habit_commit':
             speech = _habit_commit(user, parameters.get('habit'))
     else:
-        speech = "I didn't understand that"
+        speech = "Uh oh, is your account linked?"
     return speech
 

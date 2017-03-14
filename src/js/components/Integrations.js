@@ -86,6 +86,11 @@ export default class Integrations extends React.Component {
         });
     }
 
+    google_disconnect() {
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.disconnect();
+    }
+
     handleSnackClose() {
         this.setState({snack_open: false});
     }
@@ -94,6 +99,7 @@ export default class Integrations extends React.Component {
         let {form} = this.state;
         let test = true;
         let {user} = this.props;
+        if (!user) return;
         let gr_user_id, gh_user, gh_pat;
         if (user && user.integrations) {
             let ints = user.integrations;
@@ -132,6 +138,10 @@ export default class Integrations extends React.Component {
                         <TextField name="gh_pat" placeholder="Github Personal Access Token (PAT)" value={form.github_pat} onChange={this.changeHandler.bind(this, 'form', 'github_pat')} /><br/>
 
                         <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['github_username', 'github_pat'])} />
+                    </Tab>
+
+                    <Tab label="Google">
+                        <FlatButton label="Disconnect" onClick={this.google_disconnect.bind(this)} />
                     </Tab>
 
                 </Tabs>

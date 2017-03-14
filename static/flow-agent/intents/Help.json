@@ -1,0 +1,72 @@
+{
+  "userSays": [
+    {
+      "id": "05dfd6a5-ffb0-43d4-8d8f-f029e8fa7915",
+      "data": [
+        {
+          "text": "What else can I do"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "0706185c-e1cf-44ac-afc3-d5987e016811",
+      "data": [
+        {
+          "text": "What can I say"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "1ea32308-201b-4840-b2b4-6633c0ca24d5",
+      "data": [
+        {
+          "text": "What can I do"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "c70b1d72-fe13-44d6-b7dc-db4008a8b5b1",
+      "data": [
+        {
+          "text": "Help me"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "8633d4e9-a3b2-49ba-bd78-d781ca04b280",
+  "name": "Help",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.help",
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": 0,
+          "speech": [
+            "One thing you can do is report habits completed, for example: Mark \u0027run\u0027 as completed.",
+            "One thing you can do is check on your goals, say: \"What are my goals?\"",
+            "You can commit to habits, for example: \"I\u0027m going to \u0027run\u0027 today\" or \"Commit to \u0027run\u0027 today\"",
+            "One thing you can do is check your overall status. Try saying: \"How am I doing?\""
+          ]
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": false,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}
