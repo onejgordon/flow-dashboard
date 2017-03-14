@@ -54,10 +54,11 @@ class User(ndb.Model):
     gender = ndb.StringProperty()
     timezone = ndb.StringProperty(default="UTC", indexed=False)
     birthday = ndb.DateProperty()
-    # Google
     integrations = ndb.TextProperty()  # Flat JSON dict
     settings = ndb.TextProperty()  # JSON
+    # Integration IDs
     g_id = ndb.StringProperty()
+    fb_id = ndb.StringProperty()
 
     def __str__(self):
         return self.name if self.name else self.email
@@ -109,6 +110,8 @@ class User(ndb.Model):
             self.birthday = tools.fromISODate(params.get('birthday'))
         if 'settings' in params:
             self.settings = json.dumps(params.get('settings'), {})
+        if 'fb_id' in params:
+            self.fb_id = params.get('fb_id')
 
     def admin(self):
         return self.level == USER.ADMIN
