@@ -1,5 +1,6 @@
 var React = require('react');
-import { FontIcon, Dialog, TextField, Slider,
+var AppConstants = require('constants/AppConstants');
+import { Dialog, TextField, Slider,
   FlatButton, RaisedButton, IconButton, List,
   ListItem, Paper, DropDownMenu,
   MenuItem } from 'material-ui';
@@ -36,8 +37,8 @@ export default class MiniJournalWidget extends React.Component {
         historical_incomplete_dates: [],
         position: null // {lat, lon}
       };
-      this.WINDOW_START_HR = 22;
-      this.WINDOW_END_HR = 4;
+      this.WINDOW_START_HR = AppConstants.JOURNAL_START_HOUR;
+      this.WINDOW_END_HR = AppConstants.JOURNAL_END_HOUR;
       this.MAX_TASKS = 3;
   }
 

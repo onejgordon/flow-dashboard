@@ -129,6 +129,9 @@ class User(ndb.Model):
     def get_timezone(self):
         return self.timezone if self.timezone else "UTC"
 
+    def local_time(self):
+        return tools.local_time(self.get_timezone())
+
     def first_name(self):
         if self.name:
             return self.name.split(' ')[0]
@@ -272,6 +275,10 @@ class Task(UserAccessible):
         }
 
     @staticmethod
+    def CountCompletedSince(user, since):
+        return Task.query(ancestor=user.key).order(-Task.dt_done).filter(Task.dt_done > since).count(limit=None)
+
+    @staticmethod
     def Open(user, limit=10):
         return Task.query(ancestor=user.key).filter(Task.status == TASK.NOT_DONE).order(-Task.dt_created).fetch(limit=limit)
 
@@ -291,8 +298,13 @@ class Task(UserAccessible):
     @staticmethod
     def Create(user, title, due=None):
         if not due:
-            due = datetime.now() + timedelta(days=1)
-        return Task(title=title, dt_due=due, parent=user.key)
+            tz = user.get_timezone()
+            local_now = tools.local_time(tz)
+            schedule_for_same_day = local_now.hour < 16
+            local_due = datetime.combine(local_now.date(), time(22, 0)) if schedule_for_same_day else (datetime.now() + timedelta(days=1))
+            if local_due:
+                local_due = tools.server_time(tz, local_due)
+        return Task(title=title, dt_due=local_due, parent=user.key)
 
     def Update(self, **params):
         from constants import TASK_DONE_REPLIES

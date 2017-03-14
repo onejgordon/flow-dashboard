@@ -92,13 +92,7 @@ class TaskAPI(handlers.JsonRequestHandler):
         if id:
             task = Task.get_by_id(int(id), parent=self.user.key)
         else:
-            tz = self.user.get_timezone()
-            local_now = tools.local_time(tz)
-            schedule_for_same_day = local_now.hour < 16
-            local_due = datetime.combine(local_now.date(), time(22, 0)) if schedule_for_same_day else None
-            if local_due:
-                local_due = tools.server_time(tz, local_due)
-            task = Task.Create(self.user, None, due=local_due)
+            task = Task.Create(self.user, None)
         if task:
             self.message = task.Update(**params)
             self.success = True

@@ -37,7 +37,7 @@ export default class Timeline extends React.Component {
     render() {
         let {loaded} = this.state;
         let DOB = this.props.user.birthday;
-        if (!DOB) return <div className="empty">Set birthday on the <Link to="/app/manage">manage</Link> page.</div>;
+        if (!DOB) return <div className="empty">Set your birthday and add events on the <Link to="/app/manage">manage</Link> page.</div>;
         return (
             <div>
 

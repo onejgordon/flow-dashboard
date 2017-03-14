@@ -37,7 +37,7 @@ class AgentTestCase(BaseTestCase):
 
     def test_agent_status_query(self):
         speech, data = self.ca.respond_to_action('input.status_request')
-        self.assertEqual(speech, "Alright George. You've completed 0 tasks for today. You still need to do 'Dont forget the milk'.")
+        self.assertEqual(speech, "Alright George. You've completed 0 tasks for today. You still need to do 'Dont forget the milk'. No habits done yet.")
 
     def test_agent_goals(self):
         speech, data = self.ca.respond_to_action('input.goals_request')
@@ -48,6 +48,9 @@ class AgentTestCase(BaseTestCase):
         speech, data = self.ca.respond_to_action('input.habit_report', parameters={'habit': 'run'})
         self.assertTrue("'Run' is marked as complete" in speech, speech)
 
+        speech, data = self.ca.respond_to_action('input.habit_status', parameters={'habit': 'run'})
+        self.assertEqual("Good work on doing 1 habit (Run)!", speech)
+
     def test_agent_habit_commitment(self):
         speech, data = self.ca.respond_to_action('input.habit_commit', parameters={'habit': 'run'})
         self.assertTrue("You've committed to 'Run' today" in speech, speech)
@@ -55,7 +58,7 @@ class AgentTestCase(BaseTestCase):
     def test_agent_no_user(self):
         self.ca.user = None
         speech, data = self.ca.respond_to_action('input.status_request')
-        self.assertEqual("Uh oh, is your account linked?", speech)
+        self.assertEqual("To get started, please link your account with Flow", speech)
 
     def test_parsing(self):
         volley = [
@@ -78,13 +81,27 @@ class AgentTestCase(BaseTestCase):
             ('planning to run this evening', 'input.habit_commit', {'habit': 'run'}),
             ('im going to run later', 'input.habit_commit', {'habit': 'run'}),
 
+            # Habit status
+            ('habit progress', 'input.habit_status', None),
+
+            # Add habit
+            ('add habit meditate', 'input.habit_add', {'habit': 'meditate'}),
+
+            # Add task
+            ('add task finish report', 'input.task_add', {'task_name': 'finish report'}),
+
             # Help
             ('what can i do', 'input.help', None),
-            ('???', 'input.help', None)
+            ('???', 'input.help', None),
+            ('help', 'input.help', None),
+            ('help on tasks', 'input.help_tasks', None),
+
+            # Add task
+            ('disconnect', 'input.disconnect', None),
         ]
         for v in volley:
             raw_message, expected_action, expected_params = v
             action, params = self.ca.parse_message(raw_message)
-            self.assertEqual(expected_action, action, raw_message)
-            self.assertEqual(expected_params, params, raw_message)
+            self.assertEqual(expected_action, action, "Error in %s. %s <> %s" % (raw_message, expected_action, action))
+            self.assertEqual(expected_params, params, "Error in %s. %s <> %s" % (raw_message, expected_params, params))
 

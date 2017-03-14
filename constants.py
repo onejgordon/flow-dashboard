@@ -70,10 +70,17 @@ class EVENT():
     PROFESSIONAL = 3
     PUBLIC = 4
 
+class JOURNAL():
+
+    # Timing
+    START_HOUR = 4
+    END_HOUR = 21
+
 class JOURNALTAG():
     # Types
     PERSON = 1
     HASHTAG = 2 # Activities, etc
+
 
 class READABLE():
     # Type

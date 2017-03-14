@@ -103,6 +103,7 @@ We've used API.AI to create an agent that integrates with Google Actions / Assis
 
 ## Planned Features
 
+* Submit daily reports through agent
 * Track happiness / activities throughout day (push), ala https://www.trackyourhappiness.org/
 * Actual book start date Readable (good reads)
 * Desktop notifs

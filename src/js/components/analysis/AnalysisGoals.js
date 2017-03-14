@@ -1,14 +1,5 @@
 var React = require('react');
-
-var util = require('utils/util');
-
-var LoadStatus = require('components/common/LoadStatus');
-import {FontIcon, IconButton, FlatButton, AutoComplete,
-    Checkbox} from 'material-ui';
-import {Bar, Line} from "react-chartjs-2";
-var api = require('utils/api');
-import {get} from 'lodash';
-
+import {Bar} from "react-chartjs-2";
 import connectToStores from 'alt-utils/lib/connectToStores';
 
 @connectToStores
@@ -60,7 +51,6 @@ export default class AnalysisGoals extends React.Component {
     }
 
     render() {
-        let {loaded} = this.props;
         let {goals} = this.props;
         let today = new Date();
         let goalData = this.goal_data();
