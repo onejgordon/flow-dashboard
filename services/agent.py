@@ -4,11 +4,18 @@
 # API calls to interact with API.AI (Google Assistant / Actions / Home, Facebook Messenger)
 
 from google.appengine.ext import ndb
-from models import Habit, HabitDay, Task, Goal
+from models import Habit, HabitDay, Task, Goal, User
 from datetime import datetime
 import random
 from constants import HABIT_DONE_REPLIES, HABIT_COMMIT_REPLIES, SECURE_BASE
+import urllib
+from google.appengine.api import urlfetch
+import json
+from secrets import FB_ACCESS_TOKEN
 import tools
+import re
+import logging
+import random
 
 AGENT_GOOGLE_ASST = 1
 AGENT_FBOOK_MESSENGER = 2
@@ -16,9 +23,19 @@ AGENT_FBOOK_MESSENGER = 2
 
 class ConversationAgent(object):
 
+    COMPLY_BANTER = [
+        "Sure",
+        "No problem",
+        "Of course",
+        "Absolutely",
+    ]
+
     def __init__(self, type=AGENT_GOOGLE_ASST, user=None):
         self.type = type
         self.user = user
+
+    def _comply_banter(self):
+        return random.choice(ConversationAgent.COMPLY_BANTER)
 
     def _goals_request(self):
         goals = Goal.Current(self.user, which="month")
@@ -122,36 +139,174 @@ class ConversationAgent(object):
                 speech = self._habit_report(parameters.get('habit'))
             elif action == 'input.habit_commit':
                 speech = self._habit_commit(parameters.get('habit'))
+            elif action == 'input.task_add':
+                # TODO
+                speech = "Task adding isn't supported yet"
+            elif action == 'input.task_view':
+                # TODO
+                speech = "Task viewing isn't supported yet"
+            elif action == 'input.habit_add':
+                # TODO
+                speech = "Habit adding isn't supported yet"
+            elif action == 'input.habit_status':
+                # TODO
+                speech = "Habit status isn't supported yet"
+            elif action == 'input.help_goals':
+                HELP_GOALS = "You can set and review monthly and annual goals. Try saying 'set goals' or 'view goals'"
+                speech = '. '.join([self._comply_banter(), HELP_GOALS])
+            elif action == 'input.help_tasks':
+                HELP_TASKS = "You can set and track top tasks each day. Try saying 'add task finish report' or 'my tasks'"
+                speech = '. '.join([self._comply_banter(), HELP_TASKS])
+            elif action == 'input.help_habits':
+                HELP_HABITS = "You can set habits to build, and track completion. Try saying 'new habit' or 'habit progress'"
+                speech = '. '.join([self._comply_banter(), HELP_HABITS])
+            elif action == 'input.help_journals':
+                HELP_JOURNALS = "You can set up daily questions to track anything you want over time. Try saying 'daily report'"
+                speech = '. '.join([self._comply_banter(), HELP_JOURNALS])
         else:
             speech = "Uh oh, is your account linked?"
             if self.type == AGENT_FBOOK_MESSENGER:
                 data = {
-                    "facebook": {
-                        "attachment": {
-                            "type": "template",
-                            "payload": {
-                                "template_type": "button",
-                                "text": speech,
-                                "buttons": [
-                                    {
-                                        "type": "account_link",
-                                        "url": SECURE_BASE + "/app/fbook/auth"
-                                    }
-                                ]
-                            }
+                    "attachment": {
+                        "type": "template",
+                        "payload": {
+                            "template_type": "button",
+                            "text": speech,
+                            "buttons": [
+                                {
+                                    "type": "account_link",
+                                    "url": SECURE_BASE + "/app/fbook/auth"
+                                }
+                            ]
                         }
                     }
                 }
         return (speech, data)
 
+    def _process_pattern(self, pattern):
+        return tools.variable_replacement(pattern, {
+            'HABIT_PATTERN': '(?P<habit>[a-zA-Z ]+)',
+            'TASK_PATTERN': '(?P<topic>[a-zA-Z]{5,30})',
+            })
+
     def parse_message(self, message):
-        LOOKUP = {
-            'what are my goals': 'input.goals_request',
-            'how am i doing': 'input.status_request'
+        PATTERNS = {
+            r'(?:what are my|remind me my|tell me my|monthly|current|my|view) goals': 'input.goals_request',
+            r'how am i doing': 'input.status_request',
+            r'tell me about my day': 'input.status_request',
+            r'(?:how do|tell me about|more info|learn about) (?:tasks)': 'input.help_tasks',
+            r'(?:how do|tell me about|more info|learn about) (?:habits)': 'input.help_habits',
+            r'(?:how do|tell me about|more info|learn about) (?:journals|journaling|daily journals)': 'input.help_journals',
+            r'(?:how do|tell me about|more info|learn about) (?:goals|monthly goals|goal tracking)': 'input.help_goals',
+            r'(?:mark|set) [HABIT_PATTERN] as (?:done|complete|finished)': 'input.habit_report',
+            r'(?:i finished|completed) [HABIT_PATTERN]': 'input.habit_report',
+            r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)': 'input.habit_commit',
+            r'(?:add task|set task|new task) [TASK_PATTERN]': 'input.task_add',
+            r'(?:my tasks|view tasks)': 'input.task_view'
         }
-        action = LOOKUP.get(message.lower())
-        parameters = None  # TODO
+        action = None
+        parameters = None
+        for pattern, pattern_action in PATTERNS.items():
+            m = re.search(self._process_pattern(pattern), message, flags=re.IGNORECASE)
+            if m:
+                action = pattern_action
+                if m.groupdict():
+                    parameters = m.groupdict()
         return (action, parameters)
+
+
+class FacebookAgent(ConversationAgent):
+
+    REQ_UNKNOWN = 1
+    REQ_MESSAGE = 2
+    REQ_POSTBACK = 3
+
+    def __init__(self, request, type=AGENT_FBOOK_MESSENGER, user=None):
+        super(FacebookAgent, self).__init__(type=type, user=user)
+        self.body = tools.getJson(request.body)
+        logging.debug(self.body)
+        self.attachment = None
+        self.reply = None
+        self.md = {}  # To populate with entry.messaging[0]
+        self.request_type = FacebookAgent.REQ_UNKNOWN
+        if not self.user:
+            self._get_fbook_user()
+        self._get_request_type()
+        logging.debug("Request: %s" % self.request_type)
+        self._process_request()
+
+    def _link_account(self, psid, account_linking):
+        status = account_linking.get('status')
+        if status == 'linked':
+            authcode = account_linking.get('authorization_code')
+            user_id = authcode
+            logging.debug("Linking user: %s" % authcode)
+            self.user = User.get_by_id(int(user_id))
+            if self.user and psid:
+                self.user.fb_id = psid
+                self.user.put()
+
+    def _get_fbook_user(self):
+        entry = self.body.get('entry', [])
+        if entry:
+            messaging = entry[0].get('messaging')
+            if messaging:
+                self.md = md = messaging[0]
+                account_linking = md.get("account_linking", {})
+                sender = md.get('sender', {})
+                psid = sender.get('id')
+                if account_linking:
+                    # Handle account linking
+                    self._link_account(psid, account_linking)
+                if not self.user and psid:
+                    self.user = User.query().filter(User.fb_id == psid).get()
+        else:
+            logging.debug("malformed")
+
+    def _get_request_type(self):
+        if 'message' in self.md:
+            self.request_type = FacebookAgent.REQ_MESSAGE
+        elif 'postback' in self.md:
+            self.request_type = FacebookAgent.REQ_POSTBACK
+
+    def _get_fbook_message(self):
+        return self.md.get('message', {}).get('text')
+
+    def _process_request(self):
+        '''
+        Populate self.reply and self.data
+        '''
+        # TODO: Memcache state (string & param, e.g. set goals)
+        if self.request_type == FacebookAgent.REQ_MESSAGE:
+            message = self._get_fbook_message()
+            action, parameters = self.parse_message(message)
+            if action:
+                self.reply, self.data = self.respond_to_action(action, parameters=parameters)
+        elif self.request_type == FacebookAgent.REQ_POSTBACK:
+            payload = self.md.get('postback', {}).get('payload')
+            self.reply, self.data = self.respond_to_action(payload)
+
+    def send_response(self):
+        if self.user and self.reply:
+            message_object = {
+                "text": self.reply
+            }
+            if self.attachment:
+                message_object.update(self.attachment)
+            body = {
+                "recipient": {
+                    "id": self.user.fb_id
+                },
+                "message": message_object
+            }
+            logging.debug(body)
+            URL = "https://graph.facebook.com/v2.6/me/messages?access_token=%s" % FB_ACCESS_TOKEN
+            if tools.on_dev_server():
+                logging.debug("Not sending request, on dev")
+            else:
+                response = urlfetch.post(URL, json.dumps(body))
+                logging.debug(response.status_code)
+            return body
 
 
 

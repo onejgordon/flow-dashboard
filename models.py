@@ -110,6 +110,8 @@ class User(ndb.Model):
             self.birthday = tools.fromISODate(params.get('birthday'))
         if 'settings' in params:
             self.settings = json.dumps(params.get('settings'), {})
+        if 'fb_id' in params:
+            self.fb_id = params.get('fb_id')
 
     def admin(self):
         return self.level == USER.ADMIN

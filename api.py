@@ -786,25 +786,6 @@ class AgentAPI(handlers.JsonRequestHandler):
         res['contextOut'] = []
         self.json_out(res, debug=True)
 
-    def _get_fbook_user(self, body):
-        account_linking = body.get("account_linking", {})
-        sender = body.get('sender', {})
-        psid = sender.get('id')
-        if account_linking:
-            status = account_linking.get('status')
-            if status == 'linked':
-                authcode = account_linking.get('authorization_code')
-                user_id = authcode
-                self.user = User.get_by_id(int(user_id))
-                if self.user and psid:
-                    self.user.fb_id = psid
-                    self.user.put()
-        if not self.user and psid:
-            self.user = User.query().filter(User.fb_id == psid).get()
-
-    def _get_fbook_message(self, body):
-        return body.get('message', {}).get('text')
-
     @authorized.role()
     def fbook_request(self, d):
         '''
@@ -813,23 +794,13 @@ class AgentAPI(handlers.JsonRequestHandler):
         from secrets import FB_VERIFY_TOKEN
         verify_token = self.request.get('hub.verify_token')
         hub_challenge = self.request.get('hub.challenge')
-        reply = None
         if verify_token and verify_token == FB_VERIFY_TOKEN:
             if hub_challenge:
                 self.response.out.write(hub_challenge)
                 return
 
-        body = tools.getJson(self.request.body)
-
-        logging.debug(body)
-        self._get_fbook_user(body)
-        from services.agent import ConversationAgent, AGENT_FBOOK_MESSENGER
-        from services import facebook
-        ca = ConversationAgent(type=AGENT_FBOOK_MESSENGER, user=self.user)
-        action, parameters = ca.parse_message(self._get_fbook_message(body))
-        if action:
-            reply, data = ca.respond_to_action(action, parameters=parameters)
-        if reply and self.user:
-            facebook.send_message(self.user, reply)
+        from services.agent import FacebookAgent
+        fa = FacebookAgent(self.request)
+        fa.send_response()
         self.success = True
-        self.json_out()
+        self.json_out({})

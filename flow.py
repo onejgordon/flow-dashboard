@@ -92,7 +92,7 @@ app = webapp2.WSGIApplication(
 
         # Agent
         webapp2.Route('/api/agent/apiai/request', handler=api.AgentAPI, handler_method="apiai_request", methods=["POST"]),
-        webapp2.Route('/api/agent/fbook/request', handler=api.AgentAPI, handler_method="fbook_request", methods=["POST"]),
+        webapp2.Route('/api/agent/fbook/request', handler=api.AgentAPI, handler_method="fbook_request"),
 
         # Cron jobs (see cron.yaml)
         webapp2.Route('/cron/readables/sync', handler=tasks.SyncReadables),

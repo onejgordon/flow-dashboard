@@ -56,3 +56,31 @@ class AgentTestCase(BaseTestCase):
         self.ca.user = None
         speech, data = self.ca.respond_to_action('input.status_request')
         self.assertEqual("Uh oh, is your account linked?", speech)
+
+    def test_parsing(self):
+        volley = [
+            # Goal requests
+            ('what are my goals?', 'input.goals_request', None),
+            ('remind me my goals', 'input.goals_request', None),
+            ('monthly goals', 'input.goals_request', None),
+            ('my goals this month', 'input.goals_request', None),
+
+            # Habit reports
+            ('mark run as complete', 'input.habit_report', {'habit': 'run'}),
+            ('mark run as done', 'input.habit_report', {'habit': 'run'}),
+            ('mark meditate as finished', 'input.habit_report', {'habit': 'meditate'}),
+            ('i finished meditate', 'input.habit_report', {'habit': 'meditate'}),
+            ('set run as complete', 'input.habit_report', {'habit': 'run'}),
+
+            # Habit commitments
+            ('i will run tonight', 'input.habit_commit', {'habit': 'run'}),
+            ('commit to make dinner tonight', 'input.habit_commit', {'habit': 'make dinner'}),
+            ('planning to run this evening', 'input.habit_commit', {'habit': 'run'}),
+            ('im going to run later', 'input.habit_commit', {'habit': 'run'}),
+        ]
+        for v in volley:
+            raw_message, expected_action, expected_params = v
+            action, params = self.ca.parse_message(raw_message)
+            self.assertEqual(expected_action, action, raw_message)
+            self.assertEqual(expected_params, params, raw_message)
+
