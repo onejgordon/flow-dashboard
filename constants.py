@@ -91,7 +91,8 @@ class JOURNAL():
 
     INVALID_REPLY = "I couldn't understand your answer, please try again"
     INVALID_TASK = "That didn't look like a task, please try again"
-    TOP_TASK_PROMPT = "Enter a top task for tomorrow (you can say 'done')"
+    TOP_TASK_PROMPT = "Enter a top task for tomorrow (or you can say 'done')"
+    TOP_TASK_PROMPT_ADDTL = "Enter another top task for tomorrow (you can say 'done')"
 
 class JOURNALTAG():
     # Types

@@ -551,7 +551,9 @@ class MiniJournal(UserAccessible):
         return MiniJournal(id=id, date=date, parent=user.key)
 
     @staticmethod
-    def Get(user, date):
+    def Get(user, date=None):
+        if not date:
+            date = MiniJournal.CurrentSubmissionDate()
         id = tools.iso_date(date)
         return MiniJournal.get_by_id(id, parent=user.key)
 
@@ -690,7 +692,7 @@ class Goal(UserAccessible):
             monthly_id = ndb.Key('Goal', datetime.strftime(date, "%Y-%m"), parent=user.key)
             keys.append(monthly_id)
         goals = ndb.get_multi(keys)
-        return [g for g in goals if g]
+        return [g for g in goals]
 
     @staticmethod
     def Create(user, id=None, date=None, annual=False):

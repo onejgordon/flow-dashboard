@@ -393,8 +393,7 @@ class JournalAPI(handlers.JsonRequestHandler):
         '''
         Get today's journal (yesterday if early morning)
         '''
-        date = self._get_date()
-        jrnl = MiniJournal.Get(self.user, date)
+        jrnl = MiniJournal.Get(self.user)
         self.set_response({
             'journal': jrnl.json() if jrnl else None
         }, success=True)
@@ -689,6 +688,17 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
 
 
 class AgentAPI(handlers.JsonRequestHandler):
+
+    @authorized.role('admin')
+    def spoof(self, d):
+        from services.agent import ConversationAgent, AGENT_FBOOK_MESSENGER
+        ca = ConversationAgent(type=AGENT_FBOOK_MESSENGER, user=self.user)
+        message = self.request.get('message')
+        action, params = ca.parse_message(message)
+        speech, data = ca.respond_to_action(action, parameters=params)
+        self.message = speech
+        self.success = True
+        self.set_response(debug=True)
 
     def _get_agent_type(self, body):
         # Facebook Messenger example

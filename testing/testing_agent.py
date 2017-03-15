@@ -148,7 +148,7 @@ class AgentTestCase(BaseTestCase):
             self.assertEqual(reply, expected_reply)
 
         # Confirm journal saved properly
-        jrnl = MiniJournal.Get(self.u, datetime.today())
+        jrnl = MiniJournal.Get(self.u)
         self.assertIsNotNone(jrnl)
         rating = jrnl.get_data_value('day_rating')
         self.assertEqual(rating, RATING)

@@ -10,6 +10,7 @@ import random
 from constants import HABIT_DONE_REPLIES, HABIT_COMMIT_REPLIES, SECURE_BASE, \
     JOURNAL
 from google.appengine.api import memcache
+from google.appengine.api import urlfetch
 from datetime import timedelta
 import json
 import tools
@@ -89,6 +90,7 @@ class ConversationState(object):
         self.store_array = store_array
         self.store_number = store_number
 
+
 class ConversationAgent(object):
 
     COMPLY_BANTER = [
@@ -101,33 +103,34 @@ class ConversationAgent(object):
     def __init__(self, type=AGENT_GOOGLE_ASST, user=None):
         self.type = type
         self.user = user
-        self.MC_CONVO_KEY = None
         self.cs = None
+
+    def _convo_mckey(self):
         if self.user:
-            self.MC_CONVO_KEY = "conversation_uid:%s" % self.user.key.id()
-            self.cs = self._get_conversation_state()
+            return "conversation_uid:%s" % self.user.key.id()
 
     def _get_conversation_state(self):
-        _cs = memcache.get(self.MC_CONVO_KEY)
-        cs = None
-        if _cs:
-            cs = pickle.load(_cs)
-            if cs.expired():
-                self._expire_conversation()
-                cs = None
-        return cs
+        if self._convo_mckey():
+            _cs = memcache.get(self._convo_mckey())
+            cs = None
+            if _cs:
+                cs = pickle.loads(_cs)
+                if cs.expired():
+                    self._expire_conversation()
+                    cs = None
+            return cs
 
     def _create_conversation_state(self):
         # New conversation state
-        return ConversationState(self.MC_CONVO_KEY)
+        return ConversationState(self._convo_mckey())
 
     def _expire_conversation(self):
-        memcache.delete(self.MC_CONVO_KEY)
+        memcache.delete(self._convo_mckey())
 
     def _set_conversation_state(self):
         if self.cs:
             pickled = pickle.dumps(self.cs)
-            memcache.set(self.MC_CONVO_KEY, pickled, 60 * CONVO_EXPIRE_MINS)
+            memcache.set(self._convo_mckey(), pickled, 60 * CONVO_EXPIRE_MINS)
 
     def _quick_replies(self, buttons):
         '''
@@ -161,6 +164,7 @@ class ConversationAgent(object):
         local_time = self.user.local_time()
         hr = local_time.hour
         in_journal_window = hr >= JOURNAL.START_HOUR or hr < JOURNAL.END_HOUR or tools.on_dev_server()
+        # TODO: Check if submitted
         logging.debug('hr: %s, in_window: %s' % (hr, in_journal_window))
         if questions:
             if in_journal_window:
@@ -190,6 +194,7 @@ class ConversationAgent(object):
                     mode = MODES[mode_index+1]
                     self.cs.set_state('mode', mode)
                 reply = None
+                end_convo = False
                 # Generate next reply
                 if mode == 'questions':
                     next_q_index = last_q_index + 1
@@ -203,7 +208,9 @@ class ConversationAgent(object):
                     self.cs.set_state('last_q_index', next_q_index)
                 elif mode == 'tasks':
                     # Ask to add tasks
-                    reply = JOURNAL.TOP_TASK_PROMPT
+                    tasks = self.cs.response_data.get('tasks', [])
+                    additional = len(tasks) > 0
+                    reply = JOURNAL.TOP_TASK_PROMPT_ADDTL if additional else JOURNAL.TOP_TASK_PROMPT
                     self.cs.expect_reply(JOURNAL.PTN_TEXT_RESPONSE, 'tasks', store_array=True)  # Store as name
                 elif mode == 'end':
                     # Finish and submit
@@ -219,9 +226,13 @@ class ConversationAgent(object):
                             tasks.append(task)
                     ndb.put_multi(tasks)
                     reply = "Report submitted!"
+                    end_convo = True
                 if reply:
                     self.cs.set_message_to_user(reply)
-                self._set_conversation_state()
+                if end_convo:
+                    self._expire_conversation()
+                else:
+                    self._set_conversation_state()
                 return reply
             else:
                 text = "You have %d journal questions setup: %s" % ' and '.join([q.get('text') for q in questions])
@@ -232,14 +243,16 @@ class ConversationAgent(object):
             return "Please visit flowdash.co to set up journal questions"
 
     def _goals_request(self):
-        goals = Goal.Current(self.user, which="month")
+        [annual, monthly] = Goal.Current(self.user)
         speech = None
-        if goals:
-            g = goals[0]
-            if g.annual():
-                speech = "Goals for %s. " % g.date.year()
-            else:
-                speech = "Goals for %s. " % datetime.strftime(g.date, "%B %Y")
+        g = None
+        if annual:
+            g = annual
+            speech = "Goals for %s. " % g.date.year()
+        elif monthly:
+            g = monthly
+            speech = "Goals for %s. " % datetime.strftime(g.date, "%B %Y")
+        if g:
             if g.text:
                 for i, text in enumerate(g.text):
                     speech += "%d: %s. " % (i+1, text)
@@ -418,6 +431,7 @@ class ConversationAgent(object):
     def parse_message(self, message):
         action = None
         parameters = None
+        self.cs = self._get_conversation_state()
         in_convo = self.cs is not None
         if in_convo:
             if self.cs.type == 'journal':
@@ -462,16 +476,16 @@ class FacebookAgent(ConversationAgent):
 
     def __init__(self, request, type=AGENT_FBOOK_MESSENGER, user=None):
         super(FacebookAgent, self).__init__(type=type, user=user)
-        self.body = tools.getJson(request.body)
-        logging.debug(self.body)
         self.message_data = {}
         self.reply = None
         self.md = {}  # To populate with entry.messaging[0]
-        self.request_type = FacebookAgent.REQ_UNKNOWN
-        if not self.user:
+        self.request_type = None
+        self.body = tools.getJson(request.body)
+        if not user:
             self._get_fbook_user()
-        logging.debug("Authenticated user: %s" % self.user)
         self._get_request_type()
+        logging.debug("Authenticated user: %s. Type: %s" % (self.user, self.request_type))
+        logging.debug(self.body)
         self._process_request()
 
     def _link_account(self, psid, account_linking):
@@ -509,6 +523,8 @@ class FacebookAgent(ConversationAgent):
             self.request_type = FacebookAgent.REQ_MESSAGE
         elif 'postback' in self.md:
             self.request_type = FacebookAgent.REQ_POSTBACK
+        else:
+            self.request_type = FacebookAgent.REQ_UNKNOWN
 
     def _get_fbook_message(self):
         return self.md.get('message', {}).get('text')
@@ -517,7 +533,6 @@ class FacebookAgent(ConversationAgent):
         '''
         Populate self.reply and self.data
         '''
-        # TODO: Memcache state (string & param, e.g. set goals)
         if self.request_type == FacebookAgent.REQ_MESSAGE:
             message = self._get_fbook_message()
             if message:
