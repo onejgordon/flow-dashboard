@@ -139,7 +139,7 @@ class AgentTestCase(BaseTestCase):
             (NARR, "How was the day?"),  # day_rating
             ("?", JOURNAL.INVALID_REPLY),
             ("%s" % RATING, JOURNAL.TOP_TASK_PROMPT),
-            ("Finish hacking the machine", JOURNAL.TOP_TASK_PROMPT),
+            ("Finish hacking the machine", JOURNAL.TOP_TASK_PROMPT_ADDTL),
             ("done", "Report submitted!")
         ]
         for message, expected_reply in conversation:

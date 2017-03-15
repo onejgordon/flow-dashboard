@@ -214,7 +214,9 @@ class ConversationAgent(object):
                     self.cs.expect_reply(JOURNAL.PTN_TEXT_RESPONSE, 'tasks', store_array=True)  # Store as name
                 elif mode == 'end':
                     # Finish and submit
-                    task_names = self.cs.response_data.pop('tasks')
+                    task_names = []
+                    if 'tasks' in self.cs.response_data:
+                        task_names = self.cs.response_data.pop('tasks')
                     jrnl = MiniJournal.Create(self.user)
                     jrnl.Update(data=self.cs.response_data)
                     jrnl.parse_tags()
