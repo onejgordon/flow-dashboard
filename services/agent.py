@@ -4,18 +4,20 @@
 # API calls to interact with API.AI (Google Assistant / Actions / Home, Facebook Messenger)
 
 from google.appengine.ext import ndb
-from models import Habit, HabitDay, Task, Goal, User
+from models import Habit, HabitDay, Task, Goal, User, MiniJournal
 from datetime import datetime, time
 import random
 from constants import HABIT_DONE_REPLIES, HABIT_COMMIT_REPLIES, SECURE_BASE, \
     JOURNAL
-from google.appengine.api import urlfetch
+from google.appengine.api import memcache
+from datetime import timedelta
 import json
 import tools
 import re
 import logging
 import random
 import imp
+import pickle
 try:
     imp.find_module('secrets')
 except ImportError:
@@ -26,8 +28,66 @@ else:
 AGENT_GOOGLE_ASST = 1
 AGENT_FBOOK_MESSENGER = 2
 
+CONVO_EXPIRE_MINS = 5
+
 HELP_TEXT = "With the Flow agent, you can setup and review goals, top tasks each day, and habits to build. You can also set up daily journals to track anything you want."
 
+
+class ConversationState(object):
+
+    def __init__(self, cache_key, type='journal'):
+        self.dt_start = datetime.now()
+        self.dt_expire = None
+        self.last_message_to_user = None
+        self.next_expected_pattern = None
+        self.next_store_key = None
+        self.store_array = False
+        self.store_number = False
+        self.cache_key = cache_key
+        self.state = {}  # Hold state
+        self.response_data = {}
+        self.type = type
+        self.update_expiration()
+
+    def update_expiration(self):
+        self.dt_expire = datetime.now() + timedelta(seconds=60*CONVO_EXPIRE_MINS)
+
+    def expired(self):
+        return datetime.now() > self.dt_expire
+
+    def add_message_from_user(self, from_user):
+        success = True
+        if self.next_expected_pattern:
+            m = re.match(self.next_expected_pattern, from_user)
+            if m and self.next_store_key:
+                logging.debug("Setting response data %s->%s" % (self.next_store_key, from_user))
+                value = from_user
+                if self.store_number:
+                    value = tools.safe_number(value)
+                if self.store_array:
+                    if self.next_store_key not in self.response_data:
+                        self.response_data[self.next_store_key] = []
+                    self.response_data[self.next_store_key].append(value)
+                else:
+                    self.response_data[self.next_store_key] = value
+            else:
+                success = False
+        self.update_expiration()
+        return success
+
+    def set_message_to_user(self, to_user):
+        self.last_message_to_user = to_user
+
+    def set_state(self, prop, value):
+        logging.debug("Setting conversation state %s->%s" % (prop, value))
+        self.state[prop] = value
+
+    def expect_reply(self, pattern, store_key=None, store_array=False, store_number=False):
+        self.next_expected_pattern = pattern
+        if store_key:
+            self.next_store_key = store_key
+        self.store_array = store_array
+        self.store_number = store_number
 
 class ConversationAgent(object):
 
@@ -41,10 +101,37 @@ class ConversationAgent(object):
     def __init__(self, type=AGENT_GOOGLE_ASST, user=None):
         self.type = type
         self.user = user
+        self.MC_CONVO_KEY = None
+        self.cs = None
+        if self.user:
+            self.MC_CONVO_KEY = "conversation_uid:%s" % self.user.key.id()
+            self.cs = self._get_conversation_state()
+
+    def _get_conversation_state(self):
+        _cs = memcache.get(self.MC_CONVO_KEY)
+        cs = None
+        if _cs:
+            cs = pickle.load(_cs)
+            if cs.expired():
+                self._expire_conversation()
+                cs = None
+        return cs
+
+    def _create_conversation_state(self):
+        # New conversation state
+        return ConversationState(self.MC_CONVO_KEY)
+
+    def _expire_conversation(self):
+        memcache.delete(self.MC_CONVO_KEY)
+
+    def _set_conversation_state(self):
+        if self.cs:
+            pickled = pickle.dumps(self.cs)
+            memcache.set(self.MC_CONVO_KEY, pickled, 60 * CONVO_EXPIRE_MINS)
 
     def _quick_replies(self, buttons):
         '''
-        Buttons are (title, payload) tuples
+        buttons are list of (title, payload) tuples
         '''
         return {
             "quick_replies": [{
@@ -66,22 +153,83 @@ class ConversationAgent(object):
             self.user.put()
         return "Alright, you're disconnected."
 
-    def _journal(self):
+    def _journal(self, message=""):
+        DONE_MESSAGES = ["done", "that's all", "exit", "finished", "no"]
+        MODES = ['questions', 'tasks', 'end']
         settings = tools.getJson(self.user.settings, {})
         questions = settings.get('journals', {}).get('questions', [])
         local_time = self.user.local_time()
         hr = local_time.hour
-        in_journal_window = hr >= JOURNAL.START_HOUR or hr < JOURNAL.END_HOUR
-        if in_journal_window:
-            return "Please visit flowdash.co to submit today's journal"
-        else:
-            if questions:
+        in_journal_window = hr >= JOURNAL.START_HOUR or hr < JOURNAL.END_HOUR or tools.on_dev_server()
+        logging.debug('hr: %s, in_window: %s' % (hr, in_journal_window))
+        if questions:
+            if in_journal_window:
+                if not self.cs:
+                    self.cs = self._create_conversation_state()
+                    self.cs.set_state('mode', 'questions')
+                mode = self.cs.state.get('mode')
+                mode_finished = False
+                save_response = True
+                # Receive user message
+                if mode == 'tasks':
+                    is_done = message in DONE_MESSAGES
+                    mode_finished = is_done
+                    save_response = not is_done
+                elif mode == 'questions':
+                    last_q_index = self.cs.state.get('last_q_index', -1)
+                    last_question = last_q_index == len(questions) - 1
+                    mode_finished = last_question
+                    save_response = True
+                if save_response:
+                    successful_add = self.cs.add_message_from_user(message)
+                    if not successful_add:
+                        reply = JOURNAL.INVALID_REPLY if mode == 'questions' else JOURNAL.INVALID_TASK
+                        return reply
+                mode_index = MODES.index(mode)
+                if mode_finished:
+                    mode = MODES[mode_index+1]
+                    self.cs.set_state('mode', mode)
+                reply = None
+                # Generate next reply
+                if mode == 'questions':
+                    next_q_index = last_q_index + 1
+                    q = questions[next_q_index]
+                    reply = q.get('text')
+                    name = q.get('name')
+                    response_type = q.get('response_type')
+                    pattern = JOURNAL.PATTERNS.get(response_type)
+                    store_number = response_type in JOURNAL.NUMERIC_RESPONSES
+                    self.cs.expect_reply(pattern, name, store_number=store_number)  # Store as name
+                    self.cs.set_state('last_q_index', next_q_index)
+                elif mode == 'tasks':
+                    # Ask to add tasks
+                    reply = JOURNAL.TOP_TASK_PROMPT
+                    self.cs.expect_reply(JOURNAL.PTN_TEXT_RESPONSE, 'tasks', store_array=True)  # Store as name
+                elif mode == 'end':
+                    # Finish and submit
+                    task_names = self.cs.response_data.pop('tasks')
+                    jrnl = MiniJournal.Create(self.user)
+                    jrnl.Update(data=self.cs.response_data)
+                    jrnl.parse_tags()
+                    jrnl.put()
+                    tasks = []
+                    if task_names:
+                        for tn in task_names:
+                            task = Task.Create(self.user, tn)
+                            tasks.append(task)
+                    ndb.put_multi(tasks)
+                    reply = "Report submitted!"
+                if reply:
+                    self.cs.set_message_to_user(reply)
+                self._set_conversation_state()
+                return reply
+            else:
                 text = "You have %d journal questions setup: %s" % ' and '.join([q.get('text') for q in questions])
                 text += ". You can submit your report after %s:00" % JOURNAL.START_HOUR
                 return text
-            else:
-                # TODO
-                return "Please visit flowdash.co to set up journal questions"
+        else:
+            # TODO
+            return "Please visit flowdash.co to set up journal questions"
 
     def _goals_request(self):
         goals = Goal.Current(self.user, which="month")
@@ -156,8 +304,6 @@ class ConversationAgent(object):
                     speech = "You've committed to '%s' today. %s" % (h.name, encourage)
                     handled = True
                     break
-                else:
-                    print habit_param_raw, "not in", h.name
             if not handled:
                 speech = "I'm not sure what you mean by '%s'. You may need to create a habit before you can commit to it." % habit_param_raw
         else:
@@ -198,6 +344,8 @@ class ConversationAgent(object):
 
     def respond_to_action(self, action, parameters=None):
         speech = None
+        if not parameters:
+            parameters = {}
         data = {}
         if self.user:
             if action == 'input.disconnect':
@@ -219,7 +367,7 @@ class ConversationAgent(object):
             elif action == 'input.habit_status':
                 speech = self._habit_status()
             elif action == 'input.journal':
-                speech = self._journal()
+                speech = self._journal(parameters.get('message'))
             elif action == 'input.help_goals':
                 HELP_GOALS = "You can set and review monthly and annual goals. Try saying 'set goals' or 'view goals'"
                 speech = '. '.join([self._comply_banter(), HELP_GOALS])
@@ -268,34 +416,41 @@ class ConversationAgent(object):
             })
 
     def parse_message(self, message):
-        PATTERNS = {
-            r'(?:what are my|remind me my|tell me my|monthly|current|my|view) goals': 'input.goals_request',
-            r'(how am i doing|my status|tell me about my day)': 'input.status_request',
-            r'(?:how do|tell me about|more info|learn about|help on) (?:tasks)': 'input.help_tasks',
-            r'(?:how do|tell me about|more info|learn about|help on) (?:habits)': 'input.help_habits',
-            r'(?:how do|tell me about|more info|learn about|help on) (?:journals|journaling|daily journals)': 'input.help_journals',
-            r'(?:how do|tell me about|more info|learn about|help on) (?:goals|monthly goals|goal tracking)': 'input.help_goals',
-            r'(?:mark|set) [HABIT_PATTERN] as (?:done|complete|finished)': 'input.habit_report',
-            r'(?:add habit|new habit|create habit)[:-]? [HABIT_PATTERN]': 'input.habit_add',
-            r'(?:i finished|completed) [HABIT_PATTERN]': 'input.habit_report',
-            r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)': 'input.habit_commit',
-            r'(?:my habits|habit progress|habits today)': 'input.habit_status',
-            r'(?:add task|set task|new task) [TASK_PATTERN]': 'input.task_add',
-            r'(?:my tasks|view tasks)': 'input.task_view',
-            r'(?:help me|how does this work|what can i do|what can I say)': 'input.help',
-            r'^(help|\?\?\?$)': 'input.help',
-            r'(?:daily report|daily journal)': 'input.journal',
-            r'^disconnect$': 'input.disconnect'
-        }
         action = None
         parameters = None
-        for pattern, pattern_action in PATTERNS.items():
-            m = re.search(self._process_pattern(pattern), message, flags=re.IGNORECASE)
-            if m:
-                action = pattern_action
-                if m.groupdict():
-                    parameters = m.groupdict()
-                break
+        in_convo = self.cs is not None
+        if in_convo:
+            if self.cs.type == 'journal':
+                # Journal report conversation ongoing
+                action = 'input.journal'
+                parameters = {'message': message}
+        else:
+            PATTERNS = {
+                r'(?:what are my|remind me my|tell me my|monthly|current|my|view) goals': 'input.goals_request',
+                r'(how am i doing|my status|tell me about my day)': 'input.status_request',
+                r'(?:how do|tell me about|more info|learn about|help on) (?:tasks)': 'input.help_tasks',
+                r'(?:how do|tell me about|more info|learn about|help on) (?:habits)': 'input.help_habits',
+                r'(?:how do|tell me about|more info|learn about|help on) (?:journals|journaling|daily journals)': 'input.help_journals',
+                r'(?:how do|tell me about|more info|learn about|help on) (?:goals|monthly goals|goal tracking)': 'input.help_goals',
+                r'(?:mark|set) [HABIT_PATTERN] as (?:done|complete|finished)': 'input.habit_report',
+                r'(?:add habit|new habit|create habit)[:-]? [HABIT_PATTERN]': 'input.habit_add',
+                r'(?:i finished|completed) [HABIT_PATTERN]': 'input.habit_report',
+                r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)': 'input.habit_commit',
+                r'(?:my habits|habit progress|habits today)': 'input.habit_status',
+                r'(?:add task|set task|new task) [TASK_PATTERN]': 'input.task_add',
+                r'(?:my tasks|view tasks)': 'input.task_view',
+                r'(?:help me|how does this work|what can i do|what can I say)': 'input.help',
+                r'^(help|\?\?\?$)': 'input.help',
+                r'(?:daily report|daily journal)': 'input.journal',
+                r'^disconnect$': 'input.disconnect'
+            }
+            for pattern, pattern_action in PATTERNS.items():
+                m = re.search(self._process_pattern(pattern), message, flags=re.IGNORECASE)
+                if m:
+                    action = pattern_action
+                    if m.groupdict():
+                        parameters = m.groupdict()
+                    break
         return (action, parameters)
 
 

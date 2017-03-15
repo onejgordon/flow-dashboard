@@ -6,7 +6,6 @@ import handlers
 import tools
 from google.appengine.ext import ndb
 
-
 class Init(handlers.BaseRequestHandler):
     @authorized.role("admin")
     def get(self, d):

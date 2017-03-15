@@ -26,7 +26,7 @@ DEFAULT_USER_SETTINGS = {
                 'name': "day_rating",
                 'label': "Rating",
                 'text': "How was the day?",
-                'response_type': "slider",
+                'response_type': "number",
                 'chart': True,
                 'tag_segment_chart': True,
                 'color': '#dd0000'
@@ -75,6 +75,23 @@ class JOURNAL():
     # Timing
     START_HOUR = 4
     END_HOUR = 21
+
+    # Patterns
+    PTN_TEXT_RESPONSE = '.*'
+    PTN_NUM_RESPONSE = '\d{1,4}\.?\d{0,2}'
+
+    # Response Types
+    PATTERNS = {
+        'text': PTN_TEXT_RESPONSE,
+        'number': PTN_NUM_RESPONSE,
+        'slider': PTN_NUM_RESPONSE
+    }
+
+    NUMERIC_RESPONSES = ['number', 'slider']
+
+    INVALID_REPLY = "I couldn't understand your answer, please try again"
+    INVALID_TASK = "That didn't look like a task, please try again"
+    TOP_TASK_PROMPT = "Enter a top task for tomorrow (you can say 'done')"
 
 class JOURNALTAG():
     # Types

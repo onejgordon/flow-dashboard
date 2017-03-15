@@ -20,7 +20,7 @@ export default class MiniJournalWidget extends React.Component {
       super(props);
       let form = {}
       this.props.questions.forEach((q) => {
-        if (q.response_type == 'slider') form[q.name] = 5;
+        if (q.response_type == 'slider' || q.response_type == 'number') form[q.name] = 5;
       });
       this.state = {
         form: form,
@@ -280,7 +280,7 @@ export default class MiniJournalWidget extends React.Component {
         _hint = <small>You can @mention and #activity tag</small>
       }
       if (!q.response_type || q.response_type == 'text') _response = <TextField name={q.name} ref={q.name} value={val} onChange={this.changeHandler.bind(this, 'form', q.name)} fullWidth={true} />
-      else if (q.response_type == 'slider') _response = <Slider name={q.name} value={val} onChange={this.changeHandlerSlider.bind(this, 'form', q.name)} max={10} min={1} defaultValue={5} step={1} />
+      else if (q.response_type == 'slider' || q.response_type == 'number') _response = <Slider name={q.name} value={val} onChange={this.changeHandlerSlider.bind(this, 'form', q.name)} max={10} min={1} defaultValue={5} step={1} />
       return (
         <div key={i}>
           <p className="lead">{ q.text }</p>

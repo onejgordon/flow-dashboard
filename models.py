@@ -496,8 +496,6 @@ class JournalTag(UserAccessible):
         hashtags = re.findall(r'#([a-zA-Z]{3,30})', text)
         new_jts = []
         all_jts = []
-        logging.debug("Found %d @mentions: %s" % (len(people), people))
-        logging.debug("Found %d #tags: %s" % (len(hashtags), hashtags))
         people_ids = [JournalTag.Key(user, p) for p in people]
         hashtag_ids = [JournalTag.Key(user, ht, prefix='#') for ht in hashtags]
         existing_tags = ndb.get_multi(people_ids + hashtag_ids)
@@ -546,7 +544,9 @@ class MiniJournal(UserAccessible):
         return res
 
     @staticmethod
-    def Create(user, date):
+    def Create(user, date=None):
+        if not date:
+            date = MiniJournal.CurrentSubmissionDate()
         id = tools.iso_date(date)
         return MiniJournal(id=id, date=date, parent=user.key)
 
@@ -554,6 +554,12 @@ class MiniJournal(UserAccessible):
     def Get(user, date):
         id = tools.iso_date(date)
         return MiniJournal.get_by_id(id, parent=user.key)
+
+    @staticmethod
+    def CurrentSubmissionDate():
+        HOURS_BACK = 8
+        now = datetime.now()
+        return (now - timedelta(hours=HOURS_BACK)).date()
 
     def Update(self, **params):
         if 'data' in params:
@@ -563,6 +569,22 @@ class MiniJournal(UserAccessible):
             self.location = gp
         if 'tags' in params:
             self.tags = params.get('tags', [])
+
+    def parse_tags(self):
+        user = self.key.parent().get()
+        questions = tools.getJson(user.settings, {}).get('journals', {}).get('questions', [])
+        parse_questions = [q.get('name') for q in questions if q.get('parse_tags')]
+        tags = []
+        for q in parse_questions:
+            response_text = tools.getJson(self.data).get(q)
+            tags.extend(JournalTag.CreateFromText(user, response_text))
+        for tag in tags:
+            if tag.key not in self.tags:
+                self.tags.append(tag.key)
+
+    def get_data_value(self, prop):
+        data = tools.getJson(self.data, {})
+        return data.get(prop)
 
 
 class Event(UserAccessible):

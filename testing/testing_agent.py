@@ -3,11 +3,12 @@
 
 from datetime import datetime, timedelta
 from base_test_case import BaseTestCase
-from models import JournalTag, Goal, User
+from models import JournalTag, Goal, MiniJournal
+from constants import JOURNAL
 from flow import app as tst_app
 from services.agent import ConversationAgent
 from models import Habit, Task
-
+import tools
 
 class AgentTestCase(BaseTestCase):
 
@@ -122,3 +123,48 @@ class AgentTestCase(BaseTestCase):
             self.assertEqual(expected_action, action, "Error in %s. %s <> %s" % (raw_message, expected_action, action))
             self.assertEqual(expected_params, params, "Error in %s. %s <> %s" % (raw_message, expected_params, params))
 
+    def test_stateful_journal_submission(self):
+        # Journal submissions ask multiple questions and require
+        # state to be kept in a conversation_state object (memcached)
+
+        # Setup journal questions for account
+        # settings = tools.getJson(self.u.settings)
+
+        NARR = "Productive! #Hacked a few things with @JuliaSpiegel"
+        RATING = 7
+
+        conversation = [
+            # (User message, Flow reply)
+            ("daily report", "A few words on your day?"),  # narrative
+            (NARR, "How was the day?"),  # day_rating
+            ("?", JOURNAL.INVALID_REPLY),
+            ("%s" % RATING, JOURNAL.TOP_TASK_PROMPT),
+            ("Finish hacking the machine", JOURNAL.TOP_TASK_PROMPT),
+            ("done", "Report submitted!")
+        ]
+        for message, expected_reply in conversation:
+            action, params = self.ca.parse_message(message)
+            reply, message_data = self.ca.respond_to_action(action, parameters=params)
+            self.assertEqual(reply, expected_reply)
+
+        # Confirm journal saved properly
+        jrnl = MiniJournal.Get(self.u, datetime.today())
+        self.assertIsNotNone(jrnl)
+        rating = jrnl.get_data_value('day_rating')
+        self.assertEqual(rating, RATING)
+        narrative = jrnl.get_data_value('narrative')
+        self.assertEqual(narrative, NARR)
+
+        # Confirm we have tags from narrative
+        tags = JournalTag.All(self.u)
+        self.assertEqual(len(tags), 2)
+        for t in tags:
+            if t.person():
+                self.assertEqual(t.name, "JuliaSpiegel")
+            else:
+                self.assertEqual(t.name, "Hacked")
+
+        # Confirm we created tasks
+        tasks = Task.Open(self.u)
+        self.assertEqual(len(tasks), 2)  # One added in journal
+        self.assertEqual(tasks[0].title, "Finish hacking the machine")
