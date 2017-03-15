@@ -85,6 +85,7 @@ class ConversationAgent(object):
 
     def _goals_request(self):
         goals = Goal.Current(self.user, which="month")
+        speech = None
         if goals:
             g = goals[0]
             if g.annual():
@@ -96,7 +97,9 @@ class ConversationAgent(object):
                     speech += "%d: %s. " % (i+1, text)
             else:
                 speech = "No goals yet"
-            return speech
+        else:
+            speech = "You haven't set up any goals yet"
+        return speech
 
     def _tasks_request(self):
         tasks = Task.Recent(self.user)
@@ -115,11 +118,11 @@ class ConversationAgent(object):
         task.put()
         return self._comply_banter() + ". Task added."
 
-    def _add_habit(self, habit):
+    def _habit_add(self, habit):
         h = Habit.Create(self.user)
         h.Update(name=habit)
         h.put()
-        return self._comply_banter() + ". Habit '%s' added." % habit
+        return self._comply_banter() + ". Habit '%s' added." % h.name
 
     def _habit_report(self, habit_param_raw):
         handled = False
@@ -226,7 +229,7 @@ class ConversationAgent(object):
                 speech = '. '.join([self._comply_banter(), HELP_TASKS])
                 data = self._quick_replies([("Learn about Habits", "input.help_habits")])
             elif action == 'input.help_habits':
-                HELP_HABITS = "You can set habits to build, and track completion. Try saying 'new habit', 'habit progress', or 'commit to run tonight'"
+                HELP_HABITS = "You can set habits to build, and track completion. Try saying 'new habit: run', 'habit progress', or 'commit to run tonight'"
                 speech = '. '.join([self._comply_banter(), HELP_HABITS])
                 data = self._quick_replies([("Learn about Journals", "input.help_journals")])
             elif action == 'input.help_journals':
@@ -273,7 +276,7 @@ class ConversationAgent(object):
             r'(?:how do|tell me about|more info|learn about|help on) (?:journals|journaling|daily journals)': 'input.help_journals',
             r'(?:how do|tell me about|more info|learn about|help on) (?:goals|monthly goals|goal tracking)': 'input.help_goals',
             r'(?:mark|set) [HABIT_PATTERN] as (?:done|complete|finished)': 'input.habit_report',
-            r'(?:add habit|new habit|create habit) [HABIT_PATTERN]': 'input.habit_add',
+            r'(?:add habit|new habit|create habit)[:-]? [HABIT_PATTERN]': 'input.habit_add',
             r'(?:i finished|completed) [HABIT_PATTERN]': 'input.habit_report',
             r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)': 'input.habit_commit',
             r'(?:my habits|habit progress|habits today)': 'input.habit_status',
@@ -326,6 +329,8 @@ class FacebookAgent(ConversationAgent):
             if self.user and psid:
                 self.user.fb_id = psid
                 self.user.put()
+                self.reply = "Alright %s, you've successfully connected with Flow!" % self.first_name()
+                self.message_data = self._quick_replies([("Learn about Flow", "GET_STARTED")])
 
     def _get_fbook_user(self):
         entry = self.body.get('entry', [])

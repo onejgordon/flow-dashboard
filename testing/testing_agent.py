@@ -44,6 +44,10 @@ class AgentTestCase(BaseTestCase):
         this_month = datetime.strftime(datetime.today(), "%B %Y")
         self.assertEqual(speech, "Goals for %s. 1: Get it done. 2: Also get exercise. " % this_month)
 
+    def test_agent_habit_add(self):
+        speech, data = self.ca.respond_to_action('input.habit_add', parameters={'habit': 'meditate'})
+        self.assertTrue("Habit 'Meditate' added" in speech, speech)
+
     def test_agent_habit_report(self):
         speech, data = self.ca.respond_to_action('input.habit_report', parameters={'habit': 'run'})
         self.assertTrue("'Run' is marked as complete" in speech, speech)
@@ -54,6 +58,14 @@ class AgentTestCase(BaseTestCase):
     def test_agent_habit_commitment(self):
         speech, data = self.ca.respond_to_action('input.habit_commit', parameters={'habit': 'run'})
         self.assertTrue("You've committed to 'Run' today" in speech, speech)
+
+    def test_agent_add_task(self):
+        speech, data = self.ca.respond_to_action('input.task_add', parameters={'task_name': 'go to the gym'})
+        self.assertTrue("Task added" in speech, speech)
+
+        recent_tasks = Task.Recent(self.u)
+        self.assertEqual(len(recent_tasks), 2)  # First added in setup
+        self.assertEqual(recent_tasks[0].title, "Go to the gym")
 
     def test_agent_no_user(self):
         self.ca.user = None
@@ -67,6 +79,10 @@ class AgentTestCase(BaseTestCase):
             ('remind me my goals', 'input.goals_request', None),
             ('monthly goals', 'input.goals_request', None),
             ('my goals this month', 'input.goals_request', None),
+
+            # Adding habits
+            ('new habit: run', 'input.habit_add', {'habit': 'run'}),
+            ('create habit go fishing', 'input.habit_add', {'habit': 'go fishing'}),
 
             # Habit reports
             ('mark run as complete', 'input.habit_report', {'habit': 'run'}),
@@ -85,6 +101,7 @@ class AgentTestCase(BaseTestCase):
             ('habit progress', 'input.habit_status', None),
 
             # Add habit
+            ('new habit: meditate', 'input.habit_add', {'habit': 'meditate'}),
             ('add habit meditate', 'input.habit_add', {'habit': 'meditate'}),
 
             # Add task

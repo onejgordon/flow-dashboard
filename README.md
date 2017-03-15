@@ -109,4 +109,4 @@ We've used API.AI to create an agent that integrates with Google Actions / Assis
 * Push panel data to compute engine for ML / prediction / regression
 * Project completion view (burn up)
 * Mobile app via react-native?
-
+* Google Fit REST API integration - https://developers.google.com/fit/rest/

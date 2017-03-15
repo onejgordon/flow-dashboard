@@ -135,6 +135,7 @@ class User(ndb.Model):
     def first_name(self):
         if self.name:
             return self.name.split(' ')[0]
+        return ""
 
     def checkToken(self, token):
         return self.session_id_token == token or self.session_id_token == unicode(quopri.decodestring(token), 'iso_8859-2')
@@ -304,7 +305,7 @@ class Task(UserAccessible):
             local_due = datetime.combine(local_now.date(), time(22, 0)) if schedule_for_same_day else (datetime.now() + timedelta(days=1))
             if local_due:
                 local_due = tools.server_time(tz, local_due)
-        return Task(title=title, dt_due=local_due, parent=user.key)
+        return Task(title=tools.capitalize(title), dt_due=local_due, parent=user.key)
 
     def Update(self, **params):
         from constants import TASK_DONE_REPLIES
@@ -366,7 +367,7 @@ class Habit(UserAccessible):
 
     def Update(self, **params):
         if 'name' in params:
-            self.name = params.get('name')
+            self.name = params.get('name').title()
         if 'color' in params:
             self.color = params.get('color')
         if 'icon' in params:
@@ -667,7 +668,7 @@ class Goal(UserAccessible):
             monthly_id = ndb.Key('Goal', datetime.strftime(date, "%Y-%m"), parent=user.key)
             keys.append(monthly_id)
         goals = ndb.get_multi(keys)
-        return [g for g in goals]
+        return [g for g in goals if g]
 
     @staticmethod
     def Create(user, id=None, date=None, annual=False):
