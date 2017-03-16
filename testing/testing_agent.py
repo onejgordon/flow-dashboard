@@ -108,6 +108,10 @@ class AgentTestCase(BaseTestCase):
             # Add task
             ('add task finish report', 'input.task_add', {'task_name': 'finish report'}),
 
+            # View tasks
+            ('my tasks', 'input.task_view', None),
+            ('tasks today', 'input.task_view', None),
+
             # Help
             ('what can i do', 'input.help', None),
             ('???', 'input.help', None),

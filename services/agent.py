@@ -240,7 +240,7 @@ class ConversationAgent(object):
                         self._set_conversation_state()
                     return reply
             else:
-                text = "You have %d journal questions setup: %s" % ' and '.join([q.get('text') for q in questions])
+                text = "You have %d journal questions setup: %s" % (len(questions), ' and '.join([q.get('text') for q in questions]))
                 text += ". You can submit your report after %s:00" % JOURNAL.START_HOUR
                 return text
         else:
@@ -457,7 +457,7 @@ class ConversationAgent(object):
                 r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)': 'input.habit_commit',
                 r'(?:my habits|habit progress|habits today)': 'input.habit_status',
                 r'(?:add task|set task|new task) [TASK_PATTERN]': 'input.task_add',
-                r'(?:my tasks|view tasks)': 'input.task_view',
+                r'(?:my tasks|view tasks|tasks today|today\'?s tasks)': 'input.task_view',
                 r'(?:help me|how does this work|what can i do|what can I say)': 'input.help',
                 r'^(help|\?\?\?$)': 'input.help',
                 r'(?:daily report|daily journal)': 'input.journal',
