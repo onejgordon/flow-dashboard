@@ -31,7 +31,7 @@ AGENT_FBOOK_MESSENGER = 2
 
 CONVO_EXPIRE_MINS = 5
 
-HELP_TEXT = "With the Flow agent, you can setup and review goals, top tasks each day, and habits to build. You can also set up daily journals to track anything you want."
+HELP_TEXT = "With the Flow agent, you can track top tasks each day, habits to build, and monthly and annual goals. You can also submit daily journals to track anything you want."
 
 
 class ConversationState(object):
@@ -273,9 +273,14 @@ class ConversationAgent(object):
         for task in tasks:
             if not task.is_done():
                 tasks_undone.append(task.title)
-        text = "You've completed %d %s for today." % (n_done, tools.pluralize('task', n_done))
+        if n_done:
+            text = "You've completed %d %s for today." % (n_done, tools.pluralize('task', n_done))
+        else:
+            text = "You haven't completed any tasks yet."
         if tasks_undone:
             text += " You still need to do '%s'." % (' and '.join(tasks_undone))
+        if not n_done and not tasks_undone:
+            text += " Try adding tasks by saying 'add task Q2 planning'"
         return text
 
     def _add_task(self, task_name):
@@ -358,12 +363,15 @@ class ConversationAgent(object):
                 if hd.done:
                     habits_done.append(habit.name)
                     n_habits_done += 1
-        if n_habits_done:
-            text = "Good work on doing %d %s (%s)!" % (n_habits_done, tools.pluralize('habit', n_habits_done), ' and '.join(habits_done))
+        if habits:
+            if n_habits_done:
+                text = "Good work on doing %d %s (%s)!" % (n_habits_done, tools.pluralize('habit', n_habits_done), ' and '.join(habits_done))
+            else:
+                text = "No habits done yet."
+            if habits_committed_undone:
+                text += " Don't forget you've committed to %s." % (' and '.join(habits_committed_undone))
         else:
-            text = "No habits done yet."
-        if habits_committed_undone:
-            text += " Don't forget you've committed to %s." % (' and '.join(habits_committed_undone))
+            text = "You haven't added any habits yet. Try saying 'add habit run'"
         return text
 
     def _status_request(self):
@@ -459,12 +467,12 @@ class ConversationAgent(object):
             LOOKUP = [
                 (r'(?:what are my|remind me my|tell me my|monthly|current|my|view) goals', 'input.goals_request'),
                 (r'(?:how am i doing|my status|tell me about my day)', 'input.status_request'),
-                (r'(?:how do|tell me about|more info|learn about|help on|what are) (?:tasks)', 'input.help_tasks'),
-                (r'(?:how do|tell me about|more info|learn about|help on|what are) (?:habits)', 'input.help_habits'),
-                (r'(?:how do|tell me about|more info|learn about|help on|what are) (?:journals|journaling|daily journals)', 'input.help_journals'),
-                (r'(?:how do|tell me about|more info|learn about|help on) (?:goals|monthly goals|goal tracking)', 'input.help_goals'),
+                (r'(?:how do|tell me about|more info|learn about|help on|help with|what are) (?:tasks)', 'input.help_tasks'),
+                (r'(?:how do|tell me about|more info|learn about|help on|help with|what are) (?:habits)', 'input.help_habits'),
+                (r'(?:how do|tell me about|more info|learn about|help on|help with|what are) (?:journals|journaling|daily journals)', 'input.help_journals'),
+                (r'(?:how do|tell me about|more info|learn about|help on|help with) (?:goals|monthly goals|goal tracking)', 'input.help_goals'),
                 (r'(?:mark|set) [HABIT_OR_TASK_PATTERN] as (?:done|complete|finished)', 'input.habit_or_task_report'),
-                (r'(?:i finished|completed) [HABIT_OR_TASK_PATTERN]', 'input.habit_or_task_report'),
+                (r'(?:i finished|i just finished|completed) [HABIT_OR_TASK_PATTERN]', 'input.habit_or_task_report'),
                 (r'(?:add habit|new habit|create habit)[:-]? [HABIT_PATTERN]', 'input.habit_add'),
                 (r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)', 'input.habit_commit'),
                 (r'(?:my habits|habit progress|habits today)', 'input.habit_status'),

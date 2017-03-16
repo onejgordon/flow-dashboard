@@ -39,7 +39,7 @@ class AgentTestCase(BaseTestCase):
 
     def test_agent_status_query(self):
         speech, data, end_convo = self.ca.respond_to_action('input.status_request')
-        self.assertEqual(speech, "Alright George. You've completed 0 tasks for today. You still need to do 'Dont forget the milk'. No habits done yet.")
+        self.assertEqual(speech, "Alright George. You haven't completed any tasks yet. You still need to do 'Dont forget the milk'. No habits done yet.")
 
     def test_agent_goals(self):
         speech, data, end_convo = self.ca.respond_to_action('input.goals_request')

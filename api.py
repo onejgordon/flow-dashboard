@@ -64,6 +64,14 @@ class ProjectAPI(handlers.JsonRequestHandler):
             'project': prj.json() if prj else None
         })
 
+    @authorized.role('user')
+    def delete(self, d):
+        id = self.request.get_range('id')
+        if id:
+            prj = Project.get_by_id(int(id), parent=self.user.key)
+            prj.key.delete()
+            self.success = True
+        self.set_response()
 
 class TaskAPI(handlers.JsonRequestHandler):
 
@@ -204,6 +212,14 @@ class HabitAPI(handlers.JsonRequestHandler):
             'habit': habit.json() if habit else None
         })
 
+    @authorized.role('user')
+    def delete(self, d):
+        id = self.request.get_range('id')
+        if id:
+            habit = Habit.get_by_id(int(id), parent=self.user.key)
+            habit.key.delete()
+            self.success = True
+        self.set_response()
 
 class GoalAPI(handlers.JsonRequestHandler):
 
@@ -309,6 +325,15 @@ class EventAPI(handlers.JsonRequestHandler):
             ndb.put_multi(dbp)
             self.success = True
             self.message = "Putting %d" % len(dbp)
+        self.set_response()
+
+    @authorized.role('user')
+    def delete(self, d):
+        id = self.request.get_range('id')
+        if id:
+            ev = Event.get_by_id(int(id), parent=self.user.key)
+            ev.key.delete()
+            self.success = True
         self.set_response()
 
 

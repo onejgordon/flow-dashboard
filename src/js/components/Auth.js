@@ -14,7 +14,6 @@ export default class Auth extends React.Component {
     }
 
     componentDidMount() {
-        if (this.props.user) this.finish_auth();
     }
 
     get_provider() {

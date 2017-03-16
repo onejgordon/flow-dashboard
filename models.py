@@ -583,7 +583,8 @@ class MiniJournal(UserAccessible):
         tags = []
         for q in parse_questions:
             response_text = tools.getJson(self.data).get(q)
-            tags.extend(JournalTag.CreateFromText(user, response_text))
+            if response_text:
+                tags.extend(JournalTag.CreateFromText(user, response_text))
         for tag in tags:
             if tag.key not in self.tags:
                 self.tags.append(tag.key)
