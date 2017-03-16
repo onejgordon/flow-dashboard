@@ -73,8 +73,8 @@ class EVENT():
 class JOURNAL():
 
     # Timing
-    START_HOUR = 4
-    END_HOUR = 21
+    START_HOUR = 21
+    END_HOUR = 4
 
     # Patterns
     PTN_TEXT_RESPONSE = '.*'
@@ -93,6 +93,8 @@ class JOURNAL():
     INVALID_TASK = "That didn't look like a task, please try again"
     TOP_TASK_PROMPT = "Enter a top task for tomorrow (or you can say 'done')"
     TOP_TASK_PROMPT_ADDTL = "Enter another top task for tomorrow (you can say 'done')"
+
+    ALREADY_SUBMITTED_REPLY = "Sorry, you've already submitted today's journal."
 
 class JOURNALTAG():
     # Types

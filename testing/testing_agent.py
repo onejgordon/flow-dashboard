@@ -168,3 +168,8 @@ class AgentTestCase(BaseTestCase):
         tasks = Task.Open(self.u)
         self.assertEqual(len(tasks), 2)  # One added in journal
         self.assertEqual(tasks[0].title, "Finish hacking the machine")
+
+        # Try to submit again
+        action, params = self.ca.parse_message("daily journal")
+        reply, message_data = self.ca.respond_to_action(action, parameters=params)
+        self.assertEqual(reply, JOURNAL.ALREADY_SUBMITTED_REPLY)
