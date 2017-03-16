@@ -63,6 +63,10 @@ TASK_DONE_REPLIES = [
 
 COOKIE_NAME = "flow_session"
 
+class HABIT():
+
+    HELP = "You can set habits to build, and track completion. Try saying 'new habit: run', 'habit progress', or 'commit to run tonight'"
+
 class EVENT():
     # Type
     PERSONAL = 1
@@ -71,6 +75,8 @@ class EVENT():
     PUBLIC = 4
 
 class JOURNAL():
+
+    HELP = "You can set up daily questions to track anything you want over time. Try saying 'daily report'"
 
     # Timing
     START_HOUR = 21
@@ -101,7 +107,6 @@ class JOURNALTAG():
     PERSON = 1
     HASHTAG = 2 # Activities, etc
 
-
 class READABLE():
     # Type
     ARTICLE = 1
@@ -112,6 +117,13 @@ class TASK():
     NOT_DONE = 1
     DONE = 2
 
+    HELP = "You can set and track top tasks each day. Try saying 'add task remember the milk' or 'my tasks'"
+
 class USER():
     USER = 1
     ADMIN = 2
+
+class GOAL():
+
+    HELP = "You can set and review monthly and annual goals. Try saying 'view goals'"
+

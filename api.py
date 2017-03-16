@@ -695,7 +695,7 @@ class AgentAPI(handlers.JsonRequestHandler):
         ca = ConversationAgent(type=AGENT_FBOOK_MESSENGER, user=self.user)
         message = self.request.get('message')
         action, params = ca.parse_message(message)
-        speech, data = ca.respond_to_action(action, parameters=params)
+        speech, data, end_convo = ca.respond_to_action(action, parameters=params)
         self.message = speech
         self.success = True
         self.set_response(debug=True)
@@ -741,6 +741,7 @@ class AgentAPI(handlers.JsonRequestHandler):
         auth_key = self.request.headers.get('Auth-Key')
         res = {'source': 'Flow'}
         speech = None
+        end_convo = False
         data = {}
         if auth_key == API_AI_AUTH_KEY:
             body = tools.getJson(self.request.body)
@@ -750,12 +751,15 @@ class AgentAPI(handlers.JsonRequestHandler):
             self._get_user(body)
             from services.agent import ConversationAgent
             ca = ConversationAgent(type=agent_type, user=self.user)
-            speech, data = ca.respond_to_action(action, parameters=parameters)
+            speech, data, end_convo = ca.respond_to_action(action, parameters=parameters)
 
         if not speech:
             speech = "Uh oh, something weird happened"
         res['speech'] = speech
         res['displayText'] = speech
+        data['google'] = {
+            'expect_user_response': not end_convo
+        }
         res['data'] = data
         res['contextOut'] = []
         self.json_out(res, debug=True)

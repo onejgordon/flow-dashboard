@@ -327,6 +327,10 @@ class Task(UserAccessible):
             self.wip = params.get('wip')
         return message
 
+    def mark_done(self):
+        message = self.Update(status=TASK.DONE)
+        return message
+
     def is_done(self):
         return self.status == TASK.DONE
 

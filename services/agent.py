@@ -8,7 +8,7 @@ from models import Habit, HabitDay, Task, Goal, User, MiniJournal
 from datetime import datetime, time
 import random
 from constants import HABIT_DONE_REPLIES, HABIT_COMMIT_REPLIES, SECURE_BASE, \
-    JOURNAL
+    JOURNAL, GOAL, TASK, HABIT
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from datetime import timedelta
@@ -162,6 +162,7 @@ class ConversationAgent(object):
         settings = tools.getJson(self.user.settings, {})
         questions = settings.get('journals', {}).get('questions', [])
         local_time = self.user.local_time()
+        end_convo = False
         hr = local_time.hour
         in_journal_window = hr >= JOURNAL.START_HOUR or hr < JOURNAL.END_HOUR or tools.on_dev_server()
         # TODO: Check if submitted
@@ -169,7 +170,7 @@ class ConversationAgent(object):
             if in_journal_window:
                 jrnl = MiniJournal.Get(self.user)
                 if jrnl:
-                    return JOURNAL.ALREADY_SUBMITTED_REPLY
+                    return (JOURNAL.ALREADY_SUBMITTED_REPLY, True)
                 else:
                     if not self.cs:
                         self.cs = self._create_conversation_state()
@@ -191,13 +192,12 @@ class ConversationAgent(object):
                         successful_add = self.cs.add_message_from_user(message)
                         if not successful_add:
                             reply = JOURNAL.INVALID_REPLY if mode == 'questions' else JOURNAL.INVALID_TASK
-                            return reply
+                            return (reply, False)
                     mode_index = MODES.index(mode)
                     if mode_finished:
                         mode = MODES[mode_index+1]
                         self.cs.set_state('mode', mode)
                     reply = None
-                    end_convo = False
                     # Generate next reply
                     if mode == 'questions':
                         next_q_index = last_q_index + 1
@@ -238,14 +238,13 @@ class ConversationAgent(object):
                         self._expire_conversation()
                     else:
                         self._set_conversation_state()
-                    return reply
+                    return (reply, end_convo)
             else:
                 text = "You have %d journal questions setup: %s" % (len(questions), ' and '.join([q.get('text') for q in questions]))
                 text += ". You can submit your report after %s:00" % JOURNAL.START_HOUR
-                return text
+                return (text, True)
         else:
-            # TODO
-            return "Please visit flowdash.co to set up journal questions"
+            return ("Please visit flowdash.co to set up journal questions", True)
 
     def _goals_request(self):
         [annual, monthly] = Goal.Current(self.user)
@@ -290,13 +289,16 @@ class ConversationAgent(object):
         h.put()
         return self._comply_banter() + ". Habit '%s' added." % h.name
 
-    def _habit_report(self, habit_param_raw):
+    def _habit_or_task_report(self, item_name):
+        '''
+        Mark a habit or a task as complete
+        '''
         handled = False
         speech = None
-        if habit_param_raw:
+        if item_name:
             habits = Habit.Active(self.user)
             for h in habits:
-                if habit_param_raw.lower() in h.name.lower():
+                if item_name.lower() in h.name.lower():
                     # TODO: Timezone?
                     done, hd = HabitDay.Toggle(h, datetime.today().date(), force_done=True)
                     encourage = random.choice(HABIT_DONE_REPLIES)
@@ -304,9 +306,20 @@ class ConversationAgent(object):
                     handled = True
                     break
             if not handled:
-                speech = "I'm not sure what you mean by '%s'." % habit_param_raw
+                # Check tasks
+                tasks = Task.Recent(self.user)
+                for t in tasks:
+                    if item_name.lower() in t.title.lower():
+                        t.mark_done()
+                        t.put()
+                        speech = "Task '%s' is marked as complete." % (t.title)
+                        handled = True
+                        break
+
+            if not handled:
+                speech = "I'm not sure what you mean by '%s'." % item_name
         else:
-            speech = "I couldn't tell what habit you completed."
+            speech = "I couldn't tell what habit or task you completed."
         return speech
 
     def _habit_commit(self, habit_param_raw):
@@ -362,6 +375,7 @@ class ConversationAgent(object):
 
     def respond_to_action(self, action, parameters=None):
         speech = None
+        end_convo = True
         if not parameters:
             parameters = {}
         data = {}
@@ -372,8 +386,8 @@ class ConversationAgent(object):
                 speech = self._status_request()
             elif action == 'input.goals_request':
                 speech = self._goals_request()
-            elif action == 'input.habit_report':
-                speech = self._habit_report(parameters.get('habit'))
+            elif action == 'input.habit_or_task_report':
+                speech = self._habit_or_task_report(parameters.get('habit_or_task'))
             elif action == 'input.habit_commit':
                 speech = self._habit_commit(parameters.get('habit'))
             elif action == 'input.task_add':
@@ -385,28 +399,25 @@ class ConversationAgent(object):
             elif action == 'input.habit_status':
                 speech = self._habit_status()
             elif action == 'input.journal':
-                speech = self._journal(parameters.get('message'))
+                speech, end_convo = self._journal(parameters.get('message'))
             elif action == 'input.help_goals':
-                HELP_GOALS = "You can set and review monthly and annual goals. Try saying 'set goals' or 'view goals'"
-                speech = '. '.join([self._comply_banter(), HELP_GOALS])
+                speech = '. '.join([self._comply_banter(), GOAL.HELP])
                 data = self._quick_replies([("Learn about Tasks", "input.help_tasks")])
             elif action == 'input.help_tasks':
-                HELP_TASKS = "You can set and track top tasks each day. Try saying 'add task finish report' or 'my tasks'"
-                speech = '. '.join([self._comply_banter(), HELP_TASKS])
+                speech = '. '.join([self._comply_banter(), TASK.HELP])
                 data = self._quick_replies([("Learn about Habits", "input.help_habits")])
             elif action == 'input.help_habits':
-                HELP_HABITS = "You can set habits to build, and track completion. Try saying 'new habit: run', 'habit progress', or 'commit to run tonight'"
-                speech = '. '.join([self._comply_banter(), HELP_HABITS])
+                speech = '. '.join([self._comply_banter(), HABIT.HELP])
                 data = self._quick_replies([("Learn about Journals", "input.help_journals")])
             elif action == 'input.help_journals':
-                HELP_JOURNALS = "You can set up daily questions to track anything you want over time. Try saying 'daily report'"
-                speech = '. '.join([self._comply_banter(), HELP_JOURNALS])
+                speech = '. '.join([self._comply_banter(), JOURNAL.HELP])
             elif action == 'GET_STARTED':
                 speech = "Welcome to Flow! " + HELP_TEXT
                 data = self._quick_replies([("Learn about Goals", "input.help_goals")])
             elif action == 'input.help':
                 speech = HELP_TEXT
                 data = self._quick_replies([("Learn about Goals", "input.help_goals")])
+                end_convo = False
         else:
             speech = "To get started, please link your account with Flow"
             if self.type == AGENT_FBOOK_MESSENGER:
@@ -425,11 +436,12 @@ class ConversationAgent(object):
                         }
                     }
                 }
-        return (speech, data)
+        return (speech, data, end_convo)
 
     def _process_pattern(self, pattern):
         return tools.variable_replacement(pattern, {
             'HABIT_PATTERN': '(?P<habit>[a-zA-Z ]+)',
+            'HABIT_OR_TASK_PATTERN': '(?P<habit_or_task>[a-zA-Z ]+)',
             'TASK_PATTERN': '(?P<task_name>[a-zA-Z ]{5,50})',
             })
 
@@ -444,26 +456,27 @@ class ConversationAgent(object):
                 action = 'input.journal'
                 parameters = {'message': message}
         else:
-            PATTERNS = {
-                r'(?:what are my|remind me my|tell me my|monthly|current|my|view) goals': 'input.goals_request',
-                r'(how am i doing|my status|tell me about my day)': 'input.status_request',
-                r'(?:how do|tell me about|more info|learn about|help on) (?:tasks)': 'input.help_tasks',
-                r'(?:how do|tell me about|more info|learn about|help on) (?:habits)': 'input.help_habits',
-                r'(?:how do|tell me about|more info|learn about|help on) (?:journals|journaling|daily journals)': 'input.help_journals',
-                r'(?:how do|tell me about|more info|learn about|help on) (?:goals|monthly goals|goal tracking)': 'input.help_goals',
-                r'(?:mark|set) [HABIT_PATTERN] as (?:done|complete|finished)': 'input.habit_report',
-                r'(?:add habit|new habit|create habit)[:-]? [HABIT_PATTERN]': 'input.habit_add',
-                r'(?:i finished|completed) [HABIT_PATTERN]': 'input.habit_report',
-                r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)': 'input.habit_commit',
-                r'(?:my habits|habit progress|habits today)': 'input.habit_status',
-                r'(?:add task|set task|new task) [TASK_PATTERN]': 'input.task_add',
-                r'(?:my tasks|view tasks|tasks today|today\'?s tasks)': 'input.task_view',
-                r'(?:help me|how does this work|what can i do|what can I say)': 'input.help',
-                r'^(help|\?\?\?$)': 'input.help',
-                r'(?:daily report|daily journal)': 'input.journal',
-                r'^disconnect$': 'input.disconnect'
-            }
-            for pattern, pattern_action in PATTERNS.items():
+            LOOKUP = [
+                (r'(?:what are my|remind me my|tell me my|monthly|current|my|view) goals', 'input.goals_request'),
+                (r'(?:how am i doing|my status|tell me about my day)', 'input.status_request'),
+                (r'(?:how do|tell me about|more info|learn about|help on|what are) (?:tasks)', 'input.help_tasks'),
+                (r'(?:how do|tell me about|more info|learn about|help on|what are) (?:habits)', 'input.help_habits'),
+                (r'(?:how do|tell me about|more info|learn about|help on|what are) (?:journals|journaling|daily journals)', 'input.help_journals'),
+                (r'(?:how do|tell me about|more info|learn about|help on) (?:goals|monthly goals|goal tracking)', 'input.help_goals'),
+                (r'(?:mark|set) [HABIT_OR_TASK_PATTERN] as (?:done|complete|finished)', 'input.habit_or_task_report'),
+                (r'(?:i finished|completed) [HABIT_OR_TASK_PATTERN]', 'input.habit_or_task_report'),
+                (r'(?:add habit|new habit|create habit)[:-]? [HABIT_PATTERN]', 'input.habit_add'),
+                (r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)', 'input.habit_commit'),
+                (r'(?:my habits|habit progress|habits today)', 'input.habit_status'),
+                (r'(?:add task|set task|new task) [TASK_PATTERN]', 'input.task_add'),
+                (r'(?:my tasks|view tasks|tasks today|today\'?s tasks)', 'input.task_view'),
+                (r'(?:help me|how does this work|what can i do|what can I say)', 'input.help'),
+                (r'^(help|\?\?\?$)', 'input.help'),
+                (r'(?:daily report|daily journal)', 'input.journal'),
+                (r'^disconnect$', 'input.disconnect')
+            ]
+            for lookup in LOOKUP:
+                pattern, pattern_action = lookup
                 m = re.search(self._process_pattern(pattern), message, flags=re.IGNORECASE)
                 if m:
                     action = pattern_action
@@ -478,6 +491,7 @@ class FacebookAgent(ConversationAgent):
     REQ_UNKNOWN = 1
     REQ_MESSAGE = 2
     REQ_POSTBACK = 3
+    REQ_ACCOUNT_LINK = 4
 
     def __init__(self, request, type=AGENT_FBOOK_MESSENGER, user=None):
         super(FacebookAgent, self).__init__(type=type, user=user)
@@ -499,12 +513,11 @@ class FacebookAgent(ConversationAgent):
             authcode = account_linking.get('authorization_code')
             user_id = authcode
             logging.debug("Linking user: %s" % authcode)
+            self.request_type = FacebookAgent.REQ_ACCOUNT_LINK
             self.user = User.get_by_id(int(user_id))
             if self.user and psid:
                 self.user.fb_id = psid
                 self.user.put()
-                self.reply = "Alright %s, you've successfully connected with Flow!" % self.first_name()
-                self.message_data = self._quick_replies([("Learn about Flow", "GET_STARTED")])
 
     def _get_fbook_user(self):
         entry = self.body.get('entry', [])
@@ -524,12 +537,13 @@ class FacebookAgent(ConversationAgent):
             logging.debug("malformed")
 
     def _get_request_type(self):
-        if 'message' in self.md:
-            self.request_type = FacebookAgent.REQ_MESSAGE
-        elif 'postback' in self.md:
-            self.request_type = FacebookAgent.REQ_POSTBACK
-        else:
-            self.request_type = FacebookAgent.REQ_UNKNOWN
+        if not self.request_type:
+            if 'message' in self.md:
+                self.request_type = FacebookAgent.REQ_MESSAGE
+            elif 'postback' in self.md:
+                self.request_type = FacebookAgent.REQ_POSTBACK
+            else:
+                self.request_type = FacebookAgent.REQ_UNKNOWN
 
     def _get_fbook_message(self):
         return self.md.get('message', {}).get('text')
@@ -543,13 +557,15 @@ class FacebookAgent(ConversationAgent):
             if message:
                 action, parameters = self.parse_message(message)
                 if action:
-                    self.reply, self.message_data = self.respond_to_action(action, parameters=parameters)
+                    self.reply, self.message_data, end_convo = self.respond_to_action(action, parameters=parameters)
         elif self.request_type == FacebookAgent.REQ_POSTBACK:
             payload = self.md.get('postback', {}).get('payload')
-            self.reply, self.message_data = self.respond_to_action(payload)
+            self.reply, self.message_data, end_convo = self.respond_to_action(payload)
+        elif self.request_type == FacebookAgent.REQ_ACCOUNT_LINK and self.user:
+            self.reply = "Alright %s, you've successfully connected with Flow!" % self.user.first_name()
+            self.message_data = self._quick_replies([("Learn about Flow", "GET_STARTED")])
 
     def send_response(self):
-        logging.debug("Reply: %s, User: %s, Message data: %s" % (self.reply, self.user, self.message_data))
         if self.fb_id and (self.reply or self.message_data):
             message_object = {}
             if self.reply and 'attachment' not in self.message_data:
