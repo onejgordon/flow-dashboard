@@ -43,7 +43,9 @@ export default class ProjectViewer extends React.Component {
     let {initially_show} = this.props;
     let {projects, all_showing} = this.state;
     let visible = projects.sort((a,b) => {
-      if (b.starred == a.starred) return b.title - a.title;
+      let a_title = a.title || ""; // Handle null
+      let b_title = b.title || "";
+      if (b.starred == a.starred) return a_title.localeCompare(b_title);
       else return b.starred - a.starred;
     });
     if (!all_showing) return visible.slice(0, initially_show);
