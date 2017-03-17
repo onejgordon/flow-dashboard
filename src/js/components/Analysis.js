@@ -64,7 +64,7 @@ export default class Analysis extends React.Component {
         let params = {
             date_start: util.printDateObj(start, 'UTC'),
             date_end: util.printDateObj(end, 'UTC'),
-            with_productivity: 1
+            with_tracking: 1
         }
         api.get("/api/analysis", params, (res) => {
             console.log(res);
@@ -72,7 +72,7 @@ export default class Analysis extends React.Component {
                 iso_dates: res.dates,
                 habits: res.habits,
                 tasks: res.tasks,
-                productivity: res.productivity,
+                tracking_days: res.tracking_days,
                 habitdays: res.habitdays,
                 goals: util.lookupDict(res.goals, 'month'),
                 loaded: true
@@ -80,60 +80,11 @@ export default class Analysis extends React.Component {
         });
     }
 
-    habit_day_checked(iso_date, habit) {
-        let {habitdays} = this.state;
-        let id = `habit:${habit.id}_day:${iso_date}`;
-        if (habitdays[id]) return habitdays[id].done;
-        return false;
-    }
-
-    habit_data() {
-        let {iso_dates, habitdays, habits} = this.state;
-        let datasets = [];
-        habits.forEach((h) => {
-            let data = iso_dates.map((iso_date) => {
-                return this.habit_day_checked(iso_date, h) ? 1 : 0;
-            });
-            let dataset = {
-                label: h.name,
-                data: data,
-                backgroundColor: h.color || "#FFFFFF"
-            };
-            datasets.push(dataset);
-        })
-        let data = {
-            labels: iso_dates,
-            datasets: datasets
-        };
-        return data;
-    }
-
-    productivity_data() {
-        let {productivity} = this.state;
-        let labels = [];
-        let data = [];
-        productivity.forEach((p) => {
-            data.push(p.data.commits);
-            labels.push(new Date(p.iso_date));
-        });
-        let pdata = {
-            labels: labels,
-            datasets: [
-                {
-                    label: "Commits",
-                    data: data,
-                    backgroundColor: '#44ff44'
-                }
-            ]
-        };
-        return pdata;
-    }
-
     render() {
         let {loaded, journal_tag_segment,
             journal_segments, goals,
             habits, habitdays, iso_dates,
-            productivity,
+            tracking_days,
             journals, tasks} = this.state;
         let today = new Date();
         if (!loaded) return null;
@@ -154,7 +105,7 @@ export default class Analysis extends React.Component {
                     goals: goals,
                     journals: journals,
                     tasks: tasks,
-                    productivity: productivity,
+                    tracking_days: tracking_days,
                     habits: habits,
                     habitdays: habitdays,
                     iso_dates: iso_dates,

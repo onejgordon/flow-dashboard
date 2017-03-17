@@ -1,5 +1,5 @@
 import logging
-from models import User, Productivity
+from models import User, TrackingDay
 import handlers
 from datetime import datetime, timedelta
 import tools
@@ -45,12 +45,12 @@ class SyncProductivity(handlers.BaseRequestHandler):
             if updater._can_run():
                 commits = updater.get_contributions_on_day(date)
                 if commits is not None:
-                    prod = Productivity.Create(user, date)
-                    prod.Update(data={
+                    td = TrackingDay.Create(user, date)
+                    td.Update(data={
                         'commits': commits
                     })
-                    prod.put()
-                    res = prod.json()
+                    td.put()
+                    res = td.json()
             else:
                 logging.debug("Github updater can't run")
         self.json_out(res, debug=True)

@@ -1,7 +1,7 @@
 
 from datetime import datetime, timedelta, time
 from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
-    Readable, Productivity, Event, JournalTag
+    Readable, TrackingDay, Event, JournalTag
 from google.appengine.ext import ndb
 import authorized
 import handlers
@@ -599,7 +599,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
     def get(self, d):
         # TODO: Async fetches
         with_habits = self.request.get_range('with_habits', default=1) == 1
-        with_productivity = self.request.get_range('with_productivity', default=1) == 1
+        with_tracking = self.request.get_range('with_tracking', default=1) == 1
         with_goals = self.request.get_range('with_goals', default=1) == 1
         with_tasks = self.request.get_range('with_tasks', default=1) == 1
         date_start = self.request.get('date_start')
@@ -624,8 +624,8 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         if with_habits:
             habits = Habit.Active(self.user)
             habitdays = HabitDay.Range(self.user, habits, dt_start, dt_end)
-        if with_productivity:
-            productivity = Productivity.Range(self.user, dt_start, dt_end)
+        if with_tracking:
+            tracking_days = TrackingDay.Range(self.user, dt_start, dt_end)
         if with_goals:
             goals = Goal.Year(self.user, today.year)
         if with_tasks:
@@ -636,7 +636,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
             'habits': [h.json() for h in habits],
             'goals': [g.json() for g in goals],
             'tasks': [t.json() for t in tasks],
-            'productivity': [p.json() for p in productivity],
+            'tracking_days': [p.json() for p in tracking_days],
             'habitdays': tools.lookupDict([hd for hd in habitdays if hd],
                     keyprop="key_id",
                     valueTransform=lambda hd: hd.json())
