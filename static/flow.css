@@ -95,7 +95,8 @@ body {
     display: none;
 }
 
-.goalDate {
+.goalDate:link, .goalDate:visited {
+    display: block;
     color: white;
     text-align: center;
     text-transform: uppercase;
@@ -105,6 +106,10 @@ body {
 
 .goalDate:hover {
     color: #F9D23D;
+}
+
+.goalDate:active {
+    color: #FAE573;
 }
 
 .goalList {
@@ -171,6 +176,10 @@ body {
 }
 
 .progressBox_i:hover {
+    background: #EFEFEF;
+}
+
+.progressBox_i:active {
     background: white;
 }
 

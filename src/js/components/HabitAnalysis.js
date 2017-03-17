@@ -1,8 +1,9 @@
 var React = require('react');
-import { IconButton, Dialog } from 'material-ui';
+import { Dialog } from 'material-ui';
 var util = require('utils/util');
 var api = require('utils/api');
 import {changeHandler} from 'utils/component-utils';
+import {Doughnut} from "react-chartjs-2";
 var ReactTooltip = require('react-tooltip');
 var BigProp = require('components/common/BigProp');
 
@@ -60,6 +61,7 @@ export default class HabitAnalysis extends React.Component {
     let longest_streak = 0;
     let streak = 0;
     let n_done = 0;
+    let habit_color = habit.color || "#1193FE";
     for (let i = 0; i < days; i++) {
       cursor.setDate(cursor.getDate() + 1);
       let iso_date = util.printDateObj(cursor);
@@ -75,7 +77,7 @@ export default class HabitAnalysis extends React.Component {
         if (streak > longest_streak) longest_streak = streak;
         streak = 0;
       }
-      if (hd && hd.done) day_st.backgroundColor = habit.color || "#1193FE";
+      if (hd && hd.done) day_st.backgroundColor = habit_color;
       let cls = "habitDay";
       if (even_month) cls += " even_month";
       _squares.push(<span className={cls} key={i} style={day_st} data-tip={iso_date}>{ cursor.getDate() }</span>)
@@ -91,7 +93,19 @@ export default class HabitAnalysis extends React.Component {
         <div className="col-sm-6">
           <BigProp label="Longest streak" value={longest_streak} />
           <BigProp label={`Completions in last ${days} days`} value={n_done} />
-          <BigProp label="Overall completion rate" value={completion_rate} />
+
+          <h5 className="text-center">Overall completion rate - { completion_rate }</h5>
+
+          <Doughnut data={{
+            labels: ["Days Completed", "Days Incomplete"],
+            datasets: [
+              {
+                data: [n_done, days - n_done],
+                backgroundColor: [habit_color, "#333333"]
+              },
+
+            ]
+          }} />
         </div>
       </div>
       )

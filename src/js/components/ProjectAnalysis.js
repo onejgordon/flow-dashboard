@@ -30,20 +30,24 @@ export default class ProjectAnalysis extends React.Component {
 
   render_content() {
     let {project} = this.props;
-    let steps = [];
-    let labels = [];
+    let points = [];
     project.progress_ts.forEach((p, decile) => {
       if (p != 0) {
-        steps.push((decile+1) / 10);
-        labels.push(p)
+        points.push({
+          progress: parseInt((decile+1) * 10),
+          date: new Date(p)
+        })
       }
     });
+    points = points.sort((a, b) => {
+      return b.date - a.date;
+    });
     let progressData = {
-      labels: labels,
+      labels: points.map((p) => { return p.date; }),
       datasets: [
         {
-          label: "Progress towards completion",
-          data: steps,
+          label: "Progress towards completion (%)",
+          data: points.map((p) => { return p.progress; }),
           backgroundColor: `rgba(0, 100, 255, 1.0)`,
         }
       ]
@@ -52,7 +56,7 @@ export default class ProjectAnalysis extends React.Component {
       scales: {
         yAxes: [{
             ticks: {
-                max: 1,
+                max: 100,
                 min: 0
             }
         }],
@@ -78,7 +82,7 @@ export default class ProjectAnalysis extends React.Component {
           <Line data={progressData} options={opts} width={1000} height={450}/>
         </div>
         <div className="col-sm-3">
-          <BigProp label="Overall rate (%/day)" value={rate.toFixed(2)} />
+          <BigProp label="Overall rate (%/day)" value={rate.toFixed(1)} />
           <BigProp label="Duration (days)" value={days.toFixed(2)} />
         </div>
       </div>

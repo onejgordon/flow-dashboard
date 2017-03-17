@@ -124,7 +124,7 @@ export default class GoalViewer extends React.Component {
     let assess_label = this.ASSESS_LABELS[(assessment_form.assessment-1)];
     return (
       <div className="goal col-sm-6" key={g.id}>
-        <div className="goalDate" onClick={this.show_goal_dialog.bind(this, g)}>{ date_printed }</div>
+        <a href="javascript:void(0)" className="goalDate" onClick={this.show_goal_dialog.bind(this, g)}>{ date_printed }</a>
         <ProgressLine value={value} total={total} />
 
         <ul className="goalList">

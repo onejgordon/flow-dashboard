@@ -79,9 +79,9 @@ export default class ProjectViewer extends React.Component {
         title="New Project"
         actions={actions}>
 
-        <TextField placeholder="Project title" value={form.title} onChange={this.changeHandler.bind(this, 'form', 'title')} fullWidth />
-        <TextField placeholder="Project subhead" value={form.subhead} onChange={this.changeHandler.bind(this, 'form', 'subhead')} fullWidth />
-        <TextField placeholder="Project URL" value={form.url1} onChange={this.changeHandler.bind(this, 'form', 'url1')} fullWidth />
+        <TextField name="title" placeholder="Project title" value={form.title} onChange={this.changeHandler.bind(this, 'form', 'title')} fullWidth />
+        <TextField name="subhead" placeholder="Project subhead" value={form.subhead} onChange={this.changeHandler.bind(this, 'form', 'subhead')} fullWidth />
+        <TextField name="url1" placeholder="Project URL" value={form.url1} onChange={this.changeHandler.bind(this, 'form', 'url1')} fullWidth />
 
       </Dialog>
       )
