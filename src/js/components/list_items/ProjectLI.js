@@ -69,6 +69,10 @@ export default class ProjectLI extends React.Component {
     this.update(project, {starred: project.starred ? 0 : 1});
   }
 
+  show_analysis() {
+    this.props.onShowAnalysis();
+  }
+
   render_progress() {
     let {with_progress, project} = this.props;
     if (!with_progress || project.progress == -1) return null;
@@ -125,6 +129,7 @@ export default class ProjectLI extends React.Component {
               <IconMenu iconButtonElement={<IconButton><FontIcon className="material-icons">more_vert</FontIcon></IconButton>}>
                 <MenuItem primaryText="Toggle progress tracking" onClick={this.toggle_progress.bind(this)} />
                 <MenuItem primaryText="Archive project" onClick={this.archive.bind(this)} />
+                <MenuItem primaryText="Analysis" onClick={this.show_analysis.bind(this)} />
               </IconMenu>
             </div>
             <h2 style={this.H}>

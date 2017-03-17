@@ -5,7 +5,7 @@ import {clone} from 'lodash';
 import {findIndexById} from 'utils/store-utils';
 var ProjectLI = require('components/list_items/ProjectLI');
 var api = require('utils/api');
-
+var ProjectAnalysis = require('components/ProjectAnalysis');
 
 @changeHandler
 export default class ProjectViewer extends React.Component {
@@ -22,7 +22,8 @@ export default class ProjectViewer extends React.Component {
           form: {},
           projects: [],
           all_showing: false,
-          project_dialog_open: false
+          project_dialog_open: false,
+          project_analysis: null
       };
   }
 
@@ -62,7 +63,9 @@ export default class ProjectViewer extends React.Component {
 
   render_projects() {
     return this.sorted_visible().map((p) => {
-        return <ProjectLI key={p.id} project={p} onProjectUpdate={this.handle_project_update.bind(this)} />
+        return <ProjectLI key={p.id} project={p}
+          onProjectUpdate={this.handle_project_update.bind(this)}
+          onShowAnalysis={this.setState.bind(this, {project_analysis: p})} />
     });
   }
 
@@ -98,6 +101,8 @@ export default class ProjectViewer extends React.Component {
     return (
       <div className="ProjectViewer">
         <h3>Ongoing Projects</h3>
+
+        <ProjectAnalysis project={this.state.project_analysis} onDismiss={this.setState.bind(this, {project_analysis: false})} />
 
         { this.render_projects() }
         { this.render_dialog() }

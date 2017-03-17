@@ -35,9 +35,9 @@ deploy(){
 	build_js
 	sudo gcloud config configurations activate flow
 	if [ "$env" == "staging" ]; then
-		sudo gcloud app deploy $deploy_configs --version=$version --no-promote
+		sudo gcloud app deploy $deploy_configs --quiet --version=$version --no-promote
 	else
-		sudo gcloud app deploy $deploy_configs --version=$version
+		sudo gcloud app deploy $deploy_configs --quiet --version=$version
 	fi
 }
 

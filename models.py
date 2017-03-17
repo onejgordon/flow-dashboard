@@ -302,10 +302,10 @@ class Task(UserAccessible):
             tz = user.get_timezone()
             local_now = tools.local_time(tz)
             schedule_for_same_day = local_now.hour < 16
-            local_due = datetime.combine(local_now.date(), time(22, 0)) if schedule_for_same_day else (datetime.now() + timedelta(days=1))
-            if local_due:
-                local_due = tools.server_time(tz, local_due)
-        return Task(title=tools.capitalize(title), dt_due=local_due, parent=user.key)
+            due = datetime.combine(local_now.date(), time(22, 0)) if schedule_for_same_day else (datetime.now() + timedelta(days=1))
+            if due:
+                due = tools.server_time(tz, due)
+        return Task(title=tools.capitalize(title), dt_due=due, parent=user.key)
 
     def Update(self, **params):
         from constants import TASK_DONE_REPLIES
@@ -405,6 +405,17 @@ class HabitDay(UserAccessible):
 
     @staticmethod
     def Range(user, habits, since_date, until_date=None):
+        '''
+        Fetch habit days for specified habits in date range
+
+        Args:
+            habits (list of Habit() objects)
+            ...
+
+        Returns:
+            list: HabitDay() ordered sequentially
+
+        '''
         today = datetime.today()
         if not until_date:
             until_date = today

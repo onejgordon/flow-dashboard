@@ -174,6 +174,31 @@ body {
     background: white;
 }
 
+.habitCelandar {
+
+}
+
+.habitCalendar > .habitDay {
+  opacity: 0.7;
+  background: gray;
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  margin: 2px;
+  font-size: 8px;
+  text-align: center;
+  color: white;
+}
+
+.habitCalendar > .habitDay.even_month {
+  opacity: 0.5;
+}
+
+.habitCalendar > .habitDay:hover {
+  opacity: 1.0;
+}
+
 .HabitWidget > table, .HabitWidget tr, .HabitWidget td, .HabitWidget th {
     background-color: none;
 }
@@ -185,6 +210,10 @@ body {
 .HabitWidget th {
     color: #888;
     font-size: 0.8em;
+}
+
+.HabitWidget td > a {
+  text-decoration: none;
 }
 
 .HabitWidget th.current-habit-week {
