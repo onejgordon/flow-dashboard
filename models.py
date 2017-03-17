@@ -742,11 +742,11 @@ class Goal(UserAccessible):
         return len(self.key.id()) == 4
 
 
-class Productivity(UserAccessible):
+class TrackingDay(UserAccessible):
     """
     Key - ID: [YYYY-MM-DD]
 
-    Productivity data for a day (e.g. git commits)
+    Abstract model to store data for a particular day
 
     """
     date = ndb.DateProperty()
@@ -763,13 +763,13 @@ class Productivity(UserAccessible):
     @staticmethod
     def Create(user, date):
         id = tools.iso_date(date)
-        return Productivity.get_or_insert(id, date=date, parent=user.key)
+        return TrackingDay.get_or_insert(id, date=date, parent=user.key)
 
     @staticmethod
     def Range(user, dt_start, dt_end):
-        return Productivity.query(ancestor=user.key).order(-Productivity.date) \
-            .filter(Productivity.date >= dt_start) \
-            .filter(Productivity.date <= dt_end) \
+        return TrackingDay.query(ancestor=user.key).order(-TrackingDay.date) \
+            .filter(TrackingDay.date >= dt_start) \
+            .filter(TrackingDay.date <= dt_end) \
             .fetch()
 
     def Update(self, **params):

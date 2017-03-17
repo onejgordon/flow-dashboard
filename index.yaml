@@ -1,39 +1,5 @@
 indexes:
 
-- kind: Project
-  properties:
-  - name: starred
-  - name: dt_created
-    direction: desc
-
-- kind: Project
-  properties:
-  - name: archived
-  - name: starred
-  - name: dt_created
-    direction: desc
-
-- kind: Task
-  properties:
-  - name: archived
-  - name: dt_created
-    direction: desc
-
-- kind: Task
-  properties:
-  - name: status
-    direction: desc
-  - name: dt_created
-    direction: desc
-
-- kind: Readable
-  properties:
-  - name: read
-  - name: dt_added
-    direction: desc
-
-
-
 - kind: Event
   ancestor: yes
   properties:
@@ -50,7 +16,7 @@ indexes:
   - name: dt_created
     direction: desc
 
-- kind: Productivity
+- kind: TrackingDay
   ancestor: yes
   properties:
   - name: date
