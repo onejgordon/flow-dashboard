@@ -34,7 +34,7 @@ export default class ProjectAnalysis extends React.Component {
     let labels = [];
     project.progress_ts.forEach((p, decile) => {
       if (p != 0) {
-        steps.push(decile / 10);
+        steps.push((decile+1) / 10);
         labels.push(p)
       }
     });
