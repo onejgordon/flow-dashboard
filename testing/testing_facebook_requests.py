@@ -42,7 +42,7 @@ class FacebookTestCase(BaseTestCase):
         g.put()
 
 
-    def test_requests(self):
+    def test_a_request(self):
         fa = FacebookAgent(DummyRequest({
             'entry': [
                 {'messaging': [
@@ -56,5 +56,25 @@ class FacebookTestCase(BaseTestCase):
                 ], 'object': 'page'}
             ))
         res_body = fa.send_response()
-        self.assertTrue("You can set and review monthly and annual goals. Try saying 'set goals' or 'view goals'" in res_body.get('message', {}).get('text'))
+        self.assertTrue("You can set and review monthly and annual goals. Try saying 'view goals'" in res_body.get('message', {}).get('text'))
+
+
+    def test_account_linking_request(self):
+        fa = FacebookAgent(DummyRequest({
+            'entry': [
+                {'messaging': [
+                    {
+                        'timestamp': 1489442604947,
+                        'account_linking': {
+                            'status': 'linked',
+                            'authorization_code': self.u.key.id()
+                        },
+                        'recipient': {'id': '197271657425000'},
+                        'sender': {'id': FB_ID}
+                    }
+                ], 'id': '197271657425620', 'time': 1489442605073}
+                ], 'object': 'page'}
+            ))
+        res_body = fa.send_response()
+        self.assertTrue("you've successfully connected with Flow!" in res_body.get('message', {}).get('text'))
 

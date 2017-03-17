@@ -68,7 +68,7 @@ def local_time(timezone, dt=None, withTimezone=False):
         timezone = pytz.timezone(timezone)
     res = pytz.utc.localize(dt).astimezone(timezone)
     if not withTimezone:
-        res.replace(tzinfo=None)
+        res = res.replace(tzinfo=None)
     return res
 
 

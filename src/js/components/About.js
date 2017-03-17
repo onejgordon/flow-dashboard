@@ -16,7 +16,7 @@ export default class About extends React.Component {
             <div>
                 <h3>Thanks for Using Flow</h3>
 
-                <p>Have feedback? Get in touch via Github, or email <a href="mailto:onejgordon@gmail.com">onejgordon@gmail.com</a>.</p>
+                <p>Have feedback? Get in touch via Github, or email onejgordon (gmail).</p>
             </div>
             )
         return (
@@ -26,31 +26,39 @@ export default class About extends React.Component {
 
                     <h2 style={{marginTop: "40px", marginBottom: "60px"}}>About</h2>
 
-                    <p className="lead" style={{fontSize: "1.5em"}}>Flow is a habit tracker and personal data analytics app that lets you keep focus on what matters. Flow owns none of your data. That's yours.</p>
+                    <p className="lead" style={{fontSize: "1.45em"}}>Flow is a habit tracker and personal data analytics app that lets you keep focus on what matters. Flow owns none of your data. That's yours.</p>
 
                     <div className="row">
 
                         <h3>The Flow Dashboard</h3>
 
-                        <p className="lead" style={{fontSize: "1.5em"}}>Track habits, monthly and annual goals, and the top tasks of the day. Submit daily journals with customizable questions.</p>
+                        <p className="lead" style={{fontSize: "1.45em"}}>Track habits, monthly and annual goals, and the top tasks of the day. Submit daily journals with customizable questions.</p>
 
                         <img src="/images/screenshots/dashboard.png" className="img-responsive" />
 
                         <h3>Your timeline.</h3>
 
-                        <p className="lead" style={{fontSize: "1.5em"}}>A birds-eye-view of your life by weeks.</p>
+                        <p className="lead" style={{fontSize: "1.45em"}}>A birds-eye-view of your life by weeks.</p>
 
                         <img src="/images/screenshots/timeline.png" className="img-responsive" />
 
                         <h3>Visualize everything.</h3>
 
-                        <p className="lead" style={{fontSize: "1.5em"}}>Everything you put into Flow can be visualized, including your daily journal questions, task completion, habit consistency, etc.</p>
+                        <p className="lead" style={{fontSize: "1.45em"}}>Everything you put into Flow can be visualized, including your daily journal questions, task completion, habit consistency, etc.</p>
 
                         <img src="/images/screenshots/analysis.png" className="img-responsive" />
 
+                        <h3>Chat with Flow</h3>
+
+                        <div className="center-block">
+                            <img src="/images/messenger_512.png" width="200" />
+                        </div>
+
+                        <p className="lead" style={{fontSize: "1.45em"}}>You can chat with <a href="https://www.facebook.com/FlowDashboard/" target="_blank">Flow on Facebook Messenger</a> to review goals, commit to and complete tasks and habits, and answer your daily journal questions.</p>
+
                         <h3>Flow is Open Source</h3>
 
-                        <p className="lead" style={{fontSize: "1.5em"}}>Spin up your own instance, or contribute.</p>
+                        <p className="lead" style={{fontSize: "1.45em"}}>Spin up your own instance, or contribute.</p>
 
                         <a href="https://github.com/onejgordon/flow-dashboard" target="_blank"><RaisedButton label="Source on Github" /></a>
 

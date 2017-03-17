@@ -1,5 +1,6 @@
 var React = require('react');
-import { FontIcon, Dialog, TextField, Slider,
+var AppConstants = require('constants/AppConstants');
+import { Dialog, TextField, Slider,
   FlatButton, RaisedButton, IconButton, List,
   ListItem, Paper, DropDownMenu,
   MenuItem } from 'material-ui';
@@ -19,7 +20,7 @@ export default class MiniJournalWidget extends React.Component {
       super(props);
       let form = {}
       this.props.questions.forEach((q) => {
-        if (q.response_type == 'slider') form[q.name] = 5;
+        if (q.response_type == 'slider' || q.response_type == 'number') form[q.name] = 5;
       });
       this.state = {
         form: form,
@@ -36,8 +37,8 @@ export default class MiniJournalWidget extends React.Component {
         historical_incomplete_dates: [],
         position: null // {lat, lon}
       };
-      this.WINDOW_START_HR = 22;
-      this.WINDOW_END_HR = 4;
+      this.WINDOW_START_HR = AppConstants.JOURNAL_START_HOUR;
+      this.WINDOW_END_HR = AppConstants.JOURNAL_END_HOUR;
       this.MAX_TASKS = 3;
   }
 
@@ -279,7 +280,7 @@ export default class MiniJournalWidget extends React.Component {
         _hint = <small>You can @mention and #activity tag</small>
       }
       if (!q.response_type || q.response_type == 'text') _response = <TextField name={q.name} ref={q.name} value={val} onChange={this.changeHandler.bind(this, 'form', q.name)} fullWidth={true} />
-      else if (q.response_type == 'slider') _response = <Slider name={q.name} value={val} onChange={this.changeHandlerSlider.bind(this, 'form', q.name)} max={10} min={1} defaultValue={5} step={1} />
+      else if (q.response_type == 'slider' || q.response_type == 'number') _response = <Slider name={q.name} value={val} onChange={this.changeHandlerSlider.bind(this, 'form', q.name)} max={10} min={1} defaultValue={5} step={1} />
       return (
         <div key={i}>
           <p className="lead">{ q.text }</p>

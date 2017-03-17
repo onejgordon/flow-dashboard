@@ -111,7 +111,7 @@ export default class ProjectLI extends React.Component {
           </Chip>
         );
       })
-    } else title = <a href={project.urls[0]} target="_blank">{ project.title || project.urls[0] }</a>
+    } else title = <a href={project.urls[0]} target="_blank">{ project.title || project.urls[0] || "Unnamed Project" }</a>
     let subheads = [<span key="dt" className="label label-default" style={{marginRight: "5px"}}><DateTime ms={project.ts_created}/></span>];
     if (project.subhead) subheads.push(project.subhead)
     subhead = <h3 style={this.SUBHEAD}>{ subheads }</h3>

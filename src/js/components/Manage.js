@@ -104,7 +104,7 @@ export default class Manage extends React.Component {
                     { name: 'id', label: "ID", editable: false, fixed: true },
                     { name: 'name', label: "Name", editable: true },
                     { name: 'color', label: "Color (Hex)", editable: true, showInList: false },
-                    { name: 'icon', label: "Icon (Design Icons)", editable: true, showInList: false },
+                    { name: 'icon', label: "Icon (From https://material.io/icons/)", editable: true, showInList: false },
                     { name: 'tgt_weekly', label: "Weekly Target", editable: true, showInList: false },
                     { name: 'archived', label: "Archived", editable: true, dataType: 'boolean' }
                 ],
@@ -200,7 +200,7 @@ export default class Manage extends React.Component {
                 { name: 'text', title: 'Question Text', type: 'text' },
                 { name: 'response_type', title: 'Response Type', type: 'dropdown', options: [
                     { value: 'text', label: "Text" },
-                    { value: 'slider', label: "Slider" }
+                    { value: 'number', label: "Number (Slider)" }
                     ], default_value: 'text' },
                 { name: 'chart', title: 'Is Charted', type: 'checkbox' },
                 { name: 'tag_segment_chart', title: 'Tag Segment Chart?', type: 'checkbox' },

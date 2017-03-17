@@ -129,9 +129,13 @@ class User(ndb.Model):
     def get_timezone(self):
         return self.timezone if self.timezone else "UTC"
 
+    def local_time(self):
+        return tools.local_time(self.get_timezone())
+
     def first_name(self):
         if self.name:
             return self.name.split(' ')[0]
+        return ""
 
     def checkToken(self, token):
         return self.session_id_token == token or self.session_id_token == unicode(quopri.decodestring(token), 'iso_8859-2')
@@ -272,6 +276,10 @@ class Task(UserAccessible):
         }
 
     @staticmethod
+    def CountCompletedSince(user, since):
+        return Task.query(ancestor=user.key).order(-Task.dt_done).filter(Task.dt_done > since).count(limit=None)
+
+    @staticmethod
     def Open(user, limit=10):
         return Task.query(ancestor=user.key).filter(Task.status == TASK.NOT_DONE).order(-Task.dt_created).fetch(limit=limit)
 
@@ -291,8 +299,13 @@ class Task(UserAccessible):
     @staticmethod
     def Create(user, title, due=None):
         if not due:
-            due = datetime.now() + timedelta(days=1)
-        return Task(title=title, dt_due=due, parent=user.key)
+            tz = user.get_timezone()
+            local_now = tools.local_time(tz)
+            schedule_for_same_day = local_now.hour < 16
+            local_due = datetime.combine(local_now.date(), time(22, 0)) if schedule_for_same_day else (datetime.now() + timedelta(days=1))
+            if local_due:
+                local_due = tools.server_time(tz, local_due)
+        return Task(title=tools.capitalize(title), dt_due=local_due, parent=user.key)
 
     def Update(self, **params):
         from constants import TASK_DONE_REPLIES
@@ -312,6 +325,10 @@ class Task(UserAccessible):
                 self.wip = False
         if 'wip' in params:
             self.wip = params.get('wip')
+        return message
+
+    def mark_done(self):
+        message = self.Update(status=TASK.DONE)
         return message
 
     def is_done(self):
@@ -354,7 +371,7 @@ class Habit(UserAccessible):
 
     def Update(self, **params):
         if 'name' in params:
-            self.name = params.get('name')
+            self.name = params.get('name').title()
         if 'color' in params:
             self.color = params.get('color')
         if 'icon' in params:
@@ -483,8 +500,6 @@ class JournalTag(UserAccessible):
         hashtags = re.findall(r'#([a-zA-Z]{3,30})', text)
         new_jts = []
         all_jts = []
-        logging.debug("Found %d @mentions: %s" % (len(people), people))
-        logging.debug("Found %d #tags: %s" % (len(hashtags), hashtags))
         people_ids = [JournalTag.Key(user, p) for p in people]
         hashtag_ids = [JournalTag.Key(user, ht, prefix='#') for ht in hashtags]
         existing_tags = ndb.get_multi(people_ids + hashtag_ids)
@@ -533,14 +548,24 @@ class MiniJournal(UserAccessible):
         return res
 
     @staticmethod
-    def Create(user, date):
+    def Create(user, date=None):
+        if not date:
+            date = MiniJournal.CurrentSubmissionDate()
         id = tools.iso_date(date)
         return MiniJournal(id=id, date=date, parent=user.key)
 
     @staticmethod
-    def Get(user, date):
+    def Get(user, date=None):
+        if not date:
+            date = MiniJournal.CurrentSubmissionDate()
         id = tools.iso_date(date)
         return MiniJournal.get_by_id(id, parent=user.key)
+
+    @staticmethod
+    def CurrentSubmissionDate():
+        HOURS_BACK = 8
+        now = datetime.now()
+        return (now - timedelta(hours=HOURS_BACK)).date()
 
     def Update(self, **params):
         if 'data' in params:
@@ -550,6 +575,23 @@ class MiniJournal(UserAccessible):
             self.location = gp
         if 'tags' in params:
             self.tags = params.get('tags', [])
+
+    def parse_tags(self):
+        user = self.key.parent().get()
+        questions = tools.getJson(user.settings, {}).get('journals', {}).get('questions', [])
+        parse_questions = [q.get('name') for q in questions if q.get('parse_tags')]
+        tags = []
+        for q in parse_questions:
+            response_text = tools.getJson(self.data).get(q)
+            if response_text:
+                tags.extend(JournalTag.CreateFromText(user, response_text))
+        for tag in tags:
+            if tag.key not in self.tags:
+                self.tags.append(tag.key)
+
+    def get_data_value(self, prop):
+        data = tools.getJson(self.data, {})
+        return data.get(prop)
 
 
 class Event(UserAccessible):

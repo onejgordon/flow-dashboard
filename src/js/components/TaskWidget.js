@@ -27,6 +27,14 @@ export default class TaskWidget extends React.Component {
           form: {},
           new_showing: false
       };
+      this.I_ST = {
+        fontSize: 20
+      }
+      this.IB_ST = {
+        padding: 10,
+        width: 20,
+        height: 20
+      }
       this.TASK_COLOR = "#DF00FF";
   }
 
@@ -120,17 +128,14 @@ export default class TaskWidget extends React.Component {
     let total_mins = 24 * 60;
     let current_mins = now.getHours() * 60 + now.getMinutes();
     let {tasks_done, tasks_total} = this.task_progress();
+    let _buttons = [
+      <IconButton key="ref" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.fetch_recent.bind(this)} tooltip="Refresh">refresh</IconButton>,
+      <IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.show_new_box.bind(this)} tooltip="Add Task">add</IconButton>
+    ]
     return (
       <div className="TaskWidget" id="TaskWidget">
-        <div className="pull-right">
-          <IconMenu iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
-            <MenuItem leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} onClick={this.fetch_recent.bind(this)}>Refresh</MenuItem>
-            <MenuItem leftIcon={<FontIcon className="material-icons">add</FontIcon>} onClick={this.show_new_box.bind(this)}>Add Task</MenuItem>
-          </IconMenu>
-        </div>
-        <div className="clearfix"/>
 
-        <h3 onClick={this.fetch_recent.bind(this)}>Top Tasks for {util.printDateObj(new Date(), "UTC", {format: "dddd, MMMM DD"})}</h3>
+        <h3 onClick={this.fetch_recent.bind(this)}>Top Tasks for {util.printDateObj(new Date(), "UTC", {format: "dddd, MMMM DD"})} { _buttons }</h3>
         <ProgressLine value={current_mins} total={total_mins} />
         { tasks.length > 0 ?
         <List>

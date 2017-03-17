@@ -10,6 +10,7 @@ var Auth = require('components/Auth');
 var Manage = require('components/Manage');
 var Analysis = require('components/Analysis');
 var Integrations = require('components/Integrations');
+var AdminAgent = require('components/admin/AdminAgent');
 
 // Analysis
 var AnalysisGoals = require('components/analysis/AnalysisGoals');
@@ -36,6 +37,7 @@ module.exports = (
       <Route path="timeline" component={Timeline} />
       <Route path="manage" component={Manage} />
       <Route path="integrations" component={Integrations} />
+      <Route path="admin/agent" component={AdminAgent} />
       <Route path="analysis" component={Analysis}>
         <IndexRedirect to="/app/analysis/goals" />
         <Route path="goals" component={AnalysisGoals} />

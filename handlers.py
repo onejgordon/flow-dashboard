@@ -98,9 +98,9 @@ class JsonRequestHandler(BaseRequestHandler):
         self.success = False
         self.message = None
 
-    def set_response(self, data=None, debug=False):
+    def set_response(self, data=None, debug=False, success=None):
         res = {
-            'success': self.success,
+            'success': self.success if success is None else success,
             'message': self.message
         }
         if data:

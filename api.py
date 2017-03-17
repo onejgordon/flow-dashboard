@@ -18,19 +18,17 @@ class ProjectAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        self.success = True
         projects = Project.Fetch(self.user)
         self.set_response({
             'projects': [p.json() for p in projects]
-        })
+        }, success=True)
 
     @authorized.role('user')
     def active(self, d):
-        self.success = True
         projects = Project.Active(self.user)
         self.set_response({
             'projects': [p.json() for p in projects]
-        })
+        }, success=True)
 
     @authorized.role('user')
     def update(self, d):
@@ -66,16 +64,23 @@ class ProjectAPI(handlers.JsonRequestHandler):
             'project': prj.json() if prj else None
         })
 
+    @authorized.role('user')
+    def delete(self, d):
+        id = self.request.get_range('id')
+        if id:
+            prj = Project.get_by_id(int(id), parent=self.user.key)
+            prj.key.delete()
+            self.success = True
+        self.set_response()
 
 class TaskAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        self.success = True
         tasks = Task.Recent(self.user)
         self.set_response({
             'tasks': [t.json() for t in tasks]
-        })
+        }, success=True)
 
     @authorized.role('user')
     def update(self, d):
@@ -92,13 +97,7 @@ class TaskAPI(handlers.JsonRequestHandler):
         if id:
             task = Task.get_by_id(int(id), parent=self.user.key)
         else:
-            tz = self.user.get_timezone()
-            local_now = tools.local_time(tz)
-            schedule_for_same_day = local_now.hour < 16
-            local_due = datetime.combine(local_now.date(), time(22, 0)) if schedule_for_same_day else None
-            if local_due:
-                local_due = tools.server_time(tz, local_due)
-            task = Task.Create(self.user, None, due=local_due)
+            task = Task.Create(self.user, None)
         if task:
             self.message = task.Update(**params)
             self.success = True
@@ -112,11 +111,10 @@ class HabitAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        self.success = True
         habits = Habit.All(self.user)
         self.set_response({
             'habits': [habit.json() for habit in habits]
-        })
+        }, success=True)
 
     @authorized.role('user')
     def recent(self, d):
@@ -140,7 +138,6 @@ class HabitAPI(handlers.JsonRequestHandler):
         '''
         Return recent days of all active habits
         '''
-        self.success = True
         start = self.request.get('start_date')
         end = self.request.get('end_date')
         habits = Habit.Active(self.user)
@@ -150,7 +147,7 @@ class HabitAPI(handlers.JsonRequestHandler):
             'habitdays': tools.lookupDict([hd for hd in habitdays if hd],
                     keyprop="key_id",
                     valueTransform=lambda hd: hd.json())
-        })
+        }, success=True)
 
 
     @authorized.role('user')
@@ -215,25 +212,31 @@ class HabitAPI(handlers.JsonRequestHandler):
             'habit': habit.json() if habit else None
         })
 
+    @authorized.role('user')
+    def delete(self, d):
+        id = self.request.get_range('id')
+        if id:
+            habit = Habit.get_by_id(int(id), parent=self.user.key)
+            habit.key.delete()
+            self.success = True
+        self.set_response()
 
 class GoalAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        self.success = True
         goals = Goal.Recent(self.user)
         self.set_response({
             'goals': [goal.json() for goal in goals]
-        })
+        }, success=True)
 
     @authorized.role('user')
     def current(self, d):
-        self.success = True
         [annual, monthly] = Goal.Current(self.user)
         self.set_response({
             'annual': annual.json() if annual else None,
             'monthly': monthly.json() if monthly else None,
-        })
+        }, success=True)
 
     @authorized.role('user')
     def update(self, d):
@@ -276,10 +279,9 @@ class EventAPI(handlers.JsonRequestHandler):
     def list(self, d):
         page, max, offset = tools.paging_params(self.request)
         events = Event.Fetch(self.user, limit=max, offset=offset)
-        self.success = True
         self.set_response({
             'events': [event.json() for event in events]
-        }, debug=True)
+        }, debug=True, success=True)
 
     @authorized.role('user')
     def update(self, d):
@@ -325,16 +327,24 @@ class EventAPI(handlers.JsonRequestHandler):
             self.message = "Putting %d" % len(dbp)
         self.set_response()
 
+    @authorized.role('user')
+    def delete(self, d):
+        id = self.request.get_range('id')
+        if id:
+            ev = Event.get_by_id(int(id), parent=self.user.key)
+            ev.key.delete()
+            self.success = True
+        self.set_response()
+
 
 class ReadableAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        self.success = True
         readables = Readable.Unread(self.user)
         self.set_response({
             'readables': [r.json() for r in readables]
-        })
+        }, success=True)
 
     @authorized.role('user')
     def update(self, d):
@@ -362,7 +372,6 @@ class ReadableAPI(handlers.JsonRequestHandler):
     def delete(self, d):
         id = self.request.get('id')
         r = Readable.get_by_id(id, parent=self.user.key)
-        message = None
         if r:
             if r.source == 'pocket':
                 access_token = self.user.get_integration_prop('pocket_access_token')
@@ -381,13 +390,10 @@ class JournalTagAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        '''
-        '''
         tags = JournalTag.All(self.user)
-        self.success = True
         self.set_response({
             'tags': [tag.json() for tag in tags]
-        })
+        }, success=True)
 
 
 class JournalAPI(handlers.JsonRequestHandler):
@@ -403,29 +409,29 @@ class JournalAPI(handlers.JsonRequestHandler):
             journal_keys.append(ndb.Key('MiniJournal', iso_date, parent=self.user.key))
             cursor -= timedelta(days=1)
         journals = ndb.get_multi(journal_keys)
-        self.success = True
         self.set_response({
             'journals': [j.json() for j in journals if j]
-            }, debug=True)
+            }, success=True)
 
     @authorized.role('user')
     def today(self, d):
         '''
         Get today's journal (yesterday if early morning)
         '''
-        date = self._get_date()
-        jrnl = MiniJournal.Get(self.user, date)
-        self.success = True
+        jrnl = MiniJournal.Get(self.user)
         self.set_response({
             'journal': jrnl.json() if jrnl else None
-        })
+        }, success=True)
 
     @authorized.role('user')
     def submit(self, d):
         '''
         Submit today's journal (yesterday if 00:00 - 04:00)
         '''
-        date = self._get_date()
+        date = None
+        _date = self.request.get('date')
+        if _date:
+            date = tools.fromISODate(_date)
         task_json = tools.getJson(self.request.get('tasks'))  # JSON
         params = tools.gets(self,
             strings=['lat', 'lon', 'tags_from_text'],
@@ -434,17 +440,11 @@ class JournalAPI(handlers.JsonRequestHandler):
         )
         logging.debug(params)
         if params.get('data'):
-            # Create new tags from text
-            if 'tags_from_text' in params:
-                all_tags = JournalTag.CreateFromText(self.user, params.get('tags_from_text'))
-                if not params.get('tags'):
-                    params['tags'] = []
-                for tag in all_tags:
-                    if tag.key not in params['tags']:
-                        params['tags'].append(tag.key)
-
+            if not params.get('tags'):
+                params['tags'] = []
             jrnl = MiniJournal.Create(self.user, date)
             jrnl.Update(**params)
+            jrnl.parse_tags()
             jrnl.put()
 
             if task_json:
@@ -465,15 +465,6 @@ class JournalAPI(handlers.JsonRequestHandler):
     def _get_task_due_date(self):
         now = datetime.now()
         return datetime.combine((now + timedelta(hours=24+8)).date(), time(0,0))
-
-    def _get_date(self):
-        date = self.request.get('date')
-        if not date:
-            HOURS_BACK = 8
-            now = datetime.now()
-            return (now - timedelta(hours=HOURS_BACK)).date()
-        else:
-            return tools.fromISODate(date).date()
 
 
 class UserAPI(handlers.JsonRequestHandler):
@@ -511,7 +502,7 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
                 self.success = True
                 self.message = "Signed in"
         else:
-            message = "Failed to validate"
+            self.message = "Failed to validate"
         self.set_response({'user': u.json() if u else None})
 
     @authorized.role()
@@ -622,7 +613,6 @@ class AnalysisAPI(handlers.JsonRequestHandler):
             goals = Goal.Year(self.user, today.year)
         if with_tasks:
             tasks = Task.DueInRange(self.user, dt_start, dt_end, limit=100)
-        self.success = True
         self.set_response({
             'dates': iso_dates,
             'journals': [j.json() for j in journals if j],
@@ -634,7 +624,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
                     keyprop="key_id",
                     valueTransform=lambda hd: hd.json())
 
-            })
+            }, success=True)
 
 
 class IntegrationsAPI(handlers.JsonRequestHandler):
@@ -647,11 +637,10 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
             self.user.set_integration_prop(prop, val)
         self.user.put()
         self.update_session_user(self.user)
-        self.success = True
         self.message = "%d properties saved" % len(props)
         self.set_response({
             'user': self.user.json()
-        })
+        }, success=True)
 
     @authorized.role('user')
     def goodreads_shelf(self, d):
@@ -718,13 +707,23 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         self.user.set_integration_prop('pocket_access_token', None)
         self.user.put()
         self.update_session_user(self.user)
-        self.success = True
         self.set_response({
             'user': self.user.json() if self.user else None
-        })
+        }, success=True)
 
 
 class AgentAPI(handlers.JsonRequestHandler):
+
+    @authorized.role('admin')
+    def spoof(self, d):
+        from services.agent import ConversationAgent, AGENT_FBOOK_MESSENGER
+        ca = ConversationAgent(type=AGENT_FBOOK_MESSENGER, user=self.user)
+        message = self.request.get('message')
+        action, params = ca.parse_message(message)
+        speech, data, end_convo = ca.respond_to_action(action, parameters=params)
+        self.message = speech
+        self.success = True
+        self.set_response(debug=True)
 
     def _get_agent_type(self, body):
         # Facebook Messenger example
@@ -767,6 +766,7 @@ class AgentAPI(handlers.JsonRequestHandler):
         auth_key = self.request.headers.get('Auth-Key')
         res = {'source': 'Flow'}
         speech = None
+        end_convo = False
         data = {}
         if auth_key == API_AI_AUTH_KEY:
             body = tools.getJson(self.request.body)
@@ -776,12 +776,15 @@ class AgentAPI(handlers.JsonRequestHandler):
             self._get_user(body)
             from services.agent import ConversationAgent
             ca = ConversationAgent(type=agent_type, user=self.user)
-            speech, data = ca.respond_to_action(action, parameters=parameters)
+            speech, data, end_convo = ca.respond_to_action(action, parameters=parameters)
 
         if not speech:
             speech = "Uh oh, something weird happened"
         res['speech'] = speech
         res['displayText'] = speech
+        data['google'] = {
+            'expect_user_response': not end_convo
+        }
         res['data'] = data
         res['contextOut'] = []
         self.json_out(res, debug=True)
