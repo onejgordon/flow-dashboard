@@ -36,17 +36,22 @@ export default class About extends React.Component {
 
                         <img src="/images/screenshots/dashboard.png" className="img-responsive" />
 
+                        <h3>Visualize everything.</h3>
+
+                        <p className="lead" style={{fontSize: "1.45em"}}>Everything you put into Flow can be visualized, including your daily journal questions, task completion...</p>
+
+                        <img src="/images/screenshots/analysis.png" className="img-responsive" />
+
+                        <p className="lead" style={{fontSize: "1.45em"}}>...performance on individual habits, and more.</p>
+
+                        <img src="/images/screenshots/habit.png" className="img-responsive" />
+
                         <h3>Your timeline.</h3>
 
                         <p className="lead" style={{fontSize: "1.45em"}}>A birds-eye-view of your life by weeks.</p>
 
                         <img src="/images/screenshots/timeline.png" className="img-responsive" />
 
-                        <h3>Visualize everything.</h3>
-
-                        <p className="lead" style={{fontSize: "1.45em"}}>Everything you put into Flow can be visualized, including your daily journal questions, task completion, habit consistency, etc.</p>
-
-                        <img src="/images/screenshots/analysis.png" className="img-responsive" />
 
                         <h3>Chat with Flow</h3>
 
