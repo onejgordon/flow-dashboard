@@ -72,8 +72,6 @@ export default class AnalysisJournals extends React.Component {
         let {chart_enabled_questions, questions} = this.state;
         let {journals} = this.props;
         let labels = [];
-        let ratings = [];
-        let predictions = [];
         let chart_questions = questions.filter((q) => {
             return q.chart && chart_enabled_questions.indexOf(q.name) > -1;
         });
