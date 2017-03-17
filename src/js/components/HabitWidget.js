@@ -6,6 +6,7 @@ import {clone} from 'lodash';
 import {cyanA400} from 'material-ui/styles/colors';
 var AppConstants = require('constants/AppConstants')
 import {changeHandler} from 'utils/component-utils';
+var HabitAnalysis = require('components/HabitAnalysis');
 
 @changeHandler
 export default class HabitWidget extends React.Component {
@@ -20,6 +21,7 @@ export default class HabitWidget extends React.Component {
           habitdays: {},
           habit_week_start: this.get_habit_week_start(),
           new_dialog_open: false,
+          habit_analysis: null,
           form: {}
       };
       this.COMMIT_COLOR = '#F9D23D';
@@ -77,6 +79,10 @@ export default class HabitWidget extends React.Component {
   make_id(habit_id, iso_day) {
     let id = "habit:"+habit_id+"_day:"+iso_day;
     return id;
+  }
+
+  show_analysis(h) {
+    this.setState({habit_analysis: h});
   }
 
   get_habit_week_start() {
@@ -197,7 +203,7 @@ export default class HabitWidget extends React.Component {
     return (
       <tr key={h.id}>
         <td className="text-center">
-          <b style={st}>{ h.name }</b>
+          <a href="javascript:void(0)" onClick={this.show_analysis.bind(this, h)}><b style={st}><i className="fa fa-area-chart"/> { h.name }</b></a>
         </td>
         {res}
         { _commitment }
@@ -209,7 +215,7 @@ export default class HabitWidget extends React.Component {
   }
 
   render() {
-    let {habits, new_dialog_open, form} = this.state;
+    let {habits, new_dialog_open, form, habit_analysis} = this.state;
     let no_habits = habits.length == 0;
     let _table;
     let actions = [<RaisedButton primary={true} label="Create Habit" onClick={this.create_habit.bind(this)} />]
@@ -231,6 +237,10 @@ export default class HabitWidget extends React.Component {
     return (
       <div className="HabitWidget" id="HabitWidget">
         <h3>Habits</h3>
+
+        <HabitAnalysis days={60}
+          habit={habit_analysis}
+          onDismiss={this.show_analysis.bind(this, null)} />
 
         <Dialog
             open={new_dialog_open}

@@ -213,6 +213,23 @@ class HabitAPI(handlers.JsonRequestHandler):
         })
 
     @authorized.role('user')
+    def detail(self, id, d):
+        with_days = self.request.get_range('with_days', default=0)
+        habit = None
+        habitdays = []
+        if id:
+            habit = Habit.get_by_id(int(id), parent=self.user.key)
+            if habit:
+                if with_days:
+                    since = datetime.today() - timedelta(days=with_days)
+                    habitdays = HabitDay.Range(self.user, [habit], since)
+                self.success = True
+        self.set_response({
+            'habit': habit.json() if habit else None,
+            'habitdays': [hd.json() for hd in habitdays if hd]
+            })
+
+    @authorized.role('user')
     def delete(self, d):
         id = self.request.get_range('id')
         if id:
