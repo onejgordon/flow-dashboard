@@ -63,12 +63,8 @@ export default class FlashCard extends React.Component {
 
   maybe_init_client(cb) {
     console.log('maybe_init_client...');
-    gapi.client.init({
-      apiKey: GOOGLE_API_KEY,
-      // discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
-      clientId: G_OAUTH_CLIENT_ID,
-      scope: this.GSHEET_SCOPE
-    }).then(function() {
+    gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4')
+    .then(function() {
       cb();
     }).then((res) => {
       console.log(res);

@@ -32,7 +32,7 @@ class UserStore {
         console.log('granted', granted_scopes);
         let scopes_needed = [];
         scopes_array.forEach((scope) => {
-            if (granted_scopes.indexOf(scope) == -1) scopes_needed.push(scope);
+            if (!granted_scopes || granted_scopes.indexOf(scope) == -1) scopes_needed.push(scope);
         });
         if (scopes_needed.length > 0) {
             guser.grant({'scope': scopes_needed.join(' ')}).then(cb, cb_fail);

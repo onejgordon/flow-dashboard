@@ -253,7 +253,7 @@ export default class Manage extends React.Component {
 
                     <p className="lead">
                         Flashcards appear on the main dashboard in the more menu.
-                        You can configure flashcards to show randomly chosen rows from a Google Spreadsheet.
+                        Currently, you can configure flashcards to show randomly chosen rows from a Google Spreadsheet.
                     </p>
 
                     <ReactJsonEditor title="Flashcards"
