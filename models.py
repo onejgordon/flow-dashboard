@@ -96,6 +96,8 @@ class User(ndb.Model):
             u = User(email=email.lower() if email else None, g_id=g_id, name=name)
             if email.lower() == APP_OWNER:
                 u.level = USER.ADMIN
+            if not password:
+                password = tools.GenPasswd()
             u.setPass(password)
             u.Update(settings=DEFAULT_USER_SETTINGS)
             if not tools.on_dev_server():
