@@ -537,6 +537,9 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
                     ok, _email, name = self.validate_google_id_token(id_token)
                     if ok:
                         self.user = User.GetByEmail(_email)
+                        if not self.user:
+                            self.user = User.Create(email=_email, name=name)
+                            self.user.put()
                 if self.user:
                     access_token = self.user.aes_access_token(client_id='google')
                     redir_url = 'https://oauth-redirect.googleusercontent.com/r/%s#' % GOOGLE_PROJECT_NAME
