@@ -1,5 +1,6 @@
 var React = require('react');
 import {RaisedButton} from 'material-ui';
+var AppConstants = require('constants/AppConstants');
 
 export default class About extends React.Component {
     static defaultProps = {}
@@ -26,7 +27,7 @@ export default class About extends React.Component {
 
                     <h2 style={{marginTop: "40px", marginBottom: "60px"}}>About</h2>
 
-                    <p className="lead" style={{fontSize: "1.45em"}}>Flow is a habit tracker and personal data analytics app that lets you keep focus on what matters. Flow owns none of your data. That's yours.</p>
+                    <p className="lead" style={{fontSize: "1.45em"}}>{ AppConstants.TAGLINE }</p>
 
                     <div className="row">
 

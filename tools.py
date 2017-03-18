@@ -133,7 +133,9 @@ def sdatetime(date, short=False):
         return None
 
 def iso_date(date):
-    return datetime.strftime(date, "%Y-%m-%d")
+    if date:
+        return datetime.strftime(date, "%Y-%m-%d")
+    return None
 
 def sdate(date):
     return datetime.strftime(date, "%m/%d/%Y")

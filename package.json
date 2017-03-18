@@ -47,7 +47,7 @@
     "react-dom": "^15.4.2",
     "react-g-analytics": "^0.2.6",
     "react-google-login": "^2.5.2",
-    "react-life-timeline": "^1.0.3",
+    "react-life-timeline": "^1.0.6",
     "react-router": "^2.8.1",
     "react-select": "^1.0.0-rc.1",
     "react-tap-event-plugin": "2.0.0",

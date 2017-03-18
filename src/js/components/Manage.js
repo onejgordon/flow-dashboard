@@ -4,11 +4,9 @@ var util = require('utils/util');
 var api = require('utils/api');
 var UserStore = require('stores/UserStore');
 var UserActions = require('actions/UserActions');
-var AppConstants = require('constants/AppConstants');
 var SimpleAdmin = require('components/common/SimpleAdmin');
-var LoadStatus = require('components/common/LoadStatus');
 var ReactJsonEditor = require('components/common/ReactJsonEditor');
-import {FlatButton, RaisedButton, TextField, FontIcon,
+import {FlatButton, RaisedButton, TextField,
     Paper} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 import {get, set, clone} from 'lodash';
@@ -164,7 +162,7 @@ export default class Manage extends React.Component {
                 <div style={{margin: "10px"}}>
                     <label>Batch Upload from JSON array</label>
                     <TextField placeholder="Events (JSON)" name="events" value={form.events} onChange={this.changeHandler.bind(this, 'form', 'events')} multiLine={true} fullWidth />
-                    <RaisedButton label="Batch Upload from JSON" onClick={this.upload_events.bind(this)}  />
+                    <RaisedButton label="Batch Upload from JSON" onClick={this.upload_events.bind(this)} />
                 </div>
                 )
 

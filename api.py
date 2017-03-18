@@ -313,7 +313,7 @@ class EventAPI(handlers.JsonRequestHandler):
         '''
         id = self.request.get_range('id')
         params = tools.gets(self,
-            strings=['title', 'color'],
+            strings=['title', 'details', 'color'],
             dates=['date_start', 'date_end']
         )
         event = None

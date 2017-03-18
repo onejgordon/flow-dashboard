@@ -23,6 +23,14 @@ a:hover {
     text-decoration: none;
 }
 
+a > .show_hover {
+  opacity: 0.0;
+}
+
+a:hover > .show_hover {
+    opacity: 1.0;
+}
+
 body {
     font-family: 'Roboto', Helvetica, sans-serif;
     font-weight: 300;
