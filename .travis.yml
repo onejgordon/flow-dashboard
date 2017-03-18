@@ -20,6 +20,6 @@ install:
 - pip install coveralls
 script:
 # Run the unit tests & end to end tests
-- coverage run --omit="testing/*,pytz/*,lib/*,*/site-packages/*,*/google_appengine/*,*/virtualenvs/*" runtests.py ${GAE_PYTHONPATH} testing/ all
+- coverage run --omit="runtests.py,testing/*,pytz/*,lib/*,*/site-packages/*,*/google_appengine/*,*/virtualenv/*" runtests.py ${GAE_PYTHONPATH} testing/ all
 after_success:
   coveralls
