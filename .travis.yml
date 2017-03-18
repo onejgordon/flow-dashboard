@@ -17,6 +17,9 @@ install:
 # Install the Python dependencies
 - pip install -t lib -r requirements.txt
 - pip install -r local.requirements.txt
+- pip install coveralls
 script:
 # Run the unit tests & end to end tests
-- python ./runtests.py ${GAE_PYTHONPATH} testing/ all
+- coverage run --omit="testing/*,pytz/*,lib/*,*/site-packages/*,*/google_appengine/*,*/virtualenvs/*" runtests.py ${GAE_PYTHONPATH} testing/ all
+after_success:
+  coveralls
