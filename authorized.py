@@ -11,14 +11,12 @@ from datetime import datetime
 def role(role=None):
     def wrapper(handler_method):
         def check_login(self, *args, **kwargs):
-            from secrets import GOOGLE_CLIENT_ID
             d = {
                 'SITENAME': SITENAME,
                 'TAGLINE': TAGLINE,
                 'AUTHOR_NAME': AUTHOR_NAME,
                 'YEAR': datetime.now().year,
-                'CURTIME': datetime.now(),
-                'G_CLIENT_ID': GOOGLE_CLIENT_ID
+                'CURTIME': datetime.now()
             }
             allow = False
             handled = False
