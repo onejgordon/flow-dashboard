@@ -82,7 +82,7 @@ class APIAITestCase(BaseTestCase):
                 ],
                 "resolvedQuery": "what are my tasks",
                 "metadata": {
-                    "intentId": "6d145e1f-da03-4a9d-b070-ffec1ed27f51",
+                    "intentId": "X",
                     "webhookForSlotFillingUsed": "false",
                     "intentName": "Task Request",
                     "webhookUsed": "true"
@@ -90,7 +90,7 @@ class APIAITestCase(BaseTestCase):
                 "action": "input.task_view",
                 "actionIncomplete": False
             },
-            "id": "32fc0ce2-16a3-4d33-bf19-a8e92a8945fb",
+            "id": "32fc0ce2-16a3-4d33-bf19-XXXXXXXXX",
             "originalRequest": {
                 "source": "google",
                 "data": {
@@ -127,7 +127,7 @@ class APIAITestCase(BaseTestCase):
                     ],
                     "user": {
                         "access_token": access_token,
-                        "user_id": "WrBcqMQhQT3X8INoUpiqFZyoALrSlgk4XSmgOTUtjy0="
+                        "user_id": "XXX"
                     },
                     "surface": {
                         "capabilities": [
@@ -144,8 +144,7 @@ class APIAITestCase(BaseTestCase):
             }
         }
         # Reuqests for tasks
-        from secrets import API_AI_AUTH_KEY
-        res = self.post("/api/agent/apiai/request", json.dumps(data), headers={'Auth-Key': API_AI_AUTH_KEY})
+        res = self.post("/api/agent/apiai/request", json.dumps(data), headers={'Auth-Key': secrets.API_AI_AUTH_KEY})
         self.assertOK(res)
         res_body = json.loads(res.normal_body)
         self.assertEqual(res_body.get('speech'), "You haven't completed any tasks yet. You still need to do 'Dont forget the milk'.")
