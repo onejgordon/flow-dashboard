@@ -522,26 +522,22 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
             self.message = "Failed to validate"
         self.set_response({'user': u.json() if u else None})
 
-    @authorized.role()
-    def google_auth(self, d):
+    def google_auth(self):
         from secrets import GOOGLE_PROJECT_NAME
         client_id = self.request.get('client_id')
         redirect_uri = self.request.get('redirect_uri')
         state = self.request.get('state')
         id_token = self.request.get('id_token')
-        redir_url = None
+        redir_url = user = None
         if client_id == 'google':
             # Part of Google Home / API.AI auth flow
             if redirect_uri == "https://oauth-redirect.googleusercontent.com/r/%s" % GOOGLE_PROJECT_NAME:
-                if not self.user:
+                if not user:
                     ok, _email, name = self.validate_google_id_token(id_token)
                     if ok:
-                        self.user = User.GetByEmail(_email)
-                        if not self.user:
-                            self.user = User.Create(email=_email, name=name)
-                            self.user.put()
-                if self.user:
-                    access_token = self.user.aes_access_token(client_id='google')
+                        user = User.GetByEmail(_email, create_if_missing=True, name=name)
+                if user:
+                    access_token = user.aes_access_token(client_id='google')
                     redir_url = 'https://oauth-redirect.googleusercontent.com/r/%s#' % GOOGLE_PROJECT_NAME
                     redir_url += urllib.urlencode({
                         'access_token': access_token,
@@ -549,6 +545,10 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
                         'state': state
                     })
                     self.success = True
+            else:
+                self.message = "Malformed"
+        else:
+            self.message = "Malformed"
         self.set_response({'redirect': redir_url}, debug=True)
 
     def validate_google_id_token(self, token):
@@ -566,18 +566,17 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
                     name = json_response.get("name", None)
         return (success, email, name)
 
-    @authorized.role()
-    def fbook_auth(self, d):
+    def fbook_auth(self):
         id_token = self.request.get('id_token')
         account_linking_token = self.request.get('account_linking_token')
         redirect_uri = self.request.get('redirect_uri')
         res = {}
-        if not self.user:
-            ok, _email, name = self.validate_google_id_token(id_token)
-            if ok:
-                self.user = User.GetByEmail(_email)
-        if self.user:
-            auth_code = self.user.key.id()
+        user = None
+        ok, _email, name = self.validate_google_id_token(id_token)
+        if ok:
+            user = User.GetByEmail(_email, create_if_missing=True, name=name)
+        if user:
+            auth_code = user.key.id()
             if redirect_uri:
                 redirect_uri += '&authorization_code=%s' % auth_code
                 self.success = True
@@ -589,10 +588,8 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         self.set_response(res, debug=True)
 
     def logout(self):
+        self.signout()
         self.success = True
-        if self.session.has_key('user'):
-            for key in self.session.keys():
-                del self.session[key]
         self.message = "Signed out"
         self.set_response()
 
@@ -775,6 +772,7 @@ class AgentAPI(handlers.JsonRequestHandler):
         result = body.get('result', {})
         action = result.get('action')
         parameters = result.get('parameters')
+        logging.debug(["_get_action_and_params", id, action, parameters])
         return (id, action, parameters)
 
     @authorized.role()
@@ -794,9 +792,14 @@ class AgentAPI(handlers.JsonRequestHandler):
             agent_type = self._get_agent_type(body)
             id, action, parameters = self._get_action_and_params(body)
             self._get_user(body)
-            from services.agent import ConversationAgent
-            ca = ConversationAgent(type=agent_type, user=self.user)
-            speech, data, end_convo = ca.respond_to_action(action, parameters=parameters)
+            if action == 'input.disconnect':
+                speech = "Alright, you've disconnected your Flow account"
+                end_convo = True
+                self.signout()  # Clear session
+            else:
+                from services.agent import ConversationAgent
+                ca = ConversationAgent(type=agent_type, user=self.user)
+                speech, data, end_convo = ca.respond_to_action(action, parameters=parameters)
 
         if not speech:
             speech = "Uh oh, something weird happened"

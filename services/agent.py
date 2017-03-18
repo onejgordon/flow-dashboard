@@ -147,13 +147,17 @@ class ConversationAgent(object):
     def _comply_banter(self):
         return random.choice(ConversationAgent.COMPLY_BANTER)
 
-    def _user_disconnect(self):
+    def _user_disconnect(self, session=None):
         if self.type == AGENT_FBOOK_MESSENGER:
             self.user.fb_id = None
             self.user.put()
         elif self.type == AGENT_GOOGLE_ASST:
             self.user.g_id = None
             self.user.put()
+            if 'user' in session:
+                for key in session.keys():
+                    del session[key]
+
         return "Alright, you're disconnected."
 
     def _journal(self, message=""):
@@ -381,7 +385,7 @@ class ConversationAgent(object):
         speech = ' '.join([address, task_text, habit_text])
         return speech
 
-    def respond_to_action(self, action, parameters=None):
+    def respond_to_action(self, action, parameters=None, session=None):
         speech = None
         end_convo = True
         if not parameters:
@@ -389,7 +393,7 @@ class ConversationAgent(object):
         data = {}
         if self.user:
             if action == 'input.disconnect':
-                speech = self._user_disconnect()
+                speech = self._user_disconnect(session=session)
             elif action == 'input.status_request':
                 speech = self._status_request()
             elif action == 'input.goals_request':
@@ -438,7 +442,7 @@ class ConversationAgent(object):
                             "buttons": [
                                 {
                                     "type": "account_link",
-                                    "url": SECURE_BASE + "/app/fbook/auth"
+                                    "url": SECURE_BASE + "/auth/fbook"
                                 }
                             ]
                         }
@@ -554,18 +558,30 @@ class FacebookAgent(ConversationAgent):
                 self.request_type = FacebookAgent.REQ_UNKNOWN
 
     def _get_fbook_message(self):
-        return self.md.get('message', {}).get('text')
+        payload = text = None
+        message = self.md.get('message', {})
+        if 'text' in message:
+            text = message.get('text')
+        if 'quick_reply' in message:
+            qr = message.get('quick_reply', {})
+            if 'payload' in qr:
+                payload = qr.get('payload')
+        return (text, payload)
 
     def _process_request(self):
         '''
         Populate self.reply and self.data
         '''
         if self.request_type == FacebookAgent.REQ_MESSAGE:
-            message = self._get_fbook_message()
-            if message:
+            message, payload = self._get_fbook_message()
+            action = parameters = None
+            if payload:
+                # Quick reply
+                action = payload
+            elif message:
                 action, parameters = self.parse_message(message)
-                if action:
-                    self.reply, self.message_data, end_convo = self.respond_to_action(action, parameters=parameters)
+            if action:
+                self.reply, self.message_data, end_convo = self.respond_to_action(action, parameters=parameters)
         elif self.request_type == FacebookAgent.REQ_POSTBACK:
             payload = self.md.get('postback', {}).get('payload')
             self.reply, self.message_data, end_convo = self.respond_to_action(payload)

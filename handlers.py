@@ -85,6 +85,11 @@ class BaseRequestHandler(webapp2.RequestHandler):
         # Returns a session using the default cookie key.
         return self.session_store.get_session(backend="datastore")
 
+    def signout(self):
+        if 'user' in self.session:
+            for key in self.session.keys():
+                del self.session[key]
+
     def update_session_user(self, user):
         logging.debug("Updating user in session (%s)" % user.key.id())
         self.session['user'] = user

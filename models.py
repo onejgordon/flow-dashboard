@@ -61,7 +61,8 @@ class User(ndb.Model):
     fb_id = ndb.StringProperty()
 
     def __str__(self):
-        return self.name if self.name else self.email
+        parts = [x for x in [self.name, self.email] if x]
+        return ' - '.join(parts)
 
     def json(self, is_self=False):
         return {
@@ -75,8 +76,11 @@ class User(ndb.Model):
         }
 
     @staticmethod
-    def GetByEmail(email):
+    def GetByEmail(email, create_if_missing=False, name=None):
         u = User.query().filter(User.email == email.lower()).get()
+        if not u and create_if_missing:
+            u = User.Create(email=email, name=name)
+            u.put()
         return u
 
     @staticmethod
