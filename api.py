@@ -10,8 +10,14 @@ import logging
 import random
 from google.appengine.api import urlfetch
 import json
-import hashlib
 import urllib
+import imp
+try:
+    imp.find_module('secrets')
+except ImportError:
+    import secrets_template as secrets
+else:
+    import secrets
 
 
 class ProjectAPI(handlers.JsonRequestHandler):
@@ -523,7 +529,6 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         self.set_response({'user': u.json() if u else None})
 
     def google_auth(self):
-        from secrets import GOOGLE_PROJECT_NAME
         client_id = self.request.get('client_id')
         redirect_uri = self.request.get('redirect_uri')
         state = self.request.get('state')
@@ -531,14 +536,14 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         redir_url = user = None
         if client_id == 'google':
             # Part of Google Home / API.AI auth flow
-            if redirect_uri == "https://oauth-redirect.googleusercontent.com/r/%s" % GOOGLE_PROJECT_NAME:
+            if redirect_uri == "https://oauth-redirect.googleusercontent.com/r/%s" % secrets.GOOGLE_PROJECT_NAME:
                 if not user:
                     ok, _email, name = self.validate_google_id_token(id_token)
                     if ok:
                         user = User.GetByEmail(_email, create_if_missing=True, name=name)
                 if user:
                     access_token = user.aes_access_token(client_id='google')
-                    redir_url = 'https://oauth-redirect.googleusercontent.com/r/%s#' % GOOGLE_PROJECT_NAME
+                    redir_url = 'https://oauth-redirect.googleusercontent.com/r/%s#' % secrets.GOOGLE_PROJECT_NAME
                     redir_url += urllib.urlencode({
                         'access_token': access_token,
                         'token_type': 'bearer',
@@ -552,7 +557,6 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         self.set_response({'redirect': redir_url}, debug=True)
 
     def validate_google_id_token(self, token):
-        import secrets
         success = False
         email = name = None
         g_response = urlfetch.fetch("https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=%s" % token)
@@ -780,13 +784,12 @@ class AgentAPI(handlers.JsonRequestHandler):
         '''
 
         '''
-        from secrets import API_AI_AUTH_KEY
         auth_key = self.request.headers.get('Auth-Key')
         res = {'source': 'Flow'}
         speech = None
         end_convo = False
         data = {}
-        if auth_key == API_AI_AUTH_KEY:
+        if auth_key == secrets.API_AI_AUTH_KEY:
             body = tools.getJson(self.request.body)
             logging.debug(body)
             agent_type = self._get_agent_type(body)
@@ -817,10 +820,9 @@ class AgentAPI(handlers.JsonRequestHandler):
         '''
         Facebook Messenger request handling
         '''
-        from secrets import FB_VERIFY_TOKEN
         verify_token = self.request.get('hub.verify_token')
         hub_challenge = self.request.get('hub.challenge')
-        if verify_token and verify_token == FB_VERIFY_TOKEN:
+        if verify_token and verify_token == secrets.FB_VERIFY_TOKEN:
             if hub_challenge:
                 self.response.out.write(hub_challenge)
                 return
