@@ -27,10 +27,11 @@ export default class BigProp extends React.Component {
   render() {
     let {label, value, color, size, icon, onClick} = this.props;
     let clickable = onClick != null;
+    let boundClick = clickable ? onClick.bind(this) : null;
     let cls = "text-center bigProp";
     if (clickable) cls += " clickable";
     return (
-      <div className={cls} onClick={onClick.bind(this)}>
+      <div className={cls} onClick={boundClick}>
         <div style={{fontSize: size, fontWeight: "bold", color: color}}>{icon}{value}</div>
         <small style={{color: 'gray'}}>{label}</small>
       </div>

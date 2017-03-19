@@ -66,8 +66,8 @@ export default class Timeline extends React.Component {
                 <TextField floatingLabelText="Title" name="title" value={form.title||''} onChange={this.changeHandler.bind(this, 'form', 'title')} fullWidth />
                 <TextField floatingLabelText="Details" name="details" value={form.details||''} onChange={this.changeHandler.bind(this, 'form', 'details')} fullWidth />
                 <TextField floatingLabelText="Color (hex)" name="color" value={form.color||''} onChange={this.changeHandler.bind(this, 'form', 'color')} fullWidth />
-                <TextField floatingLabelText="Date Start" name="date_start" value={form.date_start||''} onChange={this.changeHandler.bind(this, 'form', 'date_start')} fullWidth />
-                <TextField floatingLabelText="Date End (optional)" name="date_end" value={form.date_end||''} onChange={this.changeHandler.bind(this, 'form', 'date_end')} fullWidth />
+                <TextField floatingLabelText="Date Start (YYYY-MM-DD)" name="date_start" value={form.date_start||''} onChange={this.changeHandler.bind(this, 'form', 'date_start')} fullWidth />
+                <TextField floatingLabelText="Date End (optional, YYYY-MM-DD)" name="date_end" value={form.date_end||''} onChange={this.changeHandler.bind(this, 'form', 'date_end')} fullWidth />
             </div>
             )
     }
