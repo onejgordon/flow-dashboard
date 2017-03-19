@@ -1,7 +1,7 @@
 
 from datetime import datetime, timedelta, time
 from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
-    Readable, TrackingDay, Event, JournalTag
+    Readable, TrackingDay, Event, JournalTag, Report
 from google.appengine.ext import ndb
 import authorized
 import handlers
@@ -836,3 +836,72 @@ class AgentAPI(handlers.JsonRequestHandler):
         fa.send_response()
         self.success = True
         self.json_out({})
+
+
+class ReportAPI(handlers.JsonRequestHandler):
+    @authorized.role('user')
+    def list(self, d):
+        _max = self.request.get_range('max', max_value=500, default=100)
+        reports = Report.Fetch(self.user, limit=_max)
+        data = {
+            'reports': [r.json() for r in reports]
+            }
+        self.set_response(data=data, success=True)
+
+    @authorized.role('user')
+    def generate(self, d):
+        from constants import REPORT
+        from handlers import APIError
+        from tasks import backgroundReportRun
+        type = self.request.get_range('type')
+        if not type:
+            raise APIError("No type in report request")
+        ftype = self.request.get_range('ftype', default=REPORT.CSV)
+        specs_json = self.request.get('specs_json')
+        specs = tools.getJson(specs_json)
+        report = Report.Create(self.user, type=type, specs=specs, ftype=ftype)
+        report.put()
+        tools.safe_add_task(backgroundReportRun, report.key.urlsafe(), _queue="report-queue")
+        self.set_response(success=True, message="%s generating..." % report.title, data={
+            'report': report.json() if report else None
+        })
+
+    @authorized.role('user')
+    def serve(self, d):
+        import cloudstorage as gcs
+        rkey = self.request.get('rkey')
+        r = Report.GetAccessible(rkey, d['user'])
+        if r:
+            if r.isDone() and r.gcs_files:
+                gcsfn = r.gcs_files[0]
+                if tools.on_dev_server():
+                    try:
+                        gcs_file = gcs.open(gcsfn, 'r')
+                    except gcs.NotFoundError, e:
+                        self.response.out.write("File not found")
+                    else:
+                        self.response.headers['Content-Type'] = Report.contentType(r.extension)
+                        self.response.headers['Content-Disposition'] = str('attachment; filename="%s"' % r.filename())
+                        self.response.write(gcs_file.read())
+                        gcs_file.close()
+                else:
+                    signed_url = tools.sign_gcs_url(gcsfn, expires_after_seconds=5)
+                    response = self.redirect(signed_url)
+                    logging.info(response)
+            else:
+                self.set_response(success=False, status=404, message="Report not ready") # Not found
+        else:
+            self.response.out.write("Unauthorized")
+
+    @authorized.role('user')
+    def delete(self, d):
+        rkey = self.request.get('rkey')
+        r = Report.GetAccessible(rkey, self.user, urlencoded_key=True)
+        if r:
+            r.clean_delete(self_delete=True)
+            self.message = "Report deleted"
+            self.success = True
+        else:
+            self.message = "Report not found"
+        self.set_response()
+

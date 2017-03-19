@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta, time
 from google.appengine.ext import ndb
 from google.appengine.api import mail
-from constants import EVENT, USER, TASK, READABLE, JOURNALTAG
+from constants import EVENT, USER, TASK, READABLE, JOURNALTAG, REPORT
 import tools
 import json
 import random
@@ -28,17 +28,17 @@ class UserAccessible(ndb.Model):
     def GetAccessible(cls, key_or_id, user, urlencoded_key=False):
         if key_or_id:
             if not urlencoded_key:
-                key = ndb.Key.from_path(cls.__name__, key_or_id)
+                key = ndb.Key(cls.__name__, key_or_id)
             else:
-                key = ndb.Key(key_or_id)
-            item = ndb.get(key)
+                key = ndb.Key(urlsafe=key_or_id)
+            item = key.get()
             if item:
                 if item.accessible(user):
                     return item
         return None
 
     def accessible(self, user):
-        return self.parent == user.key
+        return self.key.parent() == user.key
 
 
 class User(ndb.Model):
@@ -895,3 +895,163 @@ class Readable(UserAccessible):
     def get_source_url(self):
         if self.source == 'pocket':
             return "https://getpocket.com/a/read/%s" % self.source_id
+
+
+class Report(UserAccessible):
+    """
+    Key - ID
+    """
+    dt_created = ndb.DateTimeProperty(auto_now_add=True)
+    dt_generated = ndb.DateTimeProperty()
+    gcs_files = ndb.StringProperty(repeated=True, indexed=False)
+    title = ndb.StringProperty()
+    storage_type = ndb.IntegerProperty(default=REPORT.GCS_CLIENT, indexed=False)
+    status = ndb.IntegerProperty(default=REPORT.CREATED)
+    type = ndb.IntegerProperty(default=REPORT.HABIT_REPORT)
+    ftype = ndb.IntegerProperty(default=REPORT.CSV, indexed=False)
+    extension = ndb.StringProperty(default="csv", indexed=False)
+    specs = ndb.TextProperty()  # JSON, e.g. date filters etc
+
+    def __str__(self):
+        return "%s (%s)" % (self.title, self.print_type())
+
+    def json(self):
+        return {
+            'key': self.key.urlsafe(),
+            'id': self.key.id(),
+            'title': self.title,
+            'status': self.status,
+            'serve_url': self.serving_url(),
+            'type': self.type,
+            'ftype': self.ftype,
+            'extension': self.extension,
+            'ts_created': tools.unixtime(self.dt_created),
+            'ts_generated': tools.unixtime(self.dt_generated),
+            'filenames': self.gcs_files
+        }
+
+    @staticmethod
+    def Fetch(user, limit=50):
+        return Report.query(ancestor=user.key).order(-Report.dt_created).fetch(limit=limit)
+
+    @staticmethod
+    def Create(user, title="Unnamed Report", type=REPORT.HABIT_REPORT, specs=None, ftype=None):
+        logging.debug("Requesting report creation, type %d specs: %s" % (type, specs))
+        r = Report(title=title, type=type, parent=user.key)
+        if specs:
+            r.set_specs(specs)
+        r.storage_type = REPORT.GCS_CLIENT
+        if ftype is not None:
+            r.ftype = ftype
+        else:
+            r.ftype = REPORT.CSV
+        r.get_extension()
+        return r
+
+    def get_duration(self):
+        if self.dt_created and self.dt_generated:
+            return tools.total_seconds(self.dt_generated - self.dt_created)
+        return 0
+
+    def get_specs(self):
+        if self.specs:
+            return json.loads(self.specs)
+        return {}
+
+    def is_done(self):
+        return self.status == REPORT.DONE
+
+    def is_generating(self):
+        return self.status == REPORT.GENERATING
+
+    def set_specs(self, data):
+        self.specs = json.dumps(data)
+
+    def generate_title(self, _title, ts_start=None, ts_end=None, **kwargs):
+        title = _title
+        start_text = end_text = None
+        if ts_start:
+            start_text = tools.sdatetime(tools.dt_from_ts(ts_start))
+        if ts_end:
+            end_text = tools.sdatetime(tools.dt_from_ts(ts_end))
+        if start_text and end_text:
+            title += " (%s - %s)" % (start_text, end_text)
+        elif start_text:
+            title += " Since %s" % start_text
+        elif end_text:
+            title += " Until %s" % end_text
+        for key, val in kwargs.items():
+            if key and val is not None:
+                title += " %s:%s" % (key, val)
+        self.title = title
+
+    def filename(self, ext=None, piece=None):
+        _piece = ""
+        if piece is not None:
+            _piece = self.gcs_filenames[piece-1]
+        _ext = ext if ext else self.extension
+        fn = "%s%s.%s" % (self.title, _piece, _ext)
+        return fn
+
+    def get_extension(self):
+        self.extension = REPORT.EXTENSIONS.get(self.ftype)
+
+    def print_type(self): return REPORT.TYPE_LABELS.get(self.type)
+
+    def print_status(self): return REPORT.STATUS_LABELS.get(self.status)
+
+    @staticmethod
+    def content_type(extension):
+        if extension in ['xls', 'xlsx']:
+            return "application/ms-excel"
+        elif extension == 'csv':
+            return "text/csv"
+        else:
+            return None
+
+    def run(self, start_cursor=None):
+        """Begins report generation"""
+        from reports import HabitReportWorker
+        worker_lookup = {
+            REPORT.HABIT_REPORT: HabitReportWorker
+        }
+        worker_class = worker_lookup.get(self.type)
+        worker = None
+        if worker_class:
+            worker = worker_class(self.key)
+            if worker and self.status not in [REPORT.ERROR, REPORT.CANCELLED]:
+                worker.run(start_cursor=start_cursor)
+            else:
+                logging.error("Worker not created or invalid status for run(): type %d" % self.type)
+
+    def finish(self):
+        '''Finalize report'''
+        self.status = REPORT.DONE
+        self.dt_generated = datetime.now()
+
+    def serving_url(self):
+        url = None
+        if self.storage_type == REPORT.GCS_CLIENT:
+            url = "/api/report/serve?rkey=%s" % self.key.urlsafe()
+        return url
+
+    def get_gcs_file(self, index=0):
+        # we actually don't anticipate more than 1 gcsfiles anymore
+        if self.gcs_files and len(self.gcs_files) >= index + 1:
+            return self.gcs_files[index]
+        return None
+
+    def delete_gcs_files(self):
+        import cloudstorage as gcs
+        if self.gcs_files:
+            for f in self.gcs_files:
+                try:
+                    gcs.delete(f)
+                    self.gcs_files.remove(f)
+                except gcs.NotFoundError, e:
+                    logging.debug("File %s not found on gcs" % f)
+
+    def clean_delete(self, self_delete=True):
+        self.delete_gcs_files()
+        if self_delete:
+            self.key.delete()

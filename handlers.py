@@ -7,6 +7,12 @@ from webapp2_extras import sessions
 from constants import *
 import json
 
+
+class APIError(Exception):
+    def __init__(self, message, errors=None):
+        super(APIError, self).__init__(message)
+
+
 def jinja2_factory(app):
     j = jinja2.Jinja2(app)
     j.environment.filters.update({
@@ -103,11 +109,12 @@ class JsonRequestHandler(BaseRequestHandler):
         self.success = False
         self.message = None
 
-    def set_response(self, data=None, debug=False, success=None):
+    def set_response(self, data=None, debug=False, success=None, status=None, message=None):
         res = {
             'success': self.success if success is None else success,
-            'message': self.message
+            'message': self.message if message is None else message
         }
         if data:
             res.update(data)
+        self.response.set_status(status if status else 200)
         self.json_out(res, debug=debug)

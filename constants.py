@@ -13,6 +13,9 @@ DAILY_REPORT_RECIPS = [APP_OWNER]
 SENDER_EMAIL = APP_OWNER
 NOTIF_EMAILS = [APP_OWNER]
 
+GCS_REPORT_BUCKET = "/flow_reports"
+BACKGROUND_SERVICE = "default"
+
 DEFAULT_USER_SETTINGS = {
     'journals': {
         'questions': [
@@ -139,3 +142,36 @@ class GOAL():
 
     HELP = "You can set and review monthly and annual goals. Try saying 'view goals'"
 
+
+class REPORT():
+    # Types
+    HABIT_REPORT = 1
+
+    # Status
+    CREATED = 1
+    GENERATING = 2
+    DONE = 3
+    CANCELLED = 4
+    ERROR = 5
+
+    # STORAGE TYPES
+    GCS_CLIENT = 1
+
+    # Ftypes
+    CSV = 1
+
+    XLS_ROW_LIMIT = 65000
+
+    TYPE_LABELS = {
+        HABIT_REPORT: "Habit Report"
+    }
+
+    STATUS_LABELS = {
+        CREATED: "Created",
+        GENERATING: "Generating",
+        DONE: "Done",
+        CANCELLED: "Cancelled",
+        ERROR: "Error"
+    }
+
+    EXTENSIONS = {CSV: "csv"}

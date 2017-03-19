@@ -631,6 +631,25 @@ var util = {
             g: parseInt(result[2], 16),
             b: parseInt(result[3], 16)
         } : null;
+    },
+
+    secsToDuration: function(secs) {
+        let labels = ["hour", "minute", "second"];
+        let d = moment.duration(secs, "seconds");
+        let hours = parseInt(d.asHours());
+        let mins = parseInt(d.minutes());
+        let _secs = parseInt(d.seconds());
+        let s = [];
+        [hours, mins, _secs].forEach(function(p, i) {
+            let label = labels[i];
+            if (p > 0) {
+                let piece = p + " " + label;
+                if (p > 1) piece += "s";
+                s.push(piece);
+            }
+        });
+        if (s.length > 0) return s.join(', ');
+        else return "0 seconds";
     }
 
 }
