@@ -77,14 +77,17 @@ Visit `https://[project-id].appspot.com` to see the app live.
 * Monthly/year goals & assessments
 * Store productivity metrics e.g. github commits (daily, hourly)
 	* Scrape Github commits chart
-* Projects & progress tracking
+* Ongoing Projects tracking
 	* Track time of each progress increment
+	* View 'burn-up' chart of completion progress over time
 * Analysis
+	* Show summary charts of all data reported to platform
 	* Segment analysis of journals by tag (highlight journal days with/without + show averages)
 * Google Assitant / Home / Facebook Messenger integration for actions like:
 	* "How am I doing"
 	* "What are my goals for this month"
 	* "Mark 'run' as complete"
+	* "Daily report"
 * Reading widget
 	* Show currently-reading shelf on Good Reads / Pocket
 * Flash card widget for spreadsheet access (e.g. random quotes, excerpts)
@@ -103,11 +106,9 @@ We've used API.AI to create an agent that integrates with Google Actions / Assis
 
 ## Planned Features
 
-* Submit daily reports through agent
 * Track happiness / activities throughout day (push), ala https://www.trackyourhappiness.org/
 * Actual book start date Readable (good reads)
 * Desktop notifs
 * Push panel data to compute engine for ML / prediction / regression
-* Project completion view (burn up)
 * Mobile app via react-native?
 * Google Fit REST API integration - https://developers.google.com/fit/rest/
