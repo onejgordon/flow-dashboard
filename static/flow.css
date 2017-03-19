@@ -51,6 +51,10 @@ body {
     min-height: 600px;
 }
 
+div.section {
+  margin-top: 15px;
+}
+
 .map {
     min-height: 250px;
     margin: 10px 0;
@@ -156,6 +160,19 @@ body {
     height: 100%;
     transition: .2s linear all;
     -webkit-transition: .4s linear all;
+}
+
+.bigProp {
+
+}
+
+.bigProp.clickable {
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.bigProp.clickable:hover {
+  opacity: 1.0;
 }
 
 /* Project progress */

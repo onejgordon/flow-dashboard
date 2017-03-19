@@ -9,6 +9,7 @@ import random
 import logging
 import re
 import imp
+from common.decorators import auto_cache
 try:
     imp.find_module('secrets')
 except ImportError:
@@ -826,6 +827,18 @@ class Readable(UserAccessible):
         return readables
 
     @staticmethod
+    @auto_cache()
+    def CountUnread(user, limit=200, refresh=False):
+        counts = {}
+        readables = Readable.query(ancestor=user.key).filter(Readable.read == False).order(-Readable.dt_added).fetch(limit=limit)
+        for r in readables:
+            type_string = r.print_type().lower()
+            if type_string not in counts:
+                counts[type_string] = 0
+            counts[type_string] += 1
+        return counts
+
+    @staticmethod
     def CreateOrUpdate(user, source_id, title=None, url=None,
                        type=READABLE.ARTICLE, source=None,
                        author=None, image_url=None, excerpt=None,
@@ -875,6 +888,9 @@ class Readable(UserAccessible):
             self.author = params.get('author')
         if 'word_count' in params:
             self.word_count = params.get('word_count')
+
+    def print_type(self):
+        return READABLE.LABELS.get(self.type)
 
     def get_source_url(self):
         if self.source == 'pocket':

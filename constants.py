@@ -67,12 +67,14 @@ class HABIT():
 
     HELP = "You can set habits to build, and track completion. Try saying 'new habit: run', 'habit progress', or 'commit to run tonight'"
 
+
 class EVENT():
     # Type
     PERSONAL = 1
     FAMILY = 2
     PROFESSIONAL = 3
     PUBLIC = 4
+
 
 class JOURNAL():
 
@@ -102,15 +104,23 @@ class JOURNAL():
 
     ALREADY_SUBMITTED_REPLY = "Sorry, you've already submitted today's journal."
 
+
 class JOURNALTAG():
     # Types
     PERSON = 1
     HASHTAG = 2 # Activities, etc
 
+
 class READABLE():
     # Type
     ARTICLE = 1
     BOOK = 2
+
+    LABELS = {
+        ARTICLE: "Article",
+        BOOK: "Book"
+    }
+
 
 class TASK():
     # Status
@@ -119,9 +129,11 @@ class TASK():
 
     HELP = "You can set and track top tasks each day. Try saying 'add task remember the milk' or 'my tasks'"
 
+
 class USER():
     USER = 1
     ADMIN = 2
+
 
 class GOAL():
 

@@ -1,12 +1,10 @@
 var React = require('react');
-import { FontIcon, IconButton, ListItem, List,
-  Avatar, FlatButton } from 'material-ui';
-var util = require('utils/util');
+import { FontIcon, IconButton, MenuItem, IconMenu, Paper, List,
+  Dialog } from 'material-ui';
 var api = require('utils/api');
+var util = require('utils/util');
 var ReadableLI = require('components/list_items/ReadableLI');
-import {findIndexById} from 'utils/store-utils';
-import {cyanA400} from 'material-ui/styles/colors';
-var ProgressLine = require('components/common/ProgressLine');
+var BigProp = require('components/common/BigProp');
 
 // Widget to show things to read
 // Goodreads - Currently reading shelf
@@ -20,8 +18,14 @@ export default class ReadWidget extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-        readables: {}
+        readables: {},
+        dialog_open: false,
+        showing_type: null, // Int
     };
+    this.LABELS = {
+      1: "Article",
+      2: "Book"
+    }
   }
 
   componentDidMount() {
@@ -30,6 +34,20 @@ export default class ReadWidget extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
 
+  }
+
+  count_readables() {
+    let counts = {};
+    let _readables = util.flattenDict(this.state.readables);
+    _readables.forEach((r) => {
+      if (!counts[r.type]) counts[r.type] = 0;
+      counts[r.type] += 1;
+    });
+    return counts;
+  }
+
+  none_loaded() {
+    return Object.keys(this.state.readables).length == 0;
   }
 
   merge_readables(_readables) {
@@ -58,6 +76,19 @@ export default class ReadWidget extends React.Component {
     });
   }
 
+  show_readables(type) {
+    this.setState({dialog_open: true, showing_type: type}, () => {
+      if (this.none_loaded()) {
+        this.fetch_readables();
+      }
+    });
+  }
+
+  dialog_title() {
+    let {showing_type} = this.state;
+    return this.LABELS[showing_type] + 's';
+  }
+
   readable_update(r) {
     this.merge_readables([r]);
   }
@@ -74,26 +105,60 @@ export default class ReadWidget extends React.Component {
     for (var id in readables) {
       if (readables.hasOwnProperty(id)) {
         let r = readables[id];
-        res.push(<ReadableLI key={id} readable={r}
-                    onUpdate={this.readable_update.bind(this)}
-                    onDelete={this.readable_delete.bind(this)} />);
+        if (r.type == this.state.showing_type) {
+          res.push(<ReadableLI key={id} readable={r}
+                      onUpdate={this.readable_update.bind(this)}
+                      onDelete={this.readable_delete.bind(this)} />);
+        }
       }
     }
     return res;
   }
 
   render() {
+    let {dialog_open} = this.state;
+    let counts = this.count_readables();
     return (
-      <div>
-        <h1>Things to Read</h1>
-        <List>
-          { this.render_readables() }
-        </List>
+      <div className="section">
 
-        <div className="vpad">
-          <FlatButton key="gr" label="Fetch from Goodreads" onClick={this.fetch_from_goodreads.bind(this)} primary={true} />
-          <FlatButton key="po" label="Fetch from Pocket" onClick={this.fetch_from_pocket.bind(this)} primary={true} />
+        <div className="row">
+          <div className="col-sm-6">
+            <h3>Reading</h3>
+          </div>
+          <div className="col-sm-6">
+            <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
+              <MenuItem key="gr" primaryText="Refresh from Goodreads" onClick={this.fetch_from_goodreads.bind(this)} />
+              <MenuItem key="po" primaryText="Refresh from Pocket" onClick={this.fetch_from_pocket.bind(this)} />
+            </IconMenu>
+          </div>
         </div>
+
+        <div className="row">
+          <div className="col-sm-6">
+              <BigProp
+                label="Books Currently Reading"
+                value={ counts[2] || 0 }
+                onClick={this.show_readables.bind(this, 2)} />
+
+          </div>
+          <div className="col-sm-6">
+              <BigProp
+                label="Unread Pocket Articles"
+                value={ counts[1] || 0 }
+                onClick={this.show_readables.bind(this, 1)} />
+
+          </div>
+        </div>
+
+        <Dialog title={this.dialog_title()}
+          open={dialog_open}
+          onRequestClose={this.setState.bind(this, {dialog_open: false})}
+          autoScrollBodyContent={true}>
+          <List>
+            { this.render_readables() }
+          </List>
+        </Dialog>
+
       </div>
     )
   }

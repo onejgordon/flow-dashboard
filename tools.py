@@ -37,6 +37,11 @@ def str_to_tuple(s):
     return tuple(float(x) for x in s[1:-1].split(','))
 
 
+def make_function_signature(func_name, *args, **kwargs):
+    alpha_kwargs = sorted(kwargs.items(), key=lambda x : x[0])
+    return "-".join([func_name, str(args), str(alpha_kwargs)])
+
+
 def paging_params(request, limit_param="max", limit_default=30, page_default=0):
     MAX_OFFSET = 7000
     max = request.get_range(limit_param, default=limit_default)

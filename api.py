@@ -668,7 +668,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         from services import goodreads
         self.success, readables = goodreads.get_books_on_shelf(self.user, shelf='currently-reading')
         if not self.success:
-            self.message = "An error occurred"
+            self.message = "There was a problem - please make sure you've entered your Goodreads ID on the integrations page"
         self.set_response({
             'readables': [r.json() for r in readables]
         })
@@ -682,10 +682,14 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         TS_KEY = 'pocket_last_timestamp'
         access_token = self.user.get_integration_prop('pocket_access_token')
         last_timestamp = self.user.get_integration_prop(TS_KEY, 0)
-        self.success, readables, latest_timestamp = pocket.sync(self.user, access_token, last_timestamp)
-        self.user.set_integration_prop(TS_KEY, latest_timestamp)
-        self.user.put()
-        self.update_session_user(self.user)
+        readables = []
+        if access_token:
+            self.success, readables, latest_timestamp = pocket.sync(self.user, access_token, last_timestamp)
+            self.user.set_integration_prop(TS_KEY, latest_timestamp)
+            self.user.put()
+            self.update_session_user(self.user)
+        else:
+            self.message = "Please link your Pocket account from the integrations page"
         self.set_response({
             'readables': [r.json() for r in filter(lambda r: not r.read, readables)]
         })
