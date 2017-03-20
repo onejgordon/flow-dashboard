@@ -226,7 +226,7 @@ class HabitReportWorker(GCSReportWorker):
         end = specs.get("end", 0)
         self.report.generate_title("Habit Report", ts_start=start, ts_end=end, **title_kwargs)
         self.prefetch_props = ['habit']
-        self.headers = ["Created", "Updated", "Habit", "Done", "Committed"]
+        self.headers = ["Created", "Updated", "Date", "Habit", "Done", "Committed"]
         self.batch_size = 1000
         self.add_date_filters(start=start, end=end)
 
@@ -235,6 +235,7 @@ class HabitReportWorker(GCSReportWorker):
         row = [
             tools.sdatetime(hd.dt_created, fmt=DATE_FMT),
             tools.sdatetime(hd.dt_updated, fmt=DATE_FMT),
+            tools.iso_date(hd.date),
             habit.name if habit else "",
             "1" if hd.done else "0",
             "1" if hd.committed else "0"
