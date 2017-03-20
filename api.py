@@ -877,9 +877,9 @@ class ReportAPI(handlers.JsonRequestHandler):
     def serve(self, d):
         import cloudstorage as gcs
         rkey = self.request.get('rkey')
-        r = Report.GetAccessible(rkey, d['user'])
+        r = Report.GetAccessible(rkey, self.user, urlencoded_key=True)
         if r:
-            if r.isDone() and r.gcs_files:
+            if r.is_done() and r.gcs_files:
                 gcsfn = r.gcs_files[0]
                 if tools.on_dev_server():
                     try:
@@ -887,7 +887,7 @@ class ReportAPI(handlers.JsonRequestHandler):
                     except gcs.NotFoundError, e:
                         self.response.out.write("File not found")
                     else:
-                        self.response.headers['Content-Type'] = Report.contentType(r.extension)
+                        self.response.headers['Content-Type'] = Report.content_type(r.extension)
                         self.response.headers['Content-Disposition'] = str('attachment; filename="%s"' % r.filename())
                         self.response.write(gcs_file.read())
                         gcs_file.close()

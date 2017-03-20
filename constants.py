@@ -146,6 +146,9 @@ class GOAL():
 class REPORT():
     # Types
     HABIT_REPORT = 1
+    TASK_REPORT = 2
+    GOAL_REPORT = 3
+    JOURNAL_REPORT = 4
 
     # Status
     CREATED = 1
@@ -163,7 +166,10 @@ class REPORT():
     XLS_ROW_LIMIT = 65000
 
     TYPE_LABELS = {
-        HABIT_REPORT: "Habit Report"
+        HABIT_REPORT: "Habit Report",
+        TASK_REPORT: "Task Report",
+        GOAL_REPORT: "Goal Report",
+        JOURNAL_REPORT: "Journal Report"
     }
 
     STATUS_LABELS = {

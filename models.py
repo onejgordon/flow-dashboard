@@ -448,6 +448,7 @@ class HabitDay(UserAccessible):
     def Update(self, **params):
         if 'done' in params:
             self.done = params.get('done')
+        self.dt_updated = datetime.now()
 
     @staticmethod
     def Toggle(habit, date, force_done=False):
@@ -1011,9 +1012,12 @@ class Report(UserAccessible):
 
     def run(self, start_cursor=None):
         """Begins report generation"""
-        from reports import HabitReportWorker
+        from reports import HabitReportWorker, TaskReportWorker, GoalReportWorker, JournalReportWorker
         worker_lookup = {
-            REPORT.HABIT_REPORT: HabitReportWorker
+            REPORT.HABIT_REPORT: HabitReportWorker,
+            REPORT.TASK_REPORT: TaskReportWorker,
+            REPORT.GOAL_REPORT: GoalReportWorker,
+            REPORT.JOURNAL_REPORT: JournalReportWorker
         }
         worker_class = worker_lookup.get(self.type)
         worker = None

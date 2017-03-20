@@ -65,6 +65,7 @@ export default class Reports extends React.Component {
     }
 
     render_report(r) {
+        let _download;
         if (r.status == this.REPORT_DONE) _download = <a href="javascript:void(0)" onClick={this.download.bind(this, r)}>Download</a>;
         var status_text = findItemById(this.REPORT_STATUSES, r.status, 'value').label;
         let _menu = (
@@ -116,6 +117,36 @@ export default class Reports extends React.Component {
                     { this.render_date_form() }
 
                     <RaisedButton label="Generate" primary={true} icon={<FontIcon className="material-icons">play_circle_filled</FontIcon>} onClick={this.generate_report.bind(this, 1)} />
+                  </Tab>
+
+                  <Tab label="Tasks">
+
+                    <br/>
+                    <p className="lead">Export task data</p>
+
+                    { this.render_date_form() }
+
+                    <RaisedButton label="Generate" primary={true} icon={<FontIcon className="material-icons">play_circle_filled</FontIcon>} onClick={this.generate_report.bind(this, 2)} />
+                  </Tab>
+
+                  <Tab label="Goals">
+
+                    <br/>
+                    <p className="lead">Export goal data</p>
+
+                    { this.render_date_form() }
+
+                    <RaisedButton label="Generate" primary={true} icon={<FontIcon className="material-icons">play_circle_filled</FontIcon>} onClick={this.generate_report.bind(this, 3)} />
+                  </Tab>
+
+                  <Tab label="Journals">
+
+                    <br/>
+                    <p className="lead">Export journal data</p>
+
+                    { this.render_date_form() }
+
+                    <RaisedButton label="Generate" primary={true} icon={<FontIcon className="material-icons">play_circle_filled</FontIcon>} onClick={this.generate_report.bind(this, 4)} />
                   </Tab>
 
                 </Tabs>
