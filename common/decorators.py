@@ -5,9 +5,37 @@ import logging
 from time import time
 from google.appengine.api import memcache
 import tools
+import os
 
 NOTIFY_FAIL_RETRY_COUNT = 5
 PERMANENT_FAIL_RETRY_COUNT = 15
+
+
+def deferred_task_decorator(method):
+    @functools.wraps(method)
+    def defer_method(*args, **kwargs):
+        # Collecting defered task header information
+        headers = {}
+        headers["queue_name"] = os.environ.get('HTTP_X_APPENGINE_QUEUENAME', '')
+        headers["retry_count"] = os.environ.get('HTTP_X_APPENGINE_TASKRETRYCOUNT', 0)
+        headers["task_name"] = os.environ.get('HTTP_X_APPENGINE_TASKNAME', '')
+
+        if not tools.on_dev_server():
+            logging.info("deferred_task_decorator : {}".format(headers))
+        # Running for the first time ignore
+        _retry_count = headers.get("retry_count", 0)
+        retry_count = int(_retry_count) if tools.safeIsDigit(_retry_count) else 0
+        if retry_count < 1:
+            return method(*args, **kwargs)
+
+        # We are retying
+        if not tools.on_dev_server():
+            logging.info("Found task retry count ok ..{}:{} - ({})"
+                .format(headers.get("queue_name"), headers.get("task_name"), retry_count))
+
+        return method(*args, **kwargs)
+
+    return defer_method
 
 
 def auto_cache(expiration=60*60, key=None):

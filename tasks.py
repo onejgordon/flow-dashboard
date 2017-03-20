@@ -61,3 +61,27 @@ class SyncProductivity(handlers.BaseRequestHandler):
             else:
                 logging.debug("Github updater can't run")
         self.json_out(res, debug=True)
+
+
+class DeleteOldReports(handlers.BaseRequestHandler):
+    def get(self):
+        from models import Report
+        cutoff = datetime.now() - timedelta(days=30)
+        old_reports = Report.query().filter(Report.dt_created < cutoff).fetch(limit=None)
+        n = 0
+        if old_reports:
+            for report in old_reports:
+                try:
+                    report.clean_delete(self_delete=False)
+                except Exception, e:
+                    logging.info(str(e))
+            n = len(old_reports)
+            ndb.delete_multi([dr.key for dr in old_reports])
+        logging.debug("Deleted %d old reports" % n)
+
+
+def backgroundReportRun(rkey, start_cursor=None):
+    rkey = ndb.Key(urlsafe=rkey)
+    r = rkey.get()
+    if r:
+        r.run(start_cursor=start_cursor)

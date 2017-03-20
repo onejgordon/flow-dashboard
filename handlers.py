@@ -4,8 +4,14 @@ from webapp2_extras import jinja2
 from google.appengine.api import memcache, mail
 from common import my_filters
 from webapp2_extras import sessions
-from constants import *
+from constants import SITENAME, ADMIN_EMAIL, SENDER_EMAIL
 import json
+
+
+class APIError(Exception):
+    def __init__(self, message, errors=None):
+        super(APIError, self).__init__(message)
+
 
 def jinja2_factory(app):
     j = jinja2.Jinja2(app)
@@ -46,7 +52,7 @@ class BaseRequestHandler(webapp2.RequestHandler):
         exception_details = str(sys.exc_info()[1])
         exception_traceback = ''.join(traceback.format_exception(*sys.exc_info()))
         logging.error(exception_traceback)
-        exception_expiration = 3600 # seconds (max 1 mail per hour for a particular exception)
+        exception_expiration = 3600  # seconds (max 1 mail per hour for a particular exception)
         sitename = SITENAME
         throttle_name = 'exception-'+exception_name
         throttle = memcache.get(throttle_name)
@@ -59,9 +65,12 @@ class BaseRequestHandler(webapp2.RequestHandler):
             memcache.add(throttle_name, 1, exception_expiration)
             subject = '[%s] exception, user:%s [%s: %s]' % (sitename, uname, exception_name, exception_details)
             mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
-                                     subject=subject,
-                                     body=exception_traceback)
-        template_values = {}
+                           subject=subject,
+                           body=exception_traceback)
+        template_values = {
+            'YEAR': datetime.now().year,
+            'SITENAME': SITENAME
+        }
         template_values['traceback'] = exception_traceback
         template_values['sitename'] = sitename
         self.render_template("error.html", **template_values)
@@ -99,15 +108,17 @@ class JsonRequestHandler(BaseRequestHandler):
 
     def __init__(self, request=None, response=None):
         super(JsonRequestHandler, self).__init__(request=request,
-            response=response)
+                                                 response=response)
         self.success = False
         self.message = None
 
-    def set_response(self, data=None, debug=False, success=None):
+    def set_response(self, data=None, debug=False, success=None, status=None,
+                     message=None):
         res = {
             'success': self.success if success is None else success,
-            'message': self.message
+            'message': self.message if message is None else message
         }
         if data:
             res.update(data)
+        self.response.set_status(status if status else 200)
         self.json_out(res, debug=debug)

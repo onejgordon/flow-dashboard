@@ -7,6 +7,7 @@ import {cyanA400} from 'material-ui/styles/colors';
 var AppConstants = require('constants/AppConstants')
 import {changeHandler} from 'utils/component-utils';
 var HabitAnalysis = require('components/HabitAnalysis');
+import { SwatchesPicker } from 'react-color';
 
 @changeHandler
 export default class HabitWidget extends React.Component {
@@ -214,6 +215,12 @@ export default class HabitWidget extends React.Component {
       );
   }
 
+  select_habit_color(color) {
+    let {form} = this.state;
+    form.color = color.hex;
+    this.setState({form});
+  }
+
   render() {
     let {habits, new_dialog_open, form, habit_analysis} = this.state;
     let no_habits = habits.length == 0;
@@ -251,6 +258,9 @@ export default class HabitWidget extends React.Component {
 
             <TextField placeholder="Habit name" value={form.name} onChange={this.changeHandler.bind(this, 'form', 'name')} fullWidth />
             <TextField placeholder="Weekly Target (#)" value={form.tgt_weekly} onChange={this.changeHandler.bind(this, 'form', 'tgt_weekly')} fullWidth />
+            <label>Choose Color</label>
+            <SwatchesPicker width={600} height={150} display={true} color={form.color || "#2D6CFA"} onChangeComplete={this.select_habit_color.bind(this)} />
+
 
         </Dialog>
 

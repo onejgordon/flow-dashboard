@@ -7,9 +7,16 @@ import { Dialog, TextField, Slider,
 var util = require('utils/util');
 import {changeHandler} from 'utils/component-utils';
 var api = require('utils/api');
+var toastr = require('toastr');
 
 @changeHandler
 export default class MiniJournalWidget extends React.Component {
+  static propTypes = {
+    include_location: React.PropTypes.bool,
+    tomorrow_top_tasks: React.PropTypes.bool,
+    questions: React.PropTypes.array
+  }
+
   static defaultProps = {
     questions: [],
     include_location: true,
@@ -85,9 +92,18 @@ export default class MiniJournalWidget extends React.Component {
   }
 
   open_journal_dialog() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(this.got_location.bind(this));
-    } else toastr.info("Geolocation disabled? Try https:// domain.");
+    let {include_location} = this.props;
+    if (include_location) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(this.got_location.bind(this), (failure) => {
+          // Failure
+          if(failure.message.indexOf("Only secure origins are allowed") == 0) {
+            // Secure Origin issue
+            toastr.error(`Geolocation disabled? Try secure domain: ${AppConstants.SECURE_BASE}.`);
+          }
+        });
+      } else toastr.error(`Browser doesn't support geolocation`);
+    }
     this.setState({open: true});
   }
 

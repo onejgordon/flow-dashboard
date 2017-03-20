@@ -1,10 +1,15 @@
 import os, time, random, string, logging, re, cgi
+import uuid
 from datetime import datetime, timedelta, date
-from datetime import time as dttime
 import hashlib
 import pytz
+import urllib
 from constants import *
 import json
+from google.appengine.ext import deferred
+from google.appengine.api import app_identity, taskqueue
+import base64
+import sys
 
 
 def GenPasswd(length=8, chars=string.letters.upper()):
@@ -16,6 +21,13 @@ def pluralize(item_name, count=1, suffix='s'):
         return item_name
     else:
         return item_name + suffix
+
+
+def safeIsDigit(val):
+    if type(val) in [str, unicode]:
+        return val.isdigit()
+    else:
+        return type(val) in [int, long]
 
 
 def on_dev_server():
@@ -130,23 +142,34 @@ def unixtime(dt=None, ms=True):
 def unix_to_dt(ts):
     return datetime.fromtimestamp(float(ts))
 
-def sdatetime(date, short=False):
+
+def sdatetime(date, fmt="%Y-%m-%d %H:%M %Z", tz=None):
     if date:
-        fmt = "%m/%d/%Y [ %H:%M ]" if not short else "%d/%m/%Y %H:%M"
+        if isinstance(tz, basestring):
+            _tz = pytz.timezone(tz)
+        else:
+            _tz = pytz.UTC
+        date = pytz.utc.localize(date).astimezone(_tz)
         return datetime.strftime(date, fmt)
     else:
-        return None
+        return "N/A"
+
+
 
 def iso_date(date):
-    if date:
-        return datetime.strftime(date, "%Y-%m-%d")
-    return None
+    return datetime.strftime(date, "%Y-%m-%d") if date else None
+
+
+def sdate(date):
+    return datetime.strftime(date, "%m/%d/%Y")
+
 
 def stime(date):
     return datetime.strftime(date, "[ %H:%M ]")
 
+
 def total_seconds(td):
-   return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
+    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
 
 
 def get_first_day(dt, d_years=0, d_months=0):
@@ -158,11 +181,77 @@ def get_first_day(dt, d_years=0, d_months=0):
 def get_last_day(dt):
     return get_first_day(dt, 0, 1) + timedelta(-1)
 
-def dt_from_ts(secs):
-    if secs == 0:
+def dt_from_ts(ms):
+    if ms == 0:
         return None
     else:
-        return datetime.fromtimestamp(float(secs))
+        return datetime.fromtimestamp(float(ms) / 1000)
+
+
+def safe_add_task(callable, *args, **kwargs):
+    """This function guarantees addition of a task to a queue.
+        It retries safe_add_tasks adding task if any error occurs during task creation.
+
+    There are 3 ways to use this function
+
+    1. Adding a single task
+        tools.safe_add_task("/admin/sms", params={'recipient':'254731501591', queue_name='admin-queue'})
+    2. Adding a list of tasks
+        tools.safe_add_task([{url="/admin/sms", params={'recipient':'254731501591'}, {url="/admin/sms", params={'recipient':'254731501592'}], queue_name='admin-queue')
+    3. Adding a deffered task
+        tools.safe_add_task(myworker.run, params={'targetGroup':'TESTG', queue_name='worker-queue'})
+
+    """
+    task_add_retries = kwargs.pop("task_add_retries", 0)
+    TASK_BATCH_SIZE = 100
+    from constants import BACKGROUND_SERVICE
+    success = True
+
+    try:
+        if isinstance(callable, basestring): # a url string
+            task_dict = dict(kwargs)
+            task_dict['url'] = callable
+            kwargs = {
+              "queue_name": task_dict.pop("queue_name", "default"),
+            }
+            task_dict['eta'] = task_dict.pop("eta", None)
+            callable = [task_dict]
+
+        if isinstance(callable, list): # a list of tasks
+            # create a list of taskqueue.Task Objects from the list of dicts
+            task_list = []
+            for task_dict in callable:
+                task_dict.setdefault("name", uuid.uuid4().hex)
+                # run tasks on the crons micro-service (if non specified)
+                task = taskqueue.Task(**task_dict)
+                task_list.append(task)
+
+            # if no queue_name is provided, default is used.
+            queue_name = kwargs.get('queue_name', 'default')
+            queue = taskqueue.Queue(queue_name)
+            while len(task_list) > 0:
+                tasks_to_add = task_list[:TASK_BATCH_SIZE]
+                queue.add(tasks_to_add)
+                logging.info("Queued up %d tasks" % len(tasks_to_add))
+                task_list = task_list[TASK_BATCH_SIZE:]
+        else:
+            # Simple callable passed in
+            kwargs.setdefault("_name", uuid.uuid4().hex)
+            deferred.defer(callable, *args, **kwargs)
+        return success
+    except (taskqueue.TombstonedTaskError, taskqueue.TaskAlreadyExistsError):
+        return success
+    except Exception, e:
+        exception_name = sys.exc_info()[0].__name__
+        exception_details = str(sys.exc_info()[1])
+        if task_add_retries >= 10:
+            logging.error("TASK CREATION ABORTED AFTER %d RETRIES!: %s %s %s" % (task_add_retries, kwargs, exception_name, exception_details))
+            return False
+        else:
+            logging.warning("TASK CREATION FAILED RETRYING!: %s %s %s %s" % (callable, kwargs, exception_name, exception_details))
+            kwargs["task_add_retries"] = task_add_retries+1
+            return safe_add_task(callable, *args, **kwargs)
+
 
 def fromISODate(s, timestamp=False):
     try:
@@ -353,6 +442,11 @@ def normalize_to_ascii(text):
         logging.warning("Error normalising_to_ascii: %s" % ex)
     return normalized_text
 
+
+def normalize_list_to_ascii(l):
+    return [normalize_to_ascii(v) for v in l]
+
+
 def safe_number(str_or_num):
     try:
         if isinstance(str_or_num, basestring) and ',' in str_or_num:
@@ -362,7 +456,47 @@ def safe_number(str_or_num):
         logging.error("Failed to convert '%s' to number - %s" % (str_or_num, e))
         return None
 
+
 def capitalize(s):
     if s:
         s = s[0].upper() + s[1:]
         return s
+
+
+def sign_gcs_url(gcs_filename, expires_after_seconds=6):
+    """ cloudstorage signed url to download cloudstorage object without login
+        Docs : https://cloud.google.com/storage/docs/access-control?hl=bg#Signed-URLs
+        API : https://cloud.google.com/storage/docs/reference-methods?hl=bg#getobject
+    """
+
+    GCS_API_ACCESS_ENDPOINT = 'https://storage.googleapis.com'
+    google_access_id = app_identity.get_service_account_name()
+    method = 'GET'
+    content_md5, content_type = None, None
+
+    # expiration : number of seconds since epoch
+    expiration_dt = datetime.utcnow() + timedelta(
+        seconds=expires_after_seconds)
+    expiration = int(time.mktime(expiration_dt.timetuple()))
+
+    # Generate the string to sign.
+    signature_string = '\n'.join([
+        method,
+        content_md5 or '',
+        content_type or '',
+        str(expiration),
+        gcs_filename])
+
+    signature_bytes = app_identity.sign_blob(str(signature_string))[1]
+
+    # Set the right query parameters. we use a gae service account for the id
+    query_params = {'GoogleAccessId': google_access_id,
+                    'Expires': str(expiration),
+                    'Signature': base64.b64encode(signature_bytes)}
+
+    # Return the built URL.
+    result = '{endpoint}{resource}?{querystring}'.format(
+        endpoint=GCS_API_ACCESS_ENDPOINT,
+        resource=gcs_filename,
+        querystring=urllib.urlencode(query_params))
+    return str(result)

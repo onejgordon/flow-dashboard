@@ -91,6 +91,7 @@ Visit `https://[project-id].appspot.com` to see the app live.
 * Reading widget
 	* Show currently-reading shelf on Good Reads / Pocket
 * Flash card widget for spreadsheet access (e.g. random quotes, excerpts)
+* Export all data to CSV
 
 ## Google Home Integration
 
@@ -102,6 +103,10 @@ We've used API.AI to create an agent that integrates with Google Actions / Assis
 4. Import the agent.json to API.AI
 5. Go to integrations and add and authorize 'Actions on Google'
 6. Preview the integration using the web preview
+
+## Facebook Messenger Integration
+
+The messenger bot lives at https://www.facebook.com/FlowDashboard/
 
 
 ## Planned Features
