@@ -55,13 +55,19 @@ export default class TaskLI extends React.Component {
       else if (hours_until <= 3) _icon = <i className="glyphicon glyphicon-hourglass" style={{color: "orange"}} />;
       secondary = <span>{ _icon }&nbsp;{util.from_now(t.ts_due)}</span>
     }
-    let rightIcon = (
-      <IconMenu iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
-        { menu.map((mi, i) => {
-          return <MenuItem key={i} leftIcon={<FontIcon className="material-icons">{mi.icon}</FontIcon>} onClick={mi.click}>{mi.label}</MenuItem>
-        }) }
-      </IconMenu>
-    );
+    let rightIcon;
+    if (menu.length == 1) {
+      let mi = menu[0];
+      rightIcon = <IconButton tooltip={mi.label} onClick={mi.click} iconClassName="material-icons">{mi.icon}</IconButton>
+    } else if (menu.length > 1) {
+      rightIcon = (
+        <IconMenu iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
+          { menu.map((mi, i) => {
+            return <MenuItem key={i} leftIcon={<FontIcon className="material-icons">{mi.icon}</FontIcon>} onClick={mi.click}>{mi.label}</MenuItem>
+          }) }
+        </IconMenu>
+      );
+    }
     let primaryText;
     if (t.wip) primaryText = <div className="wip">[ WIP ] {t.title}</div>;
     else primaryText = t.title;

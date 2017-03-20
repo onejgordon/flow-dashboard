@@ -154,16 +154,21 @@ def sdatetime(date, fmt="%Y-%m-%d %H:%M %Z", tz=None):
         return "N/A"
 
 
+
 def iso_date(date):
-    if date:
-        return datetime.strftime(date, "%Y-%m-%d")
-    return None
+    return datetime.strftime(date, "%Y-%m-%d") if date else None
+
+
+def sdate(date):
+    return datetime.strftime(date, "%m/%d/%Y")
+
 
 def stime(date):
     return datetime.strftime(date, "[ %H:%M ]")
 
+
 def total_seconds(td):
-   return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
+    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
 
 
 def get_first_day(dt, d_years=0, d_months=0):
