@@ -91,6 +91,7 @@ Visit `https://[project-id].appspot.com` to see the app live.
 * Reading widget
 	* Show currently-reading shelf on Good Reads / Pocket
 * Flash card widget for spreadsheet access (e.g. random quotes, excerpts)
+* Export all data to CSV
 
 ## Google Home Integration
 

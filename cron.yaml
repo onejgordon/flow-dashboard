@@ -7,3 +7,7 @@ cron:
 - description: sync with github
   url: /cron/productivity/sync
   schedule: every day 00:00
+
+- description: Delete reports older than 30 days
+  url: /cron/reports/delete_old
+  schedule: every sunday 00:00

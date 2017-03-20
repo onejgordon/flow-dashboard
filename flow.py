@@ -80,6 +80,10 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/readable/delete', handler=api.ReadableAPI, handler_method="delete", methods=["POST"]),
         webapp2.Route('/api/analysis', handler=api.AnalysisAPI, handler_method="get", methods=["GET"]),
         webapp2.Route('/api/journaltag', handler=api.JournalTagAPI, handler_method="list", methods=["GET"]),
+        webapp2.Route('/api/report', handler=api.ReportAPI, handler_method="list", methods=["GET"]),
+        webapp2.Route('/api/report/generate', handler=api.ReportAPI, handler_method="generate", methods=["POST"]),
+        webapp2.Route('/api/report/serve', handler=api.ReportAPI, handler_method="serve", methods=["GET"]),
+        webapp2.Route('/api/report/delete', handler=api.ReportAPI, handler_method="delete", methods=["POST"]),
 
         webapp2.Route('/api/auth/google_login', handler=api.AuthenticationAPI, handler_method="google_login"),
         webapp2.Route('/api/auth/google_auth', handler=api.AuthenticationAPI, handler_method="google_auth"),
@@ -99,9 +103,13 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/agent/fbook/request', handler=api.AgentAPI, handler_method="fbook_request"),
         webapp2.Route('/api/agent/spoof', handler=api.AgentAPI, handler_method="spoof", methods=["POST"]),
 
+        # Reports
+        webapp2.Route('/api/report/serve', handler=api.ReportAPI, handler_method="serve", methods=["GET"]),
+
         # Cron jobs (see cron.yaml)
         webapp2.Route('/cron/readables/sync', handler=tasks.SyncReadables),
         webapp2.Route('/cron/productivity/sync', handler=tasks.SyncProductivity),
+        webapp2.Route('/cron/reports/delete_old', handler=tasks.DeleteOldReports),
         webapp2.Route('/_ah/warmup', handler=tasks.WarmupHandler),
 
         # Private app (react)
