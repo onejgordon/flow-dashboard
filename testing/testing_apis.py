@@ -34,16 +34,39 @@ class APITestCase(BaseTestCase):
         g.put()
 
     def test_habit_calls(self):
+        # List
         response = self.get_json("/api/habit", {}, headers=self.api_headers)
         h = response.get('habits')[0]
         self.assertEqual(h.get('name'), "Run")
 
+        # Update
+        response = self.post_json("/api/habit", {'id': h.get('id'), 'name': 'Walk'}, headers=self.api_headers)
+        h = response.get('habit')
+        self.assertEqual(h.get('name'), 'Walk')
+
+        # Delete
+        response = self.post_json("/api/habit/delete", {'id': h.get('id')}, headers=self.api_headers)
+        h = Habit.get_by_id(h.get('id'), parent=self.u.key)
+        self.assertIsNone(h)  # Confirm deletion
+
     def test_goal_calls(self):
         response = self.get_json("/api/goal", {}, headers=self.api_headers)
-        h = response.get('goals')[0]
-        self.assertEqual(h.get('text')[0], "Get it done")
+        goal = response.get('goals')[0]
+        self.assertEqual(goal.get('text')[0], "Get it done")
+
+        # Update
+        response = self.post_json("/api/goal", {'id': goal.get('id'), 'text1': 'New goal 1', 'text2': 'New goal 2'}, headers=self.api_headers)
+        goal = response.get('goal')
+        self.assertEqual(goal.get('text')[0], 'New goal 1')
+        self.assertEqual(goal.get('text')[1], 'New goal 2')
 
     def test_task_calls(self):
         response = self.get_json("/api/task", {}, headers=self.api_headers)
         h = response.get('tasks')[0]
         self.assertEqual(h.get('title'), "Dont forget the milk")
+
+        # Update
+        response = self.post_json("/api/task", {'id': h.get('id'), 'title': 'Dont forget the sugar'}, headers=self.api_headers)
+        task = response.get('task')
+        self.assertEqual(task.get('title'), 'Dont forget the sugar')
+
