@@ -99,6 +99,10 @@ We've used API.AI to create an agent that integrates with Google Actions / Assis
 5. Go to integrations and add and authorize 'Actions on Google'
 6. Preview the integration using the web preview
 
+## Facebook Messenger Integration
+
+The messenger bot lives at https://www.facebook.com/FlowDashboard/
+
 
 ## Planned Features
 

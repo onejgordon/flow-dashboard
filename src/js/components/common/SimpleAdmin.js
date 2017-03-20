@@ -357,7 +357,6 @@ export default class SimpleAdmin extends React.Component {
     getListFromJSON: function(res) {return res;},
     getObjectFromJSON: function(res) {return res;},
     canEdit: true,
-    canArchive: false,
     confirm_delete: true
   };
 
@@ -486,23 +485,6 @@ export default class SimpleAdmin extends React.Component {
     }
   }
 
-  archive() {
-    var item = this.state.form;
-    var that = this;
-    if (item) {
-      this.setState({form: {}, status: 'closed'});
-      api.post(this.props.url+'/archive', item, function(resp) {
-        if (resp.success) {
-          var items = that.state.items.filter(function (candidate) {
-            return candidate[that.props.unique_key] != item[that.props.unique_key];
-          });
-          that.setState({items: items });
-          toastr.success(that.props.entity_name + " archived");
-        } else toastr.error("Failed to archive " + that.props.entity_name);
-      }, null, {no_success_bool: true});
-    }
-  }
-
   save() {
     var items = this.state.items;
     var creating_new = this.state.status == 'new';
@@ -517,26 +499,20 @@ export default class SimpleAdmin extends React.Component {
     data.create_new = creating_new ? 1 : 0;
     util.mergeObject(data, this.props.add_params);
     api.post(this.props.url, data, (res) => {
-      if (res.success != false){
-        var item = this.props.getObjectFromJSON(res);
-        var entname = this.props.entity_name;
-        if (creating_new) {
-          if (this.props.redirect_url) {
-            var url = this.props.redirect_url(item);
-            if (url) this.redirect(url);
-          }
-          if (this.props.onItemCreated) this.props.onItemCreated(item);
-          items.push(item);
-        } else {
-          util.updateByKey(item, items, this.props.unique_key);
+      var item = this.props.getObjectFromJSON(res);
+      var entname = this.props.entity_name;
+      if (creating_new) {
+        if (this.props.redirect_url) {
+          var url = this.props.redirect_url(item);
+          if (url) this.redirect(url);
         }
-        this.setState({items: items, status: 'closed', form: {}});
-        toastr.success(entname + " saved");
+        if (this.props.onItemCreated) this.props.onItemCreated(item);
+        items.push(item);
       } else {
-        if(res.message) toastr.error(res.message);
-        else toastr.error("Failed. Please try again.");
+        util.updateByKey(item, items, this.props.unique_key);
       }
-    }, null, {no_success_bool: true, no_toast: true});
+      this.setState({items: items, status: 'closed', form: {}});
+    }, null);
   }
 
   startNew() {
@@ -609,7 +585,6 @@ export default class SimpleAdmin extends React.Component {
         buttons.push(<FlatButton label={submit_text} onClick={this.save.bind(this)} primary={true} key="save" />);
       }
       if (!creating_new && !this.props.disableDelete) buttons.push(<FlatButton label="Delete" onClick={this.delete.bind(this)} secondary={true} style={{color: 'red'}} key="delet" />)
-      if (!creating_new && this.props.canArchive) buttons.push(<FlatButton label="Archive" onClick={this.archive.bind(this)} secondary={true} style={{color: 'purple'}} key="archive" />)
       buttons.push(<FlatButton label="Cancel" onClick={this.cancel.bind(this)} key="cancel" />)
       var formtoshow = (<Dialog open={this.dialog_open()} onRequestClose={this.cancel.bind(this)} title={title} actions={buttons} autoDetectWindowHeight={true} autoScrollBodyContent={true}>
           <div style={{marginTop: "8px"}}>{editform}</div>

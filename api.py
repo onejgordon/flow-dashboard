@@ -199,11 +199,16 @@ class HabitAPI(handlers.JsonRequestHandler):
                             booleans=['archived'],
                             integers=['tgt_weekly'],
                             supportTextBooleans=True
-        )
+                            )
+        habit = None
         if id:
             habit = Habit.get_by_id(int(id), parent=self.user.key)
         else:
-            habit = Habit.Create(self.user)
+            name = params.get('name')
+            if not name:
+                self.message = "Name required"
+            else:
+                habit = Habit.Create(self.user)
         if habit:
             habit.Update(**params)
             habit.put()
@@ -314,7 +319,9 @@ class EventAPI(handlers.JsonRequestHandler):
         if id:
             event = Event.get_by_id(id, parent=self.user.key)
         if not event:
-            event = Event.Create(self.user, params.get('date_start'))
+            start = params.get('date_start')
+            if start:
+                event = Event.Create(self.user, params.get('date_start'))
         if event:
             event.Update(**params)
             event.put()
