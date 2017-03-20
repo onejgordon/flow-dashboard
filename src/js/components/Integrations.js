@@ -117,6 +117,8 @@ export default class Integrations extends React.Component {
                 <Tabs>
                     <Tab label="Pocket">
 
+                        <p className="lead">Your reading list will be synced daily from Pocket.</p>
+
                         <FlatButton label={ pocket_connected ? "Connected" : "Connect" } onClick={this.start_pocket_authentication.bind(this)} disabled={pocket_connected}/>
                         <div hidden={!pocket_connected}>
                             <FlatButton label="Disconnect" onClick={this.disconnect_pocket.bind(this)} />
@@ -125,8 +127,10 @@ export default class Integrations extends React.Component {
 
                     <Tab label="Good Reads">
 
+                        <p className="lead">Your currently reading shelf list will be synced daily from goodreads.</p>
+
                         <b>Current User ID:</b> <span>{ gr_user_id || "--" }</span><br/>
-                        <TextField name="user_id" placeholder="Good Reads User ID" value={form.goodreads_user_id} onChange={this.changeHandler.bind(this, 'form', 'goodreads_user_id')} /><br/>
+                        <TextField name="user_id" placeholder="goodreads User ID" value={form.goodreads_user_id} onChange={this.changeHandler.bind(this, 'form', 'goodreads_user_id')} /><br/>
 
                         <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['goodreads_user_id'])} />
                     </Tab>

@@ -37,6 +37,11 @@ def str_to_tuple(s):
     return tuple(float(x) for x in s[1:-1].split(','))
 
 
+def make_function_signature(func_name, *args, **kwargs):
+    alpha_kwargs = sorted(kwargs.items(), key=lambda x : x[0])
+    return "-".join([func_name, str(args), str(alpha_kwargs)])
+
+
 def paging_params(request, limit_param="max", limit_default=30, page_default=0):
     MAX_OFFSET = 7000
     max = request.get_range(limit_param, default=limit_default)
@@ -132,43 +137,21 @@ def sdatetime(date, short=False):
     else:
         return None
 
+
 def iso_date(date):
     return datetime.strftime(date, "%Y-%m-%d") if date else None
 
+
 def sdate(date):
     return datetime.strftime(date, "%m/%d/%Y")
+
 
 def stime(date):
     return datetime.strftime(date, "[ %H:%M ]")
 
 
 def total_seconds(td):
-   return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
-
-
-def is_valid_email(possible_email):
-    '''
-    Checks if email consists of ASCII characters, has at least one @ surrounded
-    with text and at least one '.' after the @
-    '''
-    possible_email = possible_email.strip().lower()
-    try:
-        possible_email.decode('ascii')
-    except UnicodeDecodeError as e:
-        logging.error("Email is invalid: %s" % e)
-        return None
-    else:
-        from re import match
-        if match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", possible_email):
-            return possible_email
-        else:
-            return None
-
-
-def removeLinebreaks(message):
-    if message:
-        message = message.replace('\r','').replace('\n','')
-    return message
+    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
 
 
 def get_first_day(dt, d_years=0, d_months=0):
@@ -179,22 +162,6 @@ def get_first_day(dt, d_years=0, d_months=0):
 
 def get_last_day(dt):
     return get_first_day(dt, 0, 1) + timedelta(-1)
-
-html_escape_table = {
-    "&": "&amp;",
-    '"': "&quot;",
-    "'": "&apos;",
-    ">": "&gt;",
-    "<": "&lt;",
-}
-
-def html_escape(text):
-    """Produce entities within text."""
-    if type(text) is int:
-        return str(text)
-    else:
-        text = removeNonAscii(text)
-        return "".join(html_escape_table.get(c,c) for c in text)
 
 def dt_from_ts(secs):
     if secs == 0:
@@ -257,33 +224,12 @@ def is_mobile_browser(request):
    return not is_desktop(user_agent)
 
 
-def week_start():
-    now = datetime.now()
-    weekday = now.weekday()
-    weekday += 1
-    if weekday == 7:
-        weekday = 0
-    sunday = now - timedelta(days=weekday)
-    start = datetime.combine(sunday, dttime(0,0))
-    return start
-
 
 def trunc_chars(text, n=120):
     if text and len(text) > n:
         return text[:n]+"..."
     else:
         return text
-
-
-def fill_list_up(li, index, val=0):
-    while index >= len(li):
-        li.append(val)
-
-def paramDefaults(params):
-    defs = {}
-    for key, val in params.items():
-        defs[key] = val['def'] if val.has_key('def') else None
-    return defs
 
 
 def gets(self, strings=[], lists=[], floats=[], integers=[], booleans=[], dates=[], times=[], json=[], multi=False, addMultiBrackets=False, getDefault=None, ignoreMissing=True, supportTextBooleans=False):
@@ -350,25 +296,6 @@ def gets(self, strings=[], lists=[], floats=[], integers=[], booleans=[], dates=
     return vals
 
 
-def dedupe(seq, idfun=None):
-    # order preserving
-    if idfun is None:
-        def idfun(x): return x
-    seen = {}
-    result = []
-    for item in seq:
-        marker = idfun(item)
-        if marker in seen: continue
-        seen[marker] = 1
-        result.append(item)
-    return result
-
-def slugify(text):
-    if text:
-        return text.lower().replace(" ","_")
-    else:
-        return None
-
 def mean(li):
     return float(sum(li))/len(li) if len(li) > 0 else None
 
@@ -391,7 +318,7 @@ def validJson(raw, default=None):
     Returns string of dumped json, if valid
     '''
     j = getJson(raw)
-    if not j:
+    if j is None:
         return default
     return json.dumps(j)
 

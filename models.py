@@ -9,6 +9,7 @@ import random
 import logging
 import re
 import imp
+from common.decorators import auto_cache
 try:
     imp.find_module('secrets')
 except ImportError:
@@ -61,7 +62,8 @@ class User(ndb.Model):
     fb_id = ndb.StringProperty()
 
     def __str__(self):
-        return self.name if self.name else self.email
+        parts = [x for x in [self.name, self.email] if x]
+        return ' - '.join(parts)
 
     def json(self, is_self=False):
         return {
@@ -75,8 +77,11 @@ class User(ndb.Model):
         }
 
     @staticmethod
-    def GetByEmail(email):
+    def GetByEmail(email, create_if_missing=False, name=None):
         u = User.query().filter(User.email == email.lower()).get()
+        if not u and create_if_missing:
+            u = User.Create(email=email, name=name)
+            u.put()
         return u
 
     @staticmethod
@@ -92,6 +97,8 @@ class User(ndb.Model):
             u = User(email=email.lower() if email else None, g_id=g_id, name=name)
             if email.lower() == APP_OWNER:
                 u.level = USER.ADMIN
+            if not password:
+                password = tools.GenPasswd()
             u.setPass(password)
             u.Update(settings=DEFAULT_USER_SETTINGS)
             if not tools.on_dev_server():
@@ -820,6 +827,18 @@ class Readable(UserAccessible):
         return readables
 
     @staticmethod
+    @auto_cache()
+    def CountUnread(user, limit=200, refresh=False):
+        counts = {}
+        readables = Readable.query(ancestor=user.key).filter(Readable.read == False).order(-Readable.dt_added).fetch(limit=limit)
+        for r in readables:
+            type_string = r.print_type().lower()
+            if type_string not in counts:
+                counts[type_string] = 0
+            counts[type_string] += 1
+        return counts
+
+    @staticmethod
     def CreateOrUpdate(user, source_id, title=None, url=None,
                        type=READABLE.ARTICLE, source=None,
                        author=None, image_url=None, excerpt=None,
@@ -869,6 +888,9 @@ class Readable(UserAccessible):
             self.author = params.get('author')
         if 'word_count' in params:
             self.word_count = params.get('word_count')
+
+    def print_type(self):
+        return READABLE.LABELS.get(self.type)
 
     def get_source_url(self):
         if self.source == 'pocket':

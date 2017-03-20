@@ -126,13 +126,17 @@ class BaseTestCase(unittest.TestCase):
         for x in range(n_users):
             email = "email_%s@example.com" % (tools.GenPasswd())
             user = User.Create(email=email)
+            user.setPass("pw")
             user.put()
             self.users.append(user)
 
 
         # Setup API authentication params for use in API calls
-        self.api_auth_params = {
-        }
+        if n_users:
+            encoded = base64.b64encode("%s:%s" % (self.users[0].key.id(), "pw"))
+            self.api_headers = {
+                'authorization': "Basic %s" % encoded
+            }
 
     # Application helpers
 

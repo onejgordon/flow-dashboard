@@ -18,7 +18,7 @@ export default class ReadableLI extends React.Component {
     };
     this.TYPES = ["Article", "Book"];
     this.FAVORITE_ENABLED_SOURCES = ['pocket'];
-    this.READ_ENABLED_SOURCES = ['pocket'];
+    this.READ_ENABLED_SOURCES = ['pocket', 'goodreads'];
   }
 
 
@@ -54,7 +54,7 @@ export default class ReadableLI extends React.Component {
     let mis = [];
     let source = readable.source;
     if (!readable.read && this.READ_ENABLED_SOURCES.indexOf(source) > -1) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">remove_red_eye</FontIcon>} key="mr" onClick={this.update_readable.bind(this, readable, {read: 1})}>Mark Read</MenuItem>);
-    if (!readable.favorite) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">star</FontIcon>} key="mf" onClick={this.update_readable.bind(this, readable, {favorite: 1})}>Favorite</MenuItem>);
+    if (!readable.favorite && this.FAVORITE_ENABLED_SOURCES.indexOf(source) > -1) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">star</FontIcon>} key="mf" onClick={this.update_readable.bind(this, readable, {favorite: 1})}>Favorite</MenuItem>);
     mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">delete</FontIcon>} key="del" onClick={this.delete_readable.bind(this, readable)}>Delete</MenuItem>);
     let menu = (
       <IconMenu iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>

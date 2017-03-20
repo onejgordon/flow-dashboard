@@ -60,12 +60,13 @@ export default class Dashboard extends React.Component {
 
     render_more() {
         let {more} = this.state;
-        if (more == 'reading') return <ReadWidget />
-        else {
-            let fc = findItemById(this.flashcards(), more, 'id');
-            if (fc) return <FlashCard {...fc} />
-        }
+        let fc = findItemById(this.flashcards(), more, 'id');
+        if (fc) return <FlashCard {...fc} />
         return null;
+    }
+
+    any_flashcards() {
+        return this.flashcards().length > 0;
     }
 
     render() {
@@ -91,12 +92,17 @@ export default class Dashboard extends React.Component {
 
                 <HabitWidget />
 
+                <div className="row">
+                    <div className="col-sm-6">
+                        <ReadWidget />
+                    </div>
+                </div>
+
                 <MiniJournalWidget questions={journal_qs} include_location={journal_location} />
 
 
-                <div className="text-center" style={{marginTop: "20px"}}>
+                <div className="text-center" style={{marginTop: "20px"}} hidden={!this.any_flashcards()}>
                     <IconMenu iconButtonElement={<IconButton iconClassName="material-icons">games</IconButton>}>
-                        <MenuItem leftIcon={<FontIcon className="material-icons">library_books</FontIcon>} onClick={this.show_more.bind(this, 'reading')}>Reading</MenuItem>
                         { _more_options }
                     </IconMenu>
                 </div>

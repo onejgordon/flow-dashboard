@@ -10,8 +10,14 @@ import logging
 import random
 from google.appengine.api import urlfetch
 import json
-import hashlib
 import urllib
+import imp
+try:
+    imp.find_module('secrets')
+except ImportError:
+    import secrets_template as secrets
+else:
+    import secrets
 
 
 class ProjectAPI(handlers.JsonRequestHandler):
@@ -312,7 +318,7 @@ class EventAPI(handlers.JsonRequestHandler):
         '''
         id = self.request.get_range('id')
         params = tools.gets(self,
-            strings=['title', 'color'],
+            strings=['title', 'details', 'color'],
             dates=['date_start', 'date_end']
         )
         event = None
@@ -529,34 +535,35 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
             self.message = "Failed to validate"
         self.set_response({'user': u.json() if u else None})
 
-    @authorized.role()
-    def google_auth(self, d):
-        from secrets import GOOGLE_PROJECT_NAME
+    def google_auth(self):
         client_id = self.request.get('client_id')
         redirect_uri = self.request.get('redirect_uri')
         state = self.request.get('state')
         id_token = self.request.get('id_token')
-        redir_url = None
+        redir_url = user = None
         if client_id == 'google':
             # Part of Google Home / API.AI auth flow
-            if redirect_uri == "https://oauth-redirect.googleusercontent.com/r/%s" % GOOGLE_PROJECT_NAME:
-                if not self.user:
+            if redirect_uri == "https://oauth-redirect.googleusercontent.com/r/%s" % secrets.GOOGLE_PROJECT_NAME:
+                if not user:
                     ok, _email, name = self.validate_google_id_token(id_token)
                     if ok:
-                        self.user = User.GetByEmail(_email)
-                if self.user:
-                    access_token = self.user.aes_access_token(client_id='google')
-                    redir_url = 'https://oauth-redirect.googleusercontent.com/r/%s#' % GOOGLE_PROJECT_NAME
+                        user = User.GetByEmail(_email, create_if_missing=True, name=name)
+                if user:
+                    access_token = user.aes_access_token(client_id='google')
+                    redir_url = 'https://oauth-redirect.googleusercontent.com/r/%s#' % secrets.GOOGLE_PROJECT_NAME
                     redir_url += urllib.urlencode({
                         'access_token': access_token,
                         'token_type': 'bearer',
                         'state': state
                     })
                     self.success = True
+            else:
+                self.message = "Malformed"
+        else:
+            self.message = "Malformed"
         self.set_response({'redirect': redir_url}, debug=True)
 
     def validate_google_id_token(self, token):
-        import secrets
         success = False
         email = name = None
         g_response = urlfetch.fetch("https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=%s" % token)
@@ -570,18 +577,17 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
                     name = json_response.get("name", None)
         return (success, email, name)
 
-    @authorized.role()
-    def fbook_auth(self, d):
+    def fbook_auth(self):
         id_token = self.request.get('id_token')
         account_linking_token = self.request.get('account_linking_token')
         redirect_uri = self.request.get('redirect_uri')
         res = {}
-        if not self.user:
-            ok, _email, name = self.validate_google_id_token(id_token)
-            if ok:
-                self.user = User.GetByEmail(_email)
-        if self.user:
-            auth_code = self.user.key.id()
+        user = None
+        ok, _email, name = self.validate_google_id_token(id_token)
+        if ok:
+            user = User.GetByEmail(_email, create_if_missing=True, name=name)
+        if user:
+            auth_code = user.key.id()
             if redirect_uri:
                 redirect_uri += '&authorization_code=%s' % auth_code
                 self.success = True
@@ -593,10 +599,8 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         self.set_response(res, debug=True)
 
     def logout(self):
+        self.signout()
         self.success = True
-        if self.session.has_key('user'):
-            for key in self.session.keys():
-                del self.session[key]
         self.message = "Signed out"
         self.set_response()
 
@@ -671,7 +675,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         from services import goodreads
         self.success, readables = goodreads.get_books_on_shelf(self.user, shelf='currently-reading')
         if not self.success:
-            self.message = "An error occurred"
+            self.message = "There was a problem - please make sure you've entered your Goodreads ID on the integrations page"
         self.set_response({
             'readables': [r.json() for r in readables]
         })
@@ -685,10 +689,14 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         TS_KEY = 'pocket_last_timestamp'
         access_token = self.user.get_integration_prop('pocket_access_token')
         last_timestamp = self.user.get_integration_prop(TS_KEY, 0)
-        self.success, readables, latest_timestamp = pocket.sync(self.user, access_token, last_timestamp)
-        self.user.set_integration_prop(TS_KEY, latest_timestamp)
-        self.user.put()
-        self.update_session_user(self.user)
+        readables = []
+        if access_token:
+            self.success, readables, latest_timestamp = pocket.sync(self.user, access_token, last_timestamp)
+            self.user.set_integration_prop(TS_KEY, latest_timestamp)
+            self.user.put()
+            self.update_session_user(self.user)
+        else:
+            self.message = "Please link your Pocket account from the integrations page"
         self.set_response({
             'readables': [r.json() for r in filter(lambda r: not r.read, readables)]
         })
@@ -779,6 +787,7 @@ class AgentAPI(handlers.JsonRequestHandler):
         result = body.get('result', {})
         action = result.get('action')
         parameters = result.get('parameters')
+        logging.debug(["_get_action_and_params", id, action, parameters])
         return (id, action, parameters)
 
     @authorized.role()
@@ -786,21 +795,25 @@ class AgentAPI(handlers.JsonRequestHandler):
         '''
 
         '''
-        from secrets import API_AI_AUTH_KEY
         auth_key = self.request.headers.get('Auth-Key')
         res = {'source': 'Flow'}
         speech = None
         end_convo = False
         data = {}
-        if auth_key == API_AI_AUTH_KEY:
+        if auth_key == secrets.API_AI_AUTH_KEY:
             body = tools.getJson(self.request.body)
             logging.debug(body)
             agent_type = self._get_agent_type(body)
             id, action, parameters = self._get_action_and_params(body)
             self._get_user(body)
-            from services.agent import ConversationAgent
-            ca = ConversationAgent(type=agent_type, user=self.user)
-            speech, data, end_convo = ca.respond_to_action(action, parameters=parameters)
+            if action == 'input.disconnect':
+                speech = "Alright, you've disconnected your Flow account"
+                end_convo = True
+                self.signout()  # Clear session
+            else:
+                from services.agent import ConversationAgent
+                ca = ConversationAgent(type=agent_type, user=self.user)
+                speech, data, end_convo = ca.respond_to_action(action, parameters=parameters)
 
         if not speech:
             speech = "Uh oh, something weird happened"
@@ -818,10 +831,9 @@ class AgentAPI(handlers.JsonRequestHandler):
         '''
         Facebook Messenger request handling
         '''
-        from secrets import FB_VERIFY_TOKEN
         verify_token = self.request.get('hub.verify_token')
         hub_challenge = self.request.get('hub.challenge')
-        if verify_token and verify_token == FB_VERIFY_TOKEN:
+        if verify_token and verify_token == secrets.FB_VERIFY_TOKEN:
             if hub_challenge:
                 self.response.out.write(hub_challenge)
                 return

@@ -23,6 +23,14 @@ a:hover {
     text-decoration: none;
 }
 
+a > .show_hover {
+  opacity: 0.0;
+}
+
+a:hover > .show_hover {
+    opacity: 1.0;
+}
+
 body {
     font-family: 'Roboto', Helvetica, sans-serif;
     font-weight: 300;
@@ -41,6 +49,10 @@ body {
 
 #container {
     min-height: 600px;
+}
+
+div.section {
+  margin-top: 15px;
 }
 
 .map {
@@ -148,6 +160,19 @@ body {
     height: 100%;
     transition: .2s linear all;
     -webkit-transition: .4s linear all;
+}
+
+.bigProp {
+
+}
+
+.bigProp.clickable {
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.bigProp.clickable:hover {
+  opacity: 1.0;
 }
 
 /* Project progress */

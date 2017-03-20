@@ -1,5 +1,5 @@
 var React = require('react');
-import { IconButton, Dialog, RaisedButton, TextField } from 'material-ui';
+import { IconButton, Dialog, RaisedButton, TextField, FontIcon } from 'material-ui';
 var util = require('utils/util');
 var api = require('utils/api');
 import {clone} from 'lodash';
@@ -204,7 +204,7 @@ export default class HabitWidget extends React.Component {
     return (
       <tr key={h.id}>
         <td className="text-center">
-          <a href="javascript:void(0)" onClick={this.show_analysis.bind(this, h)}><b style={st}><i className="fa fa-area-chart"/> { h.name }</b></a>
+          <a href="javascript:void(0)" onClick={this.show_analysis.bind(this, h)}><span className="show_hover"><FontIcon className="material-icons" style={{fontSize: 17, lineHeight: '17px'}}>show_chart</FontIcon></span> <b style={st}>{ h.name }</b></a>
         </td>
         {res}
         { _commitment }
@@ -252,6 +252,7 @@ export default class HabitWidget extends React.Component {
         <Dialog
             open={new_dialog_open}
             title="Create Habit"
+            autoDetectWindowHeight={true} autoScrollBodyContent={true}
             onRequestClose={this.setState.bind(this, {new_dialog_open: false})}
             actions={actions}>
 

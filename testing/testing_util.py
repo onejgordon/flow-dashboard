@@ -66,6 +66,30 @@ class UtilTestCase(BaseTestCase):
             out = tools.safe_number(_in)
             self.assertEqual(out, _expect)
 
+    def testPluralize(self):
+        volley=[
+            ("item", 1, "item"),
+            ("cat", 10, "cats"),
+            ("hamburger", 0, "hamburgers")
+        ]
+
+        for v in volley:
+            _in, _count, _expect = v
+            out = tools.pluralize(_in, count=_count)
+            self.assertEqual(out, _expect)
+
+    def testValidJson(self):
+        volley=[
+            ("{}", "{}", None),
+            ("{\"hello\": \"hi\"}", "{\"hello\": \"hi\"}", None),
+            ("{'x'}", 0, 0),
+        ]
+
+        for v in volley:
+            _in, _expect, _default = v
+            out = tools.validJson(_in, default=_default)
+            self.assertEqual(out, _expect)
+
 
     def testTextSanitization(self):
         # Remove non-ascii
@@ -88,3 +112,28 @@ class UtilTestCase(BaseTestCase):
             actual = tools.normalize_to_ascii(v[0])
             self.assertEqual(actual, target)
 
+
+    def testStripSymbols(self):
+        # Remove non-ascii
+        volley = [
+            ('Surely!', 'Surely'),
+            ('abc123^&*', 'abc123'),
+            ('r*d ra!nbow', 'rd ranbow')
+        ]
+
+        for v in volley:
+            target = v[1]
+            actual = tools.strip_symbols(v[0])
+            self.assertEqual(actual, target)
+
+    def testFromISO(self):
+        volley = [
+            ('2017-01-01', datetime(2017, 1, 1)),
+            ('2001-12-31', datetime(2001, 12, 31)),
+            ('1985-04-04', datetime(1985, 4, 4))
+        ]
+
+        for v in volley:
+            target = v[1]
+            actual = tools.fromISODate(v[0])
+            self.assertEqual(actual, target)

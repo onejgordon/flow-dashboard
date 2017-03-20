@@ -31,6 +31,8 @@ export default class Splash extends React.Component {
 
                     <h2 style={{marginTop: "140px", marginBottom: "60px"}}>{cta}</h2>
 
+                    <p className="lead" style={{fontSize: "1.45em"}}>{ AppConstants.TAGLINE }</p>
+
                     <div hidden={!user}>
                         <Link to="/app/dashboard"><RaisedButton label="Your Dashboard" primary={true} /></Link>
                     </div>

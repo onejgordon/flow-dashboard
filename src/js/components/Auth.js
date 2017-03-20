@@ -72,7 +72,7 @@ export default class Auth extends React.Component {
                     <GoogleLogin
                         clientId={client_secrets.G_OAUTH_CLIENT_ID}
                         buttonText="Login"
-                        scope="profile email https://www.googleapis.com/auth/spreadsheets.readonly"
+                        scope="profile email"
                         onSuccess={this.success.bind(this)}
                         onFailure={this.fail.bind(this)} />
                 </div>
