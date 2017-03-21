@@ -4,6 +4,7 @@ var util = require('utils/util');
 var api = require('utils/api');
 import {changeHandler} from 'utils/component-utils';
 import {Doughnut} from "react-chartjs-2";
+var AppConstants = require('constants/AppConstants');
 var ReactTooltip = require('react-tooltip');
 var BigProp = require('components/common/BigProp');
 
@@ -61,6 +62,8 @@ export default class HabitAnalysis extends React.Component {
     let longest_streak = 0;
     let streak = 0;
     let n_done = 0;
+    let n_committed = 0;
+    let n_committed_done = 0;
     let habit_color = habit.color || "#1193FE";
     for (let i = 0; i < days; i++) {
       cursor.setDate(cursor.getDate() + 1);
@@ -77,12 +80,20 @@ export default class HabitAnalysis extends React.Component {
         if (streak > longest_streak) longest_streak = streak;
         streak = 0;
       }
-      if (hd && hd.done) day_st.backgroundColor = habit_color;
+      if (hd) {
+        if (hd.done) day_st.backgroundColor = habit_color;
+        if (hd.committed) {
+          n_committed += 1;
+          if (done) n_committed_done += 1;
+          day_st.color = AppConstants.COMMIT_COLOR;
+        }
+      }
       let cls = "habitDay";
       if (even_month) cls += " even_month";
       _squares.push(<span className={cls} key={i} style={day_st} data-tip={iso_date}>{ cursor.getDate() }</span>)
     }
     let completion_rate = util.printPercent(n_done/days);
+    let commitments_successful = `${n_committed_done} (${util.printPercent(n_committed_done/n_committed)})`;
     return (
       <div className="row">
         <div className="col-sm-6">
@@ -91,21 +102,24 @@ export default class HabitAnalysis extends React.Component {
           </div>
         </div>
         <div className="col-sm-6">
-          <BigProp label="Longest streak" value={longest_streak} />
-          <BigProp label={`Completions in last ${days} days`} value={n_done} />
+          <BigProp label="Longest streak" value={longest_streak} labelPosition="top" />
+          <BigProp label={`Completions in last ${days} days`} value={n_done} labelPosition="top" />
+          <BigProp label={`Commitments Successful`} value={commitments_successful} labelPosition="top" />
 
           <h5 className="text-center">Overall completion rate - { completion_rate }</h5>
 
-          <Doughnut data={{
-            labels: ["Days Completed", "Days Incomplete"],
-            datasets: [
-              {
-                data: [n_done, days - n_done],
-                backgroundColor: [habit_color, "#333333"]
-              },
+          <div className="vpad">
+            <Doughnut data={{
+              labels: ["Days Completed", "Days Incomplete"],
+              datasets: [
+                {
+                  data: [n_done, days - n_done],
+                  backgroundColor: [habit_color, "#333333"]
+                },
 
-            ]
-          }} />
+              ]
+            }} />
+          </div>
         </div>
       </div>
       )
