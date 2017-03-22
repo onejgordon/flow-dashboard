@@ -1,5 +1,6 @@
 var React = require('react');
-import { Dialog, RaisedButton, FlatButton, TextField, Slider } from 'material-ui';
+import { Dialog, RaisedButton, FlatButton, TextField,
+  IconButton, Slider } from 'material-ui';
 var api = require('utils/api');
 var util = require('utils/util');
 import {clone} from 'lodash';
@@ -16,7 +17,8 @@ export default class GoalViewer extends React.Component {
       this.state = {
           annual: null,
           monthly: null,
-          set_goal_form: null,  // Which goal to show form for (date str)
+          longterm: null,
+          set_goal_form: null,  // Which goal to show form for (date str or 'longterm')
           form: {},
           assessment_form: {assessment: 1}
       };
@@ -34,7 +36,8 @@ export default class GoalViewer extends React.Component {
       let g = res.goal;
       let st = {};
       if (g.annual) st.annual = g;
-      else st.monthly = g;
+      else if (g.monthly) st.monthly = g;
+      else if (g.longterm) st.longterm = g;
       st.set_goal_form = null;
       this.setState(st);
     })
@@ -67,22 +70,26 @@ export default class GoalViewer extends React.Component {
   fetch_current() {
     api.get("/api/goal/current", {}, (res) => {
       let today = new Date();
-      let st = {annual: res.annual, monthly: res.monthly};
+      console.log(res);
+      let st = {annual: res.annual, monthly: res.monthly, longterm: res.longterm};
       if (!res.annual) st.set_goal_form = today.getFullYear();
       else if (!res.monthly) st.set_goal_form = util.printDate(today.getTime(), this.GOAL_M_FORMAT);
       this.setState(st);
     });
   }
 
+  show_longterm() {
+    if (this.state.longterm) this.show_goal_dialog(this.state.longterm);
+    else this.setState({set_goal_form: 'longterm'});
+  }
+
   show_goal_dialog(g) {
       let today = new Date();
       let form = util.spread_array(g, 'text', 'text', 4);
-      console.log(form);
       let st = {
-        form: form
+        form: form,
+        set_goal_form: g.id
       };
-      if (g.annual) st.set_goal_form = today.getFullYear();
-      else st.set_goal_form = util.printDate(today.getTime(), this.GOAL_M_FORMAT);
       this.setState(st);
   }
 
@@ -106,7 +113,6 @@ export default class GoalViewer extends React.Component {
     let {assessment_form} = this.state;
     let today = new Date();
     let date_printed = "";
-    let pct = 0.0;
     let date = new Date(g.iso_date);
     let value = 0;
     let total = 100;
@@ -114,7 +120,6 @@ export default class GoalViewer extends React.Component {
       date_printed = g.id;
       value = util.dayOfYear(today);
       total = 365;
-      pct = 100.0 * ((today.getMonth()+1) / 12.0 + today.getDate() / 30.0 / 12.0 ); // Imprecise
     } else {
       date_printed = util.printDate(date.getTime(), "MMM YYYY");
       value = today.getDate();
@@ -146,6 +151,8 @@ export default class GoalViewer extends React.Component {
   render() {
     let _goals;
     let {annual, monthly, set_goal_form} = this.state;
+    let goal_label;
+    if (set_goal_form) goal_label = util.capitalize(set_goal_form.toString());
     if (annual || monthly) _goals = (
       <div className="row">
       { [monthly, annual].map((g, i) => {
@@ -159,10 +166,18 @@ export default class GoalViewer extends React.Component {
     ]
     return (
       <div className="GoalsViewer">
-        <h3>Goals</h3>
+        <div className="row">
+          <div className="col-sm-6">
+            <h3>Goals</h3>
+          </div>
+          <div className="col-sm-6">
+            <span className="pull-right"><IconButton tooltip="Longterm Goals" iconClassName="material-icons" onClick={this.show_longterm.bind(this)}>call_made</IconButton></span>
+          </div>
+        </div>
+
         { _goals }
 
-        <Dialog open={set_goal_form != null} title={`Set goals for ${set_goal_form}`} actions={actions} onRequestClose={this.dismiss.bind(this)}>
+        <Dialog open={set_goal_form != null} title={`Set goals for ${goal_label}`} actions={actions} onRequestClose={this.dismiss.bind(this)}>
           { this.render_set_goal_form() }
         </Dialog>
       </div>

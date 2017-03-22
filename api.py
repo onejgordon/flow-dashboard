@@ -260,10 +260,11 @@ class GoalAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def current(self, d):
-        [annual, monthly] = Goal.Current(self.user)
+        [annual, monthly, longterm] = Goal.Current(self.user)
         self.set_response({
             'annual': annual.json() if annual else None,
             'monthly': monthly.json() if monthly else None,
+            'longterm': longterm.json() if longterm else None
         }, success=True)
 
     @authorized.role('user')
@@ -279,8 +280,7 @@ class GoalAPI(handlers.JsonRequestHandler):
         if id:
             goal = Goal.get_by_id(id, parent=self.user.key)
         if not goal:
-            annual = len(id) == 4
-            goal = Goal.Create(self.user, id=id, annual=annual)
+            goal = Goal.Create(self.user, id=id)
         if goal:
             text = []
             for i in range(1, 5):

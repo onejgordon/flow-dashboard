@@ -687,9 +687,11 @@ class Goal(UserAccessible):
             'iso_date': tools.iso_date(self.date),
             'text': self.text,
             'assessment': self.assessment,
-            'annual': self.annual()
+            'annual': self.annual(),
+            'monthly': self.monthly(),
+            'longterm': self.longterm()
         }
-        if not self.annual():
+        if self.date:
             res['month'] = self.date.month
         return res
 
@@ -706,14 +708,17 @@ class Goal(UserAccessible):
             key=lambda g: g.date)
 
     @staticmethod
-    def Current(user, which="both"):
+    def Current(user, which="all"):
         date = datetime.today()
         keys = []
-        if which in ["both", "year"]:
+        if which in ["all", "year"]:
             annual_id = ndb.Key('Goal', datetime.strftime(date, "%Y"), parent=user.key)
             keys.append(annual_id)
-        if which in ["both", "month"]:
+        if which in ["all", "month"]:
             monthly_id = ndb.Key('Goal', datetime.strftime(date, "%Y-%m"), parent=user.key)
+            keys.append(monthly_id)
+        if which in ["all", "longterm"]:
+            monthly_id = ndb.Key('Goal', datetime.strftime(date, "longterm"), parent=user.key)
             keys.append(monthly_id)
         goals = ndb.get_multi(keys)
         return [g for g in goals]
@@ -725,15 +730,13 @@ class Goal(UserAccessible):
                 id = datetime.strftime(date, "%Y-%m")
             else:
                 id = datetime.strftime(date, "%Y")
-        if not annual:
-            if not date:
-                first_of_month = tools.fromISODate(id + "-01")
-                date = first_of_month
-        else:
-            if not date:
-                first_of_year = datetime(int(id), 1, 1)
-                date = first_of_year
-        return Goal(id=id, date=date, parent=user.key)
+        g = Goal(id=id, parent=user.key)
+        if g.monthly() and not date:
+            g.date = tools.fromISODate(id + "-01")
+        elif g.annual() and not g.date:
+            first_of_year = datetime(int(id), 1, 1)
+            date = first_of_year
+        return g
 
     def Update(self, **params):
         if 'text' in params:
@@ -748,6 +751,12 @@ class Goal(UserAccessible):
 
     def annual(self):
         return len(self.key.id()) == 4
+
+    def monthly(self):
+        return len(self.key.id()) == 7
+
+    def longterm(self):
+        return str(self.key.id()) == 'longterm'
 
 
 class TrackingDay(UserAccessible):

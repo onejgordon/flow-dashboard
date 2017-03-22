@@ -251,7 +251,7 @@ class ConversationAgent(object):
             return ("Please visit flowdash.co to set up journal questions", True)
 
     def _goals_request(self):
-        [annual, monthly] = Goal.Current(self.user)
+        [annual, monthly, longterm] = Goal.Current(self.user)
         speech = None
         g = None
         if monthly:
