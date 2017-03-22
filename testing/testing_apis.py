@@ -29,7 +29,7 @@ class APITestCase(BaseTestCase):
         h.put()
         t = Task.Create(u, "Dont forget the milk")
         t.put()
-        g = Goal.Create(u, date=datetime.today().date())
+        g = Goal.CreateMonthly(u, date=datetime.today().date())
         g.Update(text=["Get it done", "Also get exercise"])
         g.put()
 

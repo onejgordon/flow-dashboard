@@ -13,9 +13,9 @@ class Init(handlers.BaseRequestHandler):
         u = User.query().get()
         if u:
             today = datetime.today()
-            g = Goal.Create(u, date=today)
+            g = Goal.CreateMonthly(u, date=today)
             g.Update(text=["Get it done"])
-            g2 = Goal.Create(u, date=today, annual=True)
+            g2 = Goal.Create(u, str(today.year))
             g2.Update(text=["Make progress"])
             ndb.put_multi([g, g2])
             h = Habit.Create(u)

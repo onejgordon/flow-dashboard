@@ -724,12 +724,7 @@ class Goal(UserAccessible):
         return [g for g in goals]
 
     @staticmethod
-    def Create(user, id=None, date=None, annual=False):
-        if not id:
-            if not annual:
-                id = datetime.strftime(date, "%Y-%m")
-            else:
-                id = datetime.strftime(date, "%Y")
+    def Create(user, id, date=None):
         g = Goal(id=id, parent=user.key)
         if g.monthly() and not date:
             g.date = tools.fromISODate(id + "-01")
@@ -737,6 +732,11 @@ class Goal(UserAccessible):
             first_of_year = datetime(int(id), 1, 1)
             date = first_of_year
         return g
+
+    @staticmethod
+    def CreateMonthly(user, date):
+        id = datetime.strftime(date, "%Y-%m")
+        return Goal.Create(user, id)
 
     def Update(self, **params):
         if 'text' in params:

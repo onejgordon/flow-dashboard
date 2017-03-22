@@ -31,7 +31,7 @@ class AgentTestCase(BaseTestCase):
         t = Task.Create(u, "Dont forget the milk")
         t.put()
         self.milk = t
-        g = Goal.Create(u, date=datetime.today().date())
+        g = Goal.CreateMonthly(u, date=datetime.today().date())
         g.Update(text=["Get it done", "Also get exercise"])
         g.put()
 
