@@ -25,7 +25,7 @@ export default class HabitWidget extends React.Component {
           habit_analysis: null,
           form: {}
       };
-      this.COMMIT_COLOR = '#F9D23D';
+
   }
 
   componentDidMount() {
@@ -111,7 +111,7 @@ export default class HabitWidget extends React.Component {
       let committed = hd && hd.committed && !hd.done;
       if (committed) n_undone_commits += 1;
     });
-    if (n_undone_commits > 0) return <p className="lead" style={{color: this.COMMIT_COLOR}}>You have <b>{n_undone_commits}</b> unfinished commitment(s) today!</p>
+    if (n_undone_commits > 0) return <p className="lead" style={{color: AppConstants.COMMIT_COLOR}}>You have <b>{n_undone_commits}</b> unfinished commitment(s) today!</p>
     else return null;
   }
 
@@ -162,7 +162,7 @@ export default class HabitWidget extends React.Component {
       if (done && in_week) done_in_week += 1;
       let st = {};
       if (done) st.color = h.color || cyanA400;
-      else if (committed) st.color = this.COMMIT_COLOR;
+      else if (committed) st.color = AppConstants.COMMIT_COLOR;
       if (!in_week) st.opacity = 0.6;
       let tt = done ? "Mark Not Done" : "Mark Done";
       res.push(<td key={iso_day}>
@@ -196,7 +196,7 @@ export default class HabitWidget extends React.Component {
           <IconButton iconClassName="material-icons"
             onClick={this.commit.bind(this, h, today_iso)}
             tooltip="Commit"
-            iconStyle={{color: this.COMMIT_COLOR}}>fast_forward
+            iconStyle={{color: AppConstants.COMMIT_COLOR}}>fast_forward
           </IconButton>
           : null }
         </td>

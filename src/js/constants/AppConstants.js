@@ -8,7 +8,10 @@ var AppConstants = {
 	JOURNAL_START_HOUR: 21,
 	JOURNAL_END_HOUR: 4,
 	SECURE_BASE: "https://genzai-app.appspot.com",
-	TAGLINE: "Flow is a habit tracker and personal data analytics app that lets you keep focus on what matters. Flow owns none of your data. That's yours."
+	TAGLINE: "Flow is a habit tracker and personal data analytics app that lets you keep focus on what matters. Flow owns none of your data. That's yours.",
+
+	// Habits
+	COMMIT_COLOR: '#F9D23D'
 };
 
 module.exports = AppConstants;
