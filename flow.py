@@ -78,6 +78,7 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/readable', handler=api.ReadableAPI, handler_method="list", methods=["GET"]),
         webapp2.Route('/api/readable', handler=api.ReadableAPI, handler_method="update", methods=["POST"]),
         webapp2.Route('/api/readable/delete', handler=api.ReadableAPI, handler_method="delete", methods=["POST"]),
+        webapp2.Route('/api/quote', handler=api.QuoteAPI, handler_method="list", methods=["GET"]),
         webapp2.Route('/api/analysis', handler=api.AnalysisAPI, handler_method="get", methods=["GET"]),
         webapp2.Route('/api/journaltag', handler=api.JournalTagAPI, handler_method="list", methods=["GET"]),
         webapp2.Route('/api/report', handler=api.ReportAPI, handler_method="list", methods=["GET"]),

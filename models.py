@@ -812,6 +812,8 @@ class Readable(UserAccessible):
     favorite = ndb.BooleanProperty(default=False)
     type = ndb.IntegerProperty(default=READABLE.ARTICLE)
     excerpt = ndb.TextProperty()
+    notes = ndb.TextProperty()
+    has_notes = ndb.BooleanProperty(default=False)
     source = ndb.TextProperty()  # e.g. 'pocket', 'goodreads'
     tags = ndb.TextProperty(repeated=True)
     read = ndb.BooleanProperty(default=False)
@@ -828,14 +830,23 @@ class Readable(UserAccessible):
             'source_url': self.get_source_url(),
             'type': self.type,
             'source': self.source,
+            'notes': self.notes,
+            'has_notes': self.has_notes,
             'read': self.read,
             'word_count': self.word_count
         }
 
     @staticmethod
-    def Unread(user, limit=30):
-        readables = Readable.query(ancestor=user.key).filter(Readable.read == False).order(-Readable.dt_added).fetch(limit=limit)
-        return readables
+    def Fetch(user, favorites=False, with_notes=False, unread=False, limit=30, offset=0):
+        q = Readable.query(ancestor=user.key)
+        if with_notes:
+            q = q.filter(Readable.has_notes == True)
+        elif favorites:
+            q = q.filter(Readable.favorite == True)
+        elif unread:
+            q = q.filter(Readable.read == False)
+        q = q.order(-Readable.dt_added)
+        return q.fetch(limit=limit, offset=offset)
 
     @staticmethod
     @auto_cache()
@@ -883,6 +894,9 @@ class Readable(UserAccessible):
             self.source = params.get('source')
         if 'excerpt' in params:
             self.excerpt = params.get('excerpt')
+        if 'notes' in params:
+            self.notes = params.get('notes')
+            self.has_notes = bool(self.notes)
         if 'title' in params:
             self.title = params.get('title')
         if 'url' in params:
@@ -926,6 +940,10 @@ class Quote(UserAccessible):
             'title': self.title,
             'content': self.content
         }
+
+    @staticmethod
+    def Fetch(user, limit=50):
+        return Quote.query(ancestor=user.key).order(-Quote.dt_added).fetch(limit=limit)
 
 
 class Report(UserAccessible):

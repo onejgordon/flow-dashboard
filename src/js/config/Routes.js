@@ -9,6 +9,7 @@ var About = require('components/About');
 var Auth = require('components/Auth');
 var Manage = require('components/Manage');
 var Analysis = require('components/Analysis');
+var Reading = require('components/Reading');
 var Integrations = require('components/Integrations');
 var Reports = require('components/Reports');
 var AdminAgent = require('components/admin/AdminAgent');
@@ -39,6 +40,7 @@ module.exports = (
       <Route path="manage" component={Manage} />
       <Route path="integrations" component={Integrations} />
       <Route path="reports" component={Reports} />
+      <Route path="reading" component={Reading} />
       <Route path="admin/agent" component={AdminAgent} />
       <Route path="analysis" component={Analysis}>
         <IndexRedirect to="/app/analysis/goals" />

@@ -1,7 +1,7 @@
 
 from datetime import datetime, timedelta, time
 from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
-    Readable, TrackingDay, Event, JournalTag, Report
+    Readable, TrackingDay, Event, JournalTag, Report, Quote
 from google.appengine.ext import ndb
 import authorized
 import handlers
@@ -371,7 +371,14 @@ class ReadableAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        readables = Readable.Unread(self.user)
+        page, max, offset = tools.paging_params(self.request)
+        favorites = self.request.get_range('favorites') == 1
+        with_notes = self.request.get_range('with_notes') == 1
+        unread = self.request.get_range('unread') == 1
+        readables = Readable.Fetch(self.user, favorites=favorites,
+                                   unread=unread,
+                                   with_notes=with_notes, limit=max,
+                                   offset=offset)
         self.set_response({
             'readables': [r.json() for r in readables]
         }, success=True)
@@ -380,6 +387,7 @@ class ReadableAPI(handlers.JsonRequestHandler):
     def update(self, d):
         id = self.request.get('id')
         params = tools.gets(self,
+            strings=['notes'],
             booleans=['read', 'favorite'])
         r = Readable.get_by_id(id, parent=self.user.key)
         if r:
@@ -414,6 +422,16 @@ class ReadableAPI(handlers.JsonRequestHandler):
         else:
             self.message = "Couldn't find item"
         self.set_response()
+
+
+class QuoteAPI(handlers.JsonRequestHandler):
+
+    @authorized.role('user')
+    def list(self, d):
+        quotes = Quote.Fetch(self.user)
+        self.set_response({
+            'quotes': [q.json() for q in quotes]
+        }, success=True)
 
 
 class JournalTagAPI(handlers.JsonRequestHandler):
