@@ -9,6 +9,7 @@ import random
 import logging
 import re
 import imp
+import hashlib
 from common.decorators import auto_cache
 try:
     imp.find_module('secrets')
@@ -926,24 +927,50 @@ class Quote(UserAccessible):
     """
     Quotes
 
-    Key - ID [source]:[source id]
+    Key - ID md5([source + content])
 
     """
     source_id = ndb.TextProperty()
     dt_added = ndb.DateTimeProperty()
-    title = ndb.TextProperty()  # Can have multiple goals for period
+    readable = ndb.KeyProperty()
+    source = ndb.TextProperty()  # Title of piece, person, optionally location in piece
+    link = ndb.TextProperty()
+    tags = ndb.StringProperty(repeated=True)  # lower case, symbols removed
     content = ndb.TextProperty()
 
     def json(self):
         return {
             'id': self.key.id(),
-            'title': self.title,
-            'content': self.content
+            'source': self.source,
+            'link': self.link,
+            'content': self.content,
+            'tags': self.tags
         }
+
+    @staticmethod
+    def Create(user, source, content):
+        if source and content:
+            m = hashlib.md5()
+            m.update(source + "|" + content)
+            id = m.hexdigest()
+            return Quote(id=id, source=source, content=content, parent=user.key)
 
     @staticmethod
     def Fetch(user, limit=50):
         return Quote.query(ancestor=user.key).order(-Quote.dt_added).fetch(limit=limit)
+
+    def Update(self, **params):
+        if 'source' in params:
+            self.source = params.get('source')
+        if 'content' in params:
+            self.content = params.get('content')
+        if 'link' in params:
+            self.link = params.get('link')
+        if 'tags' in params:
+            logging.debug(params)
+            tags = params.get('tags', [])
+            if tags:
+                self.tags = tags
 
 
 class Report(UserAccessible):

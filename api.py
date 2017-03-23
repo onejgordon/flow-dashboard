@@ -433,6 +433,27 @@ class QuoteAPI(handlers.JsonRequestHandler):
             'quotes': [q.json() for q in quotes]
         }, success=True)
 
+    @authorized.role('user')
+    def update(self, d):
+        id = self.request.get('id')
+        params = tools.gets(self,
+            strings=['source', 'content', 'link'],
+            lists=['tags']
+        )
+        logging.debug(params)
+        quote = None
+        if id:
+            quote = Quote.get_by_id(id, parent=self.user.key)
+        else:
+            quote = Quote.Create(self.user, params.get('source'), params.get('content'))
+            self.message = "Quote saved!" if quote else "Couldn't create quote"
+            self.success = quote is not None
+        quote.Update(tags=params.get('tags'))
+        quote.put()
+        self.set_response({
+            'quote': quote.json() if quote else None
+        })
+
 
 class JournalTagAPI(handlers.JsonRequestHandler):
 
@@ -807,7 +828,8 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         if user and notebook_guid in config_notebook_ids:
             title, content = flow_evernote.get_note(note_guid)
             if title and content:
-                q = Quote(title=title, content=content, parent=user.key)
+                # TODO: Tags
+                q = Quote.Create(user, source=title, content=content)
                 q.put()
                 self.success = True
             else:

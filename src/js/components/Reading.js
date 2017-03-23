@@ -2,12 +2,13 @@ var React = require('react');
 
 var UserStore = require('stores/UserStore');
 var ReadableLI = require('components/list_items/ReadableLI');
-import {Tabs, Tab, Toggle,
-    IconMenu, ListItem} from 'material-ui';
+import {Tabs, Tab, Toggle, Paper, RaisedButton, TextField,
+    ListItem} from 'material-ui';
 var util = require('utils/util');
 import connectToStores from 'alt-utils/lib/connectToStores';
 import {changeHandler} from 'utils/component-utils';
 import {clone} from 'lodash';
+var api = require('utils/api');
 var FetchedList = require('components/common/FetchedList');
 
 @connectToStores
@@ -36,7 +37,7 @@ export default class Reading extends React.Component {
     }
 
     render_quote(q) {
-        return <ListItem primaryText={util.truncate(q.content(60))} />
+        return <ListItem primaryText={util.truncate(q.content, 60)} secondaryText={q.id} />
     }
 
     readable_update(r) {
@@ -51,6 +52,14 @@ export default class Reading extends React.Component {
         return <ReadableLI key={r.id} readable={r}
                   onUpdate={this.readable_update.bind(this)}
                   onDelete={this.readable_delete.bind(this)} />
+    }
+
+    create_quote() {
+        let params = clone(this.state.form);
+        api.post("/api/quote", params, (res) => {
+            if (res.quote) this.refs.quotes.update_item_by_key(res.quote, 'id');
+            this.setState({form: {}});
+        });
     }
 
     render() {
@@ -83,6 +92,16 @@ export default class Reading extends React.Component {
                             renderItem={this.render_quote.bind(this)}
                             paging_enabled={true}
                             autofetch={false}/>
+
+                        <Paper style={{padding: "10px"}}>
+                            <h3>Save Quote</h3>
+                            <TextField placeholder="Source" name="source" value={form.source||''} onChange={this.changeHandler.bind(this, 'form', 'source')} fullWidth />
+                            <TextField placeholder="Content" name="content" value={form.content||''} onChange={this.changeHandler.bind(this, 'form', 'content')} fullWidth multiLine />
+                            <TextField placeholder="Link (URL, optional)" name="link" value={form.link||''} onChange={this.changeHandler.bind(this, 'form', 'link')} fullWidth />
+                            <TextField placeholder="Tags (comma separated)" name="tags" value={form.tags||''} onChange={this.changeHandler.bind(this, 'form', 'tags')} fullWidth />
+                            <RaisedButton label="Create" onClick={this.create_quote.bind(this)} />
+                        </Paper>
+
                     </Tab>
                 </Tabs>
 
