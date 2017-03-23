@@ -45,6 +45,8 @@ export default class Integrations extends React.Component {
         }
     }
 
+    // Pocket
+
     start_pocket_authentication() {
         this.setState({snack_message: "Pocket connecting...", snack_open: true})
         api.post("/api/integrations/pocket/authenticate", {}, (res) => {
@@ -66,6 +68,35 @@ export default class Integrations extends React.Component {
     disconnect_pocket() {
         this.setState({snack_message: "Disconnecting from Pocket...", snack_open: true})
         api.post("/api/integrations/pocket/disconnect", {}, (res) => {
+            if (res.user) {
+                UserActions.storeUser(res.user);
+            }
+        });
+    }
+
+    // Evernote
+
+    start_evernote_authentication() {
+        this.setState({snack_message: "Evernote connecting...", snack_open: true})
+        api.post("/api/integrations/evernote/authenticate", {}, (res) => {
+            if (res.redirect) window.location = res.redirect;
+        });
+    }
+
+    finish_evernote_authentication() {
+        this.setState({snack_message: "Signing in to Evernote...", snack_open: true})
+        api.post("/api/integrations/evernote/authorize", {}, (res) => {
+            if (res.user) {
+                UserActions.storeUser(res.user);
+                this.setState({snack_message: "Evernote connected!", snack_open: true})
+                browserHistory.push('/app/integrations');
+            }
+        });
+    }
+
+    disconnect_evernote() {
+        this.setState({snack_message: "Disconnecting from Evernote...", snack_open: true})
+        api.post("/api/integrations/evernote/disconnect", {}, (res) => {
             if (res.user) {
                 UserActions.storeUser(res.user);
             }
@@ -101,14 +132,16 @@ export default class Integrations extends React.Component {
         let test = true;
         let {user} = this.props;
         if (!user) return;
-        let gr_user_id, gh_user, gh_pat;
+        let gr_user_id, gh_user, gh_pat, en_notebook_ids;
         if (user && user.integrations) {
             let ints = user.integrations;
             gr_user_id = ints.goodreads_user_id;
             gh_user = ints.github_username;
             gh_pat = ints.github_pat;
+            en_notebook_ids = ints.evernote_notebook_ids;
         }
         let pocket_connected = user.integrations && user.integrations.pocket_access_token != null;
+        let evernote_connected = user.integrations && user.integrations.evernote_access_token != null;
         return (
             <div>
 
@@ -122,6 +155,22 @@ export default class Integrations extends React.Component {
                         <FlatButton label={ pocket_connected ? "Connected" : "Connect" } onClick={this.start_pocket_authentication.bind(this)} disabled={pocket_connected}/>
                         <div hidden={!pocket_connected}>
                             <FlatButton label="Disconnect" onClick={this.disconnect_pocket.bind(this)} />
+                        </div>
+                    </Tab>
+
+                    <Tab label="Evernote">
+
+                        <p className="lead">Flow will receive new notes/quotes/excerpts added to specified notebooks on Evernote.</p>
+
+                        <FlatButton label={ evernote_connected ? "Connected" : "Connect" } onClick={this.start_evernote_authentication.bind(this)} disabled={evernote_connected}/>
+                        <div hidden={!evernote_connected}>
+                            <FlatButton label="Disconnect" onClick={this.disconnect_evernote.bind(this)} />
+
+                            <b>Current Notebook IDs:</b> <span>{ en_notebook_ids || "--" }</span><br/>
+                            <TextField name="user_id" placeholder="Evernote Notebook IDs (comma separated)" value={form.evernote_notebook_ids} onChange={this.changeHandler.bind(this, 'form', 'evernote_notebook_ids')} /><br/>
+
+                            <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['evernote_notebook_ids'])} />
+
                         </div>
                     </Tab>
 

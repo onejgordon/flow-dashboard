@@ -60,6 +60,7 @@ class User(ndb.Model):
     # Integration IDs
     g_id = ndb.StringProperty()
     fb_id = ndb.StringProperty()
+    evernote_id = ndb.StringProperty()
 
     def __str__(self):
         parts = [x for x in [self.name, self.email] if x]
@@ -905,6 +906,26 @@ class Readable(UserAccessible):
     def get_source_url(self):
         if self.source == 'pocket':
             return "https://getpocket.com/a/read/%s" % self.source_id
+
+
+class Quote(UserAccessible):
+    """
+    Quotes
+
+    Key - ID [source]:[source id]
+
+    """
+    source_id = ndb.TextProperty()
+    dt_added = ndb.DateTimeProperty()
+    title = ndb.TextProperty()  # Can have multiple goals for period
+    content = ndb.TextProperty()
+
+    def json(self):
+        return {
+            'id': self.key.id(),
+            'title': self.title,
+            'content': self.content
+        }
 
 
 class Report(UserAccessible):

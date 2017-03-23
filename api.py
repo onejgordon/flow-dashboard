@@ -743,6 +743,62 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
             'user': self.user.json() if self.user else None
         }, success=True)
 
+    @authorized.role('user')
+    def evernote_authenticate(self, d):
+        '''
+        Step 1
+        '''
+        from services import flow_evernote
+        authorize_url, access_token = flow_evernote.get_request_token(self.user, self.request.host_url)
+        logging.debug([authorize_url, access_token])
+        if access_token:
+            self.user.set_integration_prop('evernote_access_token', access_token)
+            self.user.put()
+            self.update_session_user(self.user)
+            # self.session['pocket_code'] = code
+            self.success = True
+        self.set_response()
+
+    @authorized.role('user')
+    def evernote_disconnect(self, d):
+        '''
+        '''
+        self.user.set_integration_prop('evernote_access_token', None)
+        self.user.put()
+        self.update_session_user(self.user)
+        self.set_response({
+            'user': self.user.json() if self.user else None
+        }, success=True)
+
+    @authorized.role()
+    def evernote_webhook(self, d):
+        '''
+        Evernote notifies us of a change
+
+        Webhook request for note creation of the form:
+        [base URL]/?userId=[user ID]&guid=[note GUID]&notebookGuid=[notebook GUID]&reason=create
+        '''
+        from services import flow_evernote
+        from models import Quote
+        config_notebook_ids = self.user.get_integration_prop('evernote_notebook_ids').split(',') # Comma sep
+        note_guid = self.request.get('guid')
+        evernote_id = self.request.get('userId')
+        notebook_guid = self.request.get('notebookGuid')
+        data = {}
+        user = User.query().filter(User.evernote_id == evernote_id)
+        if user and notebook_guid in config_notebook_ids:
+            title, content = flow_evernote.get_note(note_guid)
+            if title and content:
+                q = Quote(title=title, content=content, parent=user.key)
+                q.put()
+                self.success = True
+            else:
+                self.message = "Failed ot parse note"
+        else:
+            logging.warning("Note from ignored notebook or user not found")
+        # TODO
+        self.set_response(data=data)
+
 
 class AgentAPI(handlers.JsonRequestHandler):
 
