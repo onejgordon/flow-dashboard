@@ -123,3 +123,10 @@ indexes:
   - name: has_notes
   - name: dt_added
     direction: desc
+
+- kind: Readable
+  ancestor: yes
+  properties:
+  - name: read
+  - name: dt_read
+    direction: desc

@@ -1,5 +1,5 @@
 var React = require('react');
-
+import {Link} from 'react-router';
 var UserStore = require('stores/UserStore');
 var ReadableLI = require('components/list_items/ReadableLI');
 import {Tabs, Tab, Toggle, Paper, RaisedButton, TextField,
@@ -20,7 +20,8 @@ export default class Reading extends React.Component {
         this.state = {
             form: {
                 favorites: false,
-                with_notes: false
+                with_notes: false,
+                quotes: ''
             }
         };
     }
@@ -36,8 +37,18 @@ export default class Reading extends React.Component {
     componentDidMount() {
     }
 
+    upload_quotes() {
+        let {form} = this.state;
+        let params = {quotes: form.quotes};
+        api.post("/api/quote/batch", params);
+    }
+
     render_quote(q) {
-        return <ListItem primaryText={util.truncate(q.content, 60)} secondaryText={q.id} />
+        let subs = [q.source];
+        if (q.location) subs.push(q.location);
+        let sec = subs.join(' | ');
+        return <ListItem primaryText={util.truncate(q.content, 120)}
+                secondaryText={sec} />
     }
 
     readable_update(r) {
@@ -72,6 +83,12 @@ export default class Reading extends React.Component {
 
                 <h1>Reading</h1>
 
+                <p className="lead">
+                    View all saved reading material here. You can integrate Flow with Goodreads and Pocket to capture
+                    books and articles from the web. You can also integrate with Evernote to capture saved excerpts & quotes.
+                    Set up <Link to="/app/integrations">integrations</Link>.
+                </p>
+
                 <Tabs>
                     <Tab label="Reading">
 
@@ -86,7 +103,7 @@ export default class Reading extends React.Component {
                             autofetch={true}/>
                     </Tab>
 
-                    <Tab label="Quotes">
+                    <Tab label="Quotes & Excerpts">
                         <FetchedList ref="quotes" url="/api/quote"
                             listStyle="mui" listProp="quotes"
                             renderItem={this.render_quote.bind(this)}
@@ -101,6 +118,13 @@ export default class Reading extends React.Component {
                             <TextField placeholder="Tags (comma separated)" name="tags" value={form.tags||''} onChange={this.changeHandler.bind(this, 'form', 'tags')} fullWidth />
                             <RaisedButton label="Create" onClick={this.create_quote.bind(this)} />
                         </Paper>
+
+                        <div style={{margin: "10px"}}>
+                            <label>Batch Upload from JSON array</label>
+                            <TextField placeholder="Quotes (JSON)" name="quotes" value={form.quotes} onChange={this.changeHandler.bind(this, 'form', 'quotes')} multiLine={true} fullWidth />
+                            <RaisedButton label="Batch Upload from JSON" onClick={this.upload_quotes.bind(this)} />
+                        </div>
+
 
                     </Tab>
                 </Tabs>

@@ -2,6 +2,7 @@ var React = require('react');
 
 import {Bar} from "react-chartjs-2";
 import connectToStores from 'alt-utils/lib/connectToStores';
+var api = require('utils/api');
 
 @connectToStores
 export default class AnalysisMisc extends React.Component {
@@ -13,6 +14,7 @@ export default class AnalysisMisc extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            readables_read: []
         };
     }
 
@@ -25,6 +27,10 @@ export default class AnalysisMisc extends React.Component {
     }
 
     componentDidMount() {
+        let since = this.props.iso_dates[0];
+        api.get("/api/readable", {read: 1, since: since}, (res) => {
+            this.setState({readables_read: res.readables});
+        })
     }
 
     habit_day_checked(iso_date, habit) {
@@ -57,12 +63,20 @@ export default class AnalysisMisc extends React.Component {
 
     productivity_data() {
         let {tracking_days} = this.props;
+        let {readables_read} = this.state;
         let labels = [];
         let data = [];
+        let reading_data = [];
         tracking_days.forEach((td) => {
             data.push(td.data.commits);
             labels.push(new Date(td.iso_date));
         });
+        let date_to_read_count = {};
+        readables_read.forEach((r) => {
+            if (!date_to_read_count[r.date_read]) date_to_read_count[r.date_read] = 0;
+            date_to_read_count[r.date_read] += 1;
+        });
+        // Align reading counts with tracking days
         let pdata = {
             labels: labels,
             datasets: [
@@ -70,7 +84,13 @@ export default class AnalysisMisc extends React.Component {
                     label: "Commits",
                     data: data,
                     backgroundColor: '#44ff44'
+                },
+                {
+                    label: "Items Read",
+                    data: reading_data,
+                    backgroundColor: '#E846F9'
                 }
+
             ]
         };
         return pdata;

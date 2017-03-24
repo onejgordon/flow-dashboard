@@ -375,10 +375,12 @@ class ReadableAPI(handlers.JsonRequestHandler):
         favorites = self.request.get_range('favorites') == 1
         with_notes = self.request.get_range('with_notes') == 1
         unread = self.request.get_range('unread') == 1
+        read = self.request.get_range('read') == 1
+        since = self.request.get('since')  # ISO
         readables = Readable.Fetch(self.user, favorites=favorites,
-                                   unread=unread,
-                                   with_notes=with_notes, limit=max,
-                                   offset=offset)
+                                   unread=unread, read=read,
+                                   with_notes=with_notes, since=since,
+                                   limit=max, offset=offset)
         self.set_response({
             'readables': [r.json() for r in readables]
         }, success=True)
@@ -453,6 +455,21 @@ class QuoteAPI(handlers.JsonRequestHandler):
         self.set_response({
             'quote': quote.json() if quote else None
         })
+
+    @authorized.role('user')
+    def batch_create(self, d):
+        quotes = json.loads(self.request.get('quotes'))
+        dbp = []
+        for q in quotes:
+            if 'dt_added' in q and isinstance(q['dt_added'], basestring):
+                q['dt_added'] = tools.fromISODate(q['dt_added'])
+            q = Quote.Create(self.user, **q)
+            dbp.append(q)
+        if dbp:
+            ndb.put_multi(dbp)
+            self.success = True
+            self.message = "Putting %d" % len(dbp)
+        self.set_response()
 
 
 class JournalTagAPI(handlers.JsonRequestHandler):
@@ -788,21 +805,41 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         Step 1
         '''
         from services import flow_evernote
-        authorize_url, access_token = flow_evernote.get_request_token(self.user, self.request.host_url)
-        logging.debug([authorize_url, access_token])
+        authorize_url = flow_evernote.get_request_token(self.user, self.request.host_url + "/app/integrations/evernote_connect")
+        self.success = bool(authorize_url)
+        self.set_response(data={
+            'redirect': authorize_url
+            })
+
+    @authorized.role('user')
+    def evernote_authorize(self, d):
+        '''
+        Step 2
+        '''
+        from services import flow_evernote
+        ot = self.request.get('oauth_token')
+        ot_secret = self.request.get('oauth_token_secret')
+        verifier = self.request.get('oauth_verifier')
+        access_token, en_user = flow_evernote.get_access_token(self.user, ot, ot_secret, verifier)
+        logging.debug([access_token, en_user])
         if access_token:
             self.user.set_integration_prop('evernote_access_token', access_token)
+            if en_user:
+                self.user.evernote_id = str(en_user.id)
             self.user.put()
             self.update_session_user(self.user)
             # self.session['pocket_code'] = code
             self.success = True
-        self.set_response()
+        self.set_response(data={
+            'user': self.user.json()
+            })
 
     @authorized.role('user')
     def evernote_disconnect(self, d):
         '''
         '''
         self.user.set_integration_prop('evernote_access_token', None)
+        self.user.evernote_id = None
         self.user.put()
         self.update_session_user(self.user)
         self.set_response({
@@ -825,7 +862,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         notebook_guid = self.request.get('notebookGuid')
         data = {}
         user = User.query().filter(User.evernote_id == evernote_id)
-        if user and notebook_guid in config_notebook_ids:
+        if user and (not config_notebook_ids or notebook_guid in config_notebook_ids):
             title, content = flow_evernote.get_note(note_guid)
             if title and content:
                 # TODO: Tags
@@ -836,7 +873,6 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
                 self.message = "Failed ot parse note"
         else:
             logging.warning("Note from ignored notebook or user not found")
-        # TODO
         self.set_response(data=data)
 
 

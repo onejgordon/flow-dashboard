@@ -39,6 +39,7 @@ module.exports = (
       <Route path="timeline" component={Timeline} />
       <Route path="manage" component={Manage} />
       <Route path="integrations" component={Integrations} />
+      <Route path="integrations/:action" component={Integrations} />
       <Route path="reports" component={Reports} />
       <Route path="reading" component={Reading} />
       <Route path="admin/agent" component={AdminAgent} />

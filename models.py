@@ -75,7 +75,8 @@ class User(ndb.Model):
             'integrations': tools.getJson(self.integrations),
             'settings': tools.getJson(self.settings, {}),
             'timezone': self.timezone,
-            'birthday': tools.iso_date(self.birthday) if self.birthday else None
+            'birthday': tools.iso_date(self.birthday) if self.birthday else None,
+            'evernote_id': self.evernote_id
         }
 
     @staticmethod
@@ -121,6 +122,8 @@ class User(ndb.Model):
             self.settings = json.dumps(params.get('settings'), {})
         if 'fb_id' in params:
             self.fb_id = params.get('fb_id')
+        if 'evernote_id' in params:
+            self.evernote_id = params.get('evernote_id')
 
     def admin(self):
         return self.level == USER.ADMIN
@@ -834,19 +837,26 @@ class Readable(UserAccessible):
             'notes': self.notes,
             'has_notes': self.has_notes,
             'read': self.read,
-            'word_count': self.word_count
+            'word_count': self.word_count,
+            'date_read': tools.iso_date(self.dt_read) if self.dt_read else None
         }
 
     @staticmethod
-    def Fetch(user, favorites=False, with_notes=False, unread=False, limit=30, offset=0):
+    def Fetch(user, favorites=False, with_notes=False, unread=False, read=False,
+              limit=30, since=None, offset=0):
         q = Readable.query(ancestor=user.key)
+        ordering_prop = Readable.dt_added if not read else Readable.dt_read
         if with_notes:
             q = q.filter(Readable.has_notes == True)
         elif favorites:
             q = q.filter(Readable.favorite == True)
         elif unread:
             q = q.filter(Readable.read == False)
-        q = q.order(-Readable.dt_added)
+        elif read:
+            q = q.filter(Readable.read == True)
+        q = q.order(-ordering_prop)
+        if since:
+            q = q.filter(ordering_prop >= tools.fromISODate(since))
         return q.fetch(limit=limit, offset=offset)
 
     @staticmethod
@@ -931,10 +941,11 @@ class Quote(UserAccessible):
 
     """
     source_id = ndb.TextProperty()
-    dt_added = ndb.DateTimeProperty()
+    dt_added = ndb.DateTimeProperty(auto_now_add=True)
     readable = ndb.KeyProperty()
-    source = ndb.TextProperty()  # Title of piece, person, optionally location in piece
+    source = ndb.TextProperty()  # Title of piece, person
     link = ndb.TextProperty()
+    location = ndb.TextProperty()  # (optional) location in piece
     tags = ndb.StringProperty(repeated=True)  # lower case, symbols removed
     content = ndb.TextProperty()
 
@@ -944,16 +955,21 @@ class Quote(UserAccessible):
             'source': self.source,
             'link': self.link,
             'content': self.content,
+            'location': self.location,
             'tags': self.tags
         }
 
     @staticmethod
-    def Create(user, source, content):
+    def Create(user, source, content, dt_added=None, location=None):
         if source and content:
             m = hashlib.md5()
             m.update(source + "|" + content)
             id = m.hexdigest()
-            return Quote(id=id, source=source, content=content, parent=user.key)
+            if not dt_added:
+                dt_added = datetime.now()
+            return Quote(id=id, source=source, content=content,
+                         location=location,
+                         dt_added=dt_added, parent=user.key)
 
     @staticmethod
     def Fetch(user, limit=50):
@@ -964,6 +980,8 @@ class Quote(UserAccessible):
             self.source = params.get('source')
         if 'content' in params:
             self.content = params.get('content')
+        if 'location' in params:
+            self.location = params.get('location')
         if 'link' in params:
             self.link = params.get('link')
         if 'tags' in params:
