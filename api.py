@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta, time
 from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
     Readable, TrackingDay, Event, JournalTag, Report, Quote
+from constants import READABLE
 from google.appengine.ext import ndb
 import authorized
 import handlers
@@ -389,9 +390,15 @@ class ReadableAPI(handlers.JsonRequestHandler):
     def update(self, d):
         id = self.request.get('id')
         params = tools.gets(self,
-            strings=['notes'],
+            integers=['type'],
+            strings=['notes', 'title', 'url', 'author', 'source'],
             booleans=['read', 'favorite'])
-        r = Readable.get_by_id(id, parent=self.user.key)
+        logging.debug(params)
+        if id:
+            r = Readable.get_by_id(id, parent=self.user.key)
+        else:
+            # New
+            r = Readable.CreateOrUpdate(self.user, None, **params)
         if r:
             r.Update(**params)
             if r.source == 'pocket':
@@ -407,6 +414,37 @@ class ReadableAPI(handlers.JsonRequestHandler):
         self.set_response({
             'readable': r.json() if r else None
         })
+
+    @authorized.role('user')
+    def batch_create(self, d):
+        readings = json.loads(self.request.get('readings'))
+        source = self.request.get('source', default_value='form')
+        dbp = []
+        for r in readings:
+            type_string = r.get('type')
+            if type_string:
+                r['type'] = READABLE.LOOKUP.get(type_string.lower())
+            r = Readable.CreateOrUpdate(self.user, None, source=source, read=True, **r)
+            dbp.append(r)
+        if dbp:
+            ndb.put_multi(dbp)
+            self.success = True
+            self.message = "Putting %d" % len(dbp)
+        self.set_response()
+
+    @authorized.role('user')
+    def random_batch(self, d):
+        '''
+        Return a random batch, optionally filtered
+        '''
+        BATCH_SIZE = 50
+        sample_keys = Readable.Fetch(self.user, with_notes=True, limit=500, keys_only=True)
+        if len(sample_keys) > BATCH_SIZE:
+            sample_keys = random.sample(sample_keys, BATCH_SIZE)
+        readables = ndb.get_multi(sample_keys)
+        self.set_response({
+            'readables': [r.json() for r in readables]
+            }, success=True)
 
     @authorized.role('user')
     def delete(self, d):
@@ -439,7 +477,7 @@ class QuoteAPI(handlers.JsonRequestHandler):
     def update(self, d):
         id = self.request.get('id')
         params = tools.gets(self,
-            strings=['source', 'content', 'link'],
+            strings=['source', 'content', 'link', 'location', 'date'],
             lists=['tags']
         )
         logging.debug(params)
@@ -447,7 +485,9 @@ class QuoteAPI(handlers.JsonRequestHandler):
         if id:
             quote = Quote.get_by_id(id, parent=self.user.key)
         else:
-            quote = Quote.Create(self.user, params.get('source'), params.get('content'))
+            if 'date' in params:
+                params['dt_added'] = tools.fromISODate(params.get('date'))
+            quote = Quote.Create(self.user, **params)
             self.message = "Quote saved!" if quote else "Couldn't create quote"
             self.success = quote is not None
         quote.Update(tags=params.get('tags'))
@@ -471,6 +511,19 @@ class QuoteAPI(handlers.JsonRequestHandler):
             self.message = "Putting %d" % len(dbp)
         self.set_response()
 
+    @authorized.role('user')
+    def random_batch(self, d):
+        '''
+        Return a random batch, optionally filtered
+        '''
+        BATCH_SIZE = 50
+        sample_keys = Quote.Fetch(self.user, limit=500, keys_only=True)
+        if len(sample_keys) > BATCH_SIZE:
+            sample_keys = random.sample(sample_keys, BATCH_SIZE)
+        quotes = ndb.get_multi(sample_keys)
+        self.set_response({
+            'quotes': [q.json() for q in quotes]
+            }, success=True)
 
 class JournalTagAPI(handlers.JsonRequestHandler):
 
@@ -865,7 +918,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         if user and (not config_notebook_ids or notebook_guid in config_notebook_ids):
             title, content = flow_evernote.get_note(note_guid)
             if title and content:
-                # TODO: Tags
+                # TODO: Link and Tags
                 q = Quote.Create(user, source=title, content=content)
                 q.put()
                 self.success = True

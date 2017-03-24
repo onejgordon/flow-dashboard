@@ -4,6 +4,7 @@ import {ListItem, FontIcon, Paper, TextField,
   RaisedButton, FlatButton} from 'material-ui';
 var api = require('utils/api');
 import {changeHandler} from 'utils/component-utils';
+var util = require('utils/util');
 
 @changeHandler
 export default class ReadableLI extends React.Component {
@@ -26,9 +27,7 @@ export default class ReadableLI extends React.Component {
         notes: r ? r.notes || '' : ''
       }
     };
-    this.TYPES = ["Article", "Book"];
-    this.FAVORITE_ENABLED_SOURCES = ['pocket'];
-    this.READ_ENABLED_SOURCES = ['pocket', 'goodreads'];
+    this.TYPES = ["Article", "Book", "Paper"];
   }
 
   update_readable(r, params) {
@@ -72,9 +71,8 @@ export default class ReadableLI extends React.Component {
     if (readable.author) subhead.push(readable.author);
     if (readable.favorite) subhead.push("Favorite");
     let mis = [];
-    let source = readable.source;
-    if (!readable.read && this.READ_ENABLED_SOURCES.indexOf(source) > -1) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">remove_red_eye</FontIcon>} key="mr" onClick={this.update_readable.bind(this, readable, {read: 1})}>Mark Read</MenuItem>);
-    if (!readable.favorite && this.FAVORITE_ENABLED_SOURCES.indexOf(source) > -1) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">star</FontIcon>} key="mf" onClick={this.update_readable.bind(this, readable, {favorite: 1})}>Favorite</MenuItem>);
+    if (!readable.read) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">remove_red_eye</FontIcon>} key="mr" onClick={this.update_readable.bind(this, readable, {read: 1})}>Mark Read</MenuItem>);
+    if (!readable.favorite) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">star</FontIcon>} key="mf" onClick={this.update_readable.bind(this, readable, {favorite: 1})}>Favorite</MenuItem>);
     mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">delete</FontIcon>} key="del" onClick={this.delete_readable.bind(this, readable)}>Delete</MenuItem>);
     mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">mode_edit</FontIcon>} key="notes" onClick={this.setState.bind(this, {notes_visible: true})}>Edit Notes</MenuItem>);
     let menu = (
@@ -84,7 +82,10 @@ export default class ReadableLI extends React.Component {
     );
     let av_st = {};
     if (readable.favorite) av_st.border = '2px solid #F9EB97';
-    let avatar = <Avatar src={readable.image_url} style={av_st} />
+    let has_image = readable.image_url != null;
+    if (!has_image) av_st.backgroundColor = util.stringToColor(readable.title);
+    let avatar_content = has_image ? null : readable.title[0];
+    let avatar = <Avatar src={readable.image_url} style={av_st}>{ avatar_content }</Avatar>
     if (notes_visible) _notes = (
         <Paper style={{padding: "10px"}}>
           <TextField floatingLabelText="Notes" name="notes" value={form.notes || ""} onChange={this.changeHandler.bind(this, 'form', 'notes')} multiLine={true} fullWidth />

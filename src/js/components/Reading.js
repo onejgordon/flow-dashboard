@@ -3,13 +3,14 @@ import {Link} from 'react-router';
 var UserStore = require('stores/UserStore');
 var ReadableLI = require('components/list_items/ReadableLI');
 import {Tabs, Tab, Toggle, Paper, RaisedButton, TextField,
-    ListItem} from 'material-ui';
+    ListItem, DropDownMenu, MenuItem, FlatButton, Dialog} from 'material-ui';
 var util = require('utils/util');
 import connectToStores from 'alt-utils/lib/connectToStores';
 import {changeHandler} from 'utils/component-utils';
 import {clone} from 'lodash';
 var api = require('utils/api');
 var FetchedList = require('components/common/FetchedList');
+var toastr = require('toastr');
 
 @connectToStores
 @changeHandler
@@ -21,8 +22,12 @@ export default class Reading extends React.Component {
             form: {
                 favorites: false,
                 with_notes: false,
-                quotes: ''
-            }
+                quotes: '',
+                readings: ''
+            },
+            samples: {},
+            random_showing: null,
+            random_type_showing: null
         };
     }
 
@@ -37,10 +42,50 @@ export default class Reading extends React.Component {
     componentDidMount() {
     }
 
+    pick_sample(items, type) {
+        let st = {};
+        let idx = parseInt(Math.random() * items.length) - 1;
+        let item = items[idx];
+        st.random_showing = item;
+        st.random_type_showing = type;
+        return st;
+    }
+
+    get_random(type) {
+        let items = this.state.samples[type] || [];
+        if (items.length == 0) {
+            api.get(`/api/${type}/random`, {}, (res) => {
+                let list_prop = type + 's';
+                let {samples} = this.state;
+                samples[type] = res[list_prop];
+                let st = this.pick_sample(samples[type], type);
+                st.samples = samples;
+                this.setState(st);
+            });
+        } else {
+            // Already have samples of this type, choose one randomly
+            this.setState(this.pick_sample(items, type));
+        }
+    }
+
+    dismiss_dialog() {
+        this.setState({random_showing: null, random_type_showing: null});
+    }
+
     upload_quotes() {
         let {form} = this.state;
-        let params = {quotes: form.quotes};
-        api.post("/api/quote/batch", params);
+        if (form.quotes.length > 0 && form.quotes[0] == '[') {
+            let params = {quotes: form.quotes};
+            api.post("/api/quote/batch", params);
+        } else toastr.error("Malformed or empty? Must be JSON array");
+    }
+
+    upload_readings() {
+        let {form} = this.state;
+        if (form.readings.length > 0 && form.readings[0] == '[') {
+            let params = {readings: form.readings, source: 'form'};
+            api.post("/api/readable/batch", params);
+        } else toastr.error("Malformed or empty? Must be JSON array");
     }
 
     render_quote(q) {
@@ -73,6 +118,36 @@ export default class Reading extends React.Component {
         });
     }
 
+    create_reading() {
+        let params = clone(this.state.form);
+        params.source = 'form';
+        api.post("/api/readable", params, (res) => {
+            if (res.readable) this.refs.readables.update_item_by_key(res.readable, 'id');
+            this.setState({form: {}});
+        });
+    }
+
+    render_random_item_dialog() {
+        let {random_showing, random_type_showing} = this.state;
+        let title = "", content = "";
+        let open = random_showing != null;
+        let item = random_showing;
+        if (item) {
+            if (random_type_showing == 'readable') {
+                title = `${item.title} (${item.author})`;
+                content = <span><b>Notes:</b> {item.notes}</span>
+            } else if (random_type_showing == 'quote') {
+                title = item.source;
+                content = <span style={{fontFamily: "Georgia"}}>&ldquo;{item.content}&rdquo;</span>
+            }
+        }
+        return (
+            <Dialog title={title} open={open} onRequestClose={this.dismiss_dialog.bind(this)} autoScrollBodyContent={true}>
+                <p className="lead" style={{fontSize: "1.3em", marginTop: "10px"}}>{ content }</p>
+            </Dialog>
+        );
+    }
+
     render() {
         let {form} = this.state;
         let readable_params = {};
@@ -89,6 +164,11 @@ export default class Reading extends React.Component {
                     Set up <Link to="/app/integrations">integrations</Link>.
                 </p>
 
+                <div className="pull-right">
+                    <FlatButton label="Random Quote" onClick={this.get_random.bind(this, 'quote')} />
+                    <FlatButton label="Random Reading Notes" onClick={this.get_random.bind(this, 'readable')} />
+                </div>
+
                 <Tabs>
                     <Tab label="Reading">
 
@@ -98,14 +178,36 @@ export default class Reading extends React.Component {
                         </div>
                         <FetchedList ref="readables" params={readable_params} url="/api/readable"
                             listStyle="mui" listProp="readables"
+                            per_page={20}
                             renderItem={this.render_readable.bind(this)}
                             paging_enabled={true}
                             autofetch={true}/>
+
+                        <Paper style={{padding: "10px"}}>
+                            <h3>Save New Book / Article</h3>
+                            <DropDownMenu value={form.type || 1} onChange={this.changeHandlerDropDown.bind(this, 'form', 'type')}>
+                                <MenuItem value={1} primaryText="Article" />
+                                <MenuItem value={2} primaryText="Book" />
+                                <MenuItem value={3} primaryText="Paper" />
+                            </DropDownMenu>
+                            <TextField placeholder="Title" name="title" value={form.title||''} onChange={this.changeHandler.bind(this, 'form', 'title')} fullWidth />
+                            <TextField placeholder="Author" name="author" value={form.author||''} onChange={this.changeHandler.bind(this, 'form', 'author')} fullWidth />
+                            <TextField placeholder="Link (URL, optional)" name="url" value={form.url||''} onChange={this.changeHandler.bind(this, 'form', 'url')} fullWidth />
+                            <TextField placeholder="Notes (optional)" name="notes" value={form.notes||''} onChange={this.changeHandler.bind(this, 'form', 'notes')} fullWidth />
+                            <RaisedButton label="Create" onClick={this.create_reading.bind(this)} />
+                        </Paper>
+
+                        <div style={{margin: "10px"}}>
+                            <label>Batch Upload from JSON array</label>
+                            <TextField placeholder="Readings (JSON)" name="readings" value={form.readings} onChange={this.changeHandler.bind(this, 'form', 'readings')} multiLine={true} fullWidth />
+                            <RaisedButton label="Batch Upload from JSON" onClick={this.upload_readings.bind(this)} />
+                        </div>
                     </Tab>
 
                     <Tab label="Quotes & Excerpts">
                         <FetchedList ref="quotes" url="/api/quote"
                             listStyle="mui" listProp="quotes"
+                            per_page={20}
                             renderItem={this.render_quote.bind(this)}
                             paging_enabled={true}
                             autofetch={false}/>
@@ -125,9 +227,10 @@ export default class Reading extends React.Component {
                             <RaisedButton label="Batch Upload from JSON" onClick={this.upload_quotes.bind(this)} />
                         </div>
 
-
                     </Tab>
                 </Tabs>
+
+                { this.render_random_item_dialog() }
 
             </div>
         );

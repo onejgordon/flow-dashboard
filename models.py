@@ -819,7 +819,7 @@ class Readable(UserAccessible):
     notes = ndb.TextProperty()
     has_notes = ndb.BooleanProperty(default=False)
     source = ndb.TextProperty()  # e.g. 'pocket', 'goodreads'
-    tags = ndb.TextProperty(repeated=True)
+    tags = ndb.TextProperty(repeated=True)  # Lowercase
     read = ndb.BooleanProperty(default=False)
     word_count = ndb.IntegerProperty()
 
@@ -843,7 +843,7 @@ class Readable(UserAccessible):
 
     @staticmethod
     def Fetch(user, favorites=False, with_notes=False, unread=False, read=False,
-              limit=30, since=None, offset=0):
+              limit=30, since=None, offset=0, keys_only=False):
         q = Readable.query(ancestor=user.key)
         ordering_prop = Readable.dt_added if not read else Readable.dt_read
         if with_notes:
@@ -857,7 +857,7 @@ class Readable(UserAccessible):
         q = q.order(-ordering_prop)
         if since:
             q = q.filter(ordering_prop >= tools.fromISODate(since))
-        return q.fetch(limit=limit, offset=offset)
+        return q.fetch(limit=limit, offset=offset, keys_only=keys_only)
 
     @staticmethod
     @auto_cache()
@@ -876,19 +876,28 @@ class Readable(UserAccessible):
                        type=READABLE.ARTICLE, source=None,
                        author=None, image_url=None, excerpt=None,
                        tags=None, read=False, favorite=False,
-                       dt_read=None,
-                       word_count=0, dt_added=None):
+                       dt_read=None, notes=None,
+                       word_count=0, dt_added=None, **params):
         if title and source:
+            if source_id is None:
+                m = hashlib.md5()
+                m.update(tools.removeNonAscii(title))
+                source_id = m.hexdigest()
             if tags is None:
                 tags = []
+            tags = [t.lower() for t in tags if t]
             if not dt_added:
                 dt_added = datetime.now()
             id = source + ':' + source_id
-            r = Readable.get_or_insert(id, parent=user.key, source_id=source_id, title=title,
-                            url=url,
-                            type=type, source=source, read=read, dt_added=dt_added,
-                            excerpt=excerpt, favorite=favorite, tags=tags, dt_read=dt_read,
-                            image_url=image_url, author=author, word_count=word_count)
+            r = Readable.get_or_insert(id, parent=user.key, source_id=source_id,
+                                       title=title, url=url,
+                                       type=type, source=source, read=read,
+                                       dt_added=dt_added, notes=notes,
+                                       excerpt=excerpt, favorite=favorite,
+                                       tags=tags, dt_read=dt_read,
+                                       image_url=image_url, author=author,
+                                       word_count=word_count)
+            r.has_notes = bool(r.notes)
             return r
 
     def Update(self, **params):
@@ -960,10 +969,10 @@ class Quote(UserAccessible):
         }
 
     @staticmethod
-    def Create(user, source, content, dt_added=None, location=None):
+    def Create(user, source, content, dt_added=None, location=None, **params):
         if source and content:
             m = hashlib.md5()
-            m.update(source + "|" + content)
+            m.update('|'.join([tools.removeNonAscii(x) for x in [source, content]]))
             id = m.hexdigest()
             if not dt_added:
                 dt_added = datetime.now()
@@ -972,8 +981,8 @@ class Quote(UserAccessible):
                          dt_added=dt_added, parent=user.key)
 
     @staticmethod
-    def Fetch(user, limit=50):
-        return Quote.query(ancestor=user.key).order(-Quote.dt_added).fetch(limit=limit)
+    def Fetch(user, limit=50, keys_only=False):
+        return Quote.query(ancestor=user.key).order(-Quote.dt_added).fetch(limit=limit, keys_only=keys_only)
 
     def Update(self, **params):
         if 'source' in params:
