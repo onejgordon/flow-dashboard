@@ -78,6 +78,12 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/readable', handler=api.ReadableAPI, handler_method="list", methods=["GET"]),
         webapp2.Route('/api/readable', handler=api.ReadableAPI, handler_method="update", methods=["POST"]),
         webapp2.Route('/api/readable/delete', handler=api.ReadableAPI, handler_method="delete", methods=["POST"]),
+        webapp2.Route('/api/readable/batch', handler=api.ReadableAPI, handler_method="batch_create", methods=["POST"]),
+        webapp2.Route('/api/readable/random', handler=api.ReadableAPI, handler_method="random_batch", methods=["GET"]),
+        webapp2.Route('/api/quote', handler=api.QuoteAPI, handler_method="list", methods=["GET"]),
+        webapp2.Route('/api/quote', handler=api.QuoteAPI, handler_method="update", methods=["POST"]),
+        webapp2.Route('/api/quote/batch', handler=api.QuoteAPI, handler_method="batch_create", methods=["POST"]),
+        webapp2.Route('/api/quote/random', handler=api.QuoteAPI, handler_method="random_batch", methods=["GET"]),
         webapp2.Route('/api/analysis', handler=api.AnalysisAPI, handler_method="get", methods=["GET"]),
         webapp2.Route('/api/journaltag', handler=api.JournalTagAPI, handler_method="list", methods=["GET"]),
         webapp2.Route('/api/report', handler=api.ReportAPI, handler_method="list", methods=["GET"]),
@@ -97,6 +103,10 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/integrations/pocket/authenticate', handler=api.IntegrationsAPI, handler_method="pocket_authenticate", methods=["POST"]),
         webapp2.Route('/api/integrations/pocket/authorize', handler=api.IntegrationsAPI, handler_method="pocket_authorize", methods=["POST"]),
         webapp2.Route('/api/integrations/pocket/disconnect', handler=api.IntegrationsAPI, handler_method="pocket_disconnect", methods=["POST"]),
+        webapp2.Route('/api/integrations/evernote/authenticate', handler=api.IntegrationsAPI, handler_method="evernote_authenticate", methods=["POST"]),
+        webapp2.Route('/api/integrations/evernote/authorize', handler=api.IntegrationsAPI, handler_method="evernote_authorize", methods=["POST"]),
+        webapp2.Route('/api/integrations/evernote/disconnect', handler=api.IntegrationsAPI, handler_method="evernote_disconnect", methods=["POST"]),
+        webapp2.Route('/api/integrations/evernote/webhook', handler=api.IntegrationsAPI, handler_method="evernote_webhook", methods=["POST"]),
 
         # Agent
         webapp2.Route('/api/agent/apiai/request', handler=api.AgentAPI, handler_method="apiai_request", methods=["POST"]),

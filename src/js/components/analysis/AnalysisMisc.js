@@ -2,6 +2,8 @@ var React = require('react');
 
 import {Bar} from "react-chartjs-2";
 import connectToStores from 'alt-utils/lib/connectToStores';
+var api = require('utils/api');
+import {findItemById} from 'utils/store-utils';
 
 @connectToStores
 export default class AnalysisMisc extends React.Component {
@@ -13,6 +15,7 @@ export default class AnalysisMisc extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            readables_read: []
         };
     }
 
@@ -25,6 +28,11 @@ export default class AnalysisMisc extends React.Component {
     }
 
     componentDidMount() {
+        let since = this.props.iso_dates[0];
+        api.get("/api/readable", {read: 1, since: since}, (res) => {
+            console.log(res.readables);
+            this.setState({readables_read: res.readables});
+        })
     }
 
     habit_day_checked(iso_date, habit) {
@@ -56,21 +64,38 @@ export default class AnalysisMisc extends React.Component {
     }
 
     productivity_data() {
-        let {tracking_days} = this.props;
+        let {tracking_days, iso_dates} = this.props;
+        let {readables_read} = this.state;
         let labels = [];
-        let data = [];
-        tracking_days.forEach((td) => {
-            data.push(td.data.commits);
-            labels.push(new Date(td.iso_date));
+        let commit_data = [];
+        let reading_data = [];
+        let date_to_read_count = {};
+        readables_read.forEach((r) => {
+            if (!date_to_read_count[r.date_read]) date_to_read_count[r.date_read] = 0;
+            date_to_read_count[r.date_read] += 1;
         });
+        console.log(date_to_read_count);
+        iso_dates.forEach((date) => {
+            let td = findItemById(tracking_days, date, 'iso_date');
+            commit_data.push(td ? td.data.commits : 0);
+            reading_data.push(date_to_read_count[date] || 0);
+            labels.push(new Date(date));
+        });
+        // Align reading counts with tracking days
         let pdata = {
             labels: labels,
             datasets: [
                 {
                     label: "Commits",
-                    data: data,
+                    data: commit_data,
                     backgroundColor: '#44ff44'
+                },
+                {
+                    label: "Items Read",
+                    data: reading_data,
+                    backgroundColor: '#E846F9'
                 }
+
             ]
         };
         return pdata;

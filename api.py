@@ -1,7 +1,8 @@
 
 from datetime import datetime, timedelta, time
 from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
-    Readable, TrackingDay, Event, JournalTag, Report
+    Readable, TrackingDay, Event, JournalTag, Report, Quote
+from constants import READABLE
 from google.appengine.ext import ndb
 import authorized
 import handlers
@@ -371,7 +372,16 @@ class ReadableAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        readables = Readable.Unread(self.user)
+        page, max, offset = tools.paging_params(self.request)
+        favorites = self.request.get_range('favorites') == 1
+        with_notes = self.request.get_range('with_notes') == 1
+        unread = self.request.get_range('unread') == 1
+        read = self.request.get_range('read') == 1
+        since = self.request.get('since')  # ISO
+        readables = Readable.Fetch(self.user, favorites=favorites,
+                                   unread=unread, read=read,
+                                   with_notes=with_notes, since=since,
+                                   limit=max, offset=offset)
         self.set_response({
             'readables': [r.json() for r in readables]
         }, success=True)
@@ -380,8 +390,15 @@ class ReadableAPI(handlers.JsonRequestHandler):
     def update(self, d):
         id = self.request.get('id')
         params = tools.gets(self,
+            integers=['type'],
+            strings=['notes', 'title', 'url', 'author', 'source'],
             booleans=['read', 'favorite'])
-        r = Readable.get_by_id(id, parent=self.user.key)
+        logging.debug(params)
+        if id:
+            r = Readable.get_by_id(id, parent=self.user.key)
+        else:
+            # New
+            r = Readable.CreateOrUpdate(self.user, None, **params)
         if r:
             r.Update(**params)
             if r.source == 'pocket':
@@ -397,6 +414,37 @@ class ReadableAPI(handlers.JsonRequestHandler):
         self.set_response({
             'readable': r.json() if r else None
         })
+
+    @authorized.role('user')
+    def batch_create(self, d):
+        readings = json.loads(self.request.get('readings'))
+        source = self.request.get('source', default_value='form')
+        dbp = []
+        for r in readings:
+            type_string = r.get('type')
+            if type_string:
+                r['type'] = READABLE.LOOKUP.get(type_string.lower())
+            r = Readable.CreateOrUpdate(self.user, None, source=source, read=True, **r)
+            dbp.append(r)
+        if dbp:
+            ndb.put_multi(dbp)
+            self.success = True
+            self.message = "Putting %d" % len(dbp)
+        self.set_response()
+
+    @authorized.role('user')
+    def random_batch(self, d):
+        '''
+        Return a random batch, optionally filtered
+        '''
+        BATCH_SIZE = 50
+        sample_keys = Readable.Fetch(self.user, with_notes=True, limit=500, keys_only=True)
+        if len(sample_keys) > BATCH_SIZE:
+            sample_keys = random.sample(sample_keys, BATCH_SIZE)
+        readables = ndb.get_multi(sample_keys)
+        self.set_response({
+            'readables': [r.json() for r in readables]
+            }, success=True)
 
     @authorized.role('user')
     def delete(self, d):
@@ -415,6 +463,67 @@ class ReadableAPI(handlers.JsonRequestHandler):
             self.message = "Couldn't find item"
         self.set_response()
 
+
+class QuoteAPI(handlers.JsonRequestHandler):
+
+    @authorized.role('user')
+    def list(self, d):
+        quotes = Quote.Fetch(self.user)
+        self.set_response({
+            'quotes': [q.json() for q in quotes]
+        }, success=True)
+
+    @authorized.role('user')
+    def update(self, d):
+        id = self.request.get('id')
+        params = tools.gets(self,
+            strings=['source', 'content', 'link', 'location', 'date'],
+            lists=['tags']
+        )
+        logging.debug(params)
+        quote = None
+        if id:
+            quote = Quote.get_by_id(id, parent=self.user.key)
+        else:
+            if 'date' in params:
+                params['dt_added'] = tools.fromISODate(params.get('date'))
+            quote = Quote.Create(self.user, **params)
+            self.message = "Quote saved!" if quote else "Couldn't create quote"
+            self.success = quote is not None
+        quote.Update(tags=params.get('tags'))
+        quote.put()
+        self.set_response({
+            'quote': quote.json() if quote else None
+        })
+
+    @authorized.role('user')
+    def batch_create(self, d):
+        quotes = json.loads(self.request.get('quotes'))
+        dbp = []
+        for q in quotes:
+            if 'dt_added' in q and isinstance(q['dt_added'], basestring):
+                q['dt_added'] = tools.fromISODate(q['dt_added'])
+            q = Quote.Create(self.user, **q)
+            dbp.append(q)
+        if dbp:
+            ndb.put_multi(dbp)
+            self.success = True
+            self.message = "Putting %d" % len(dbp)
+        self.set_response()
+
+    @authorized.role('user')
+    def random_batch(self, d):
+        '''
+        Return a random batch, optionally filtered
+        '''
+        BATCH_SIZE = 50
+        sample_keys = Quote.Fetch(self.user, limit=500, keys_only=True)
+        if len(sample_keys) > BATCH_SIZE:
+            sample_keys = random.sample(sample_keys, BATCH_SIZE)
+        quotes = ndb.get_multi(sample_keys)
+        self.set_response({
+            'quotes': [q.json() for q in quotes]
+            }, success=True)
 
 class JournalTagAPI(handlers.JsonRequestHandler):
 
@@ -742,6 +851,82 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         self.set_response({
             'user': self.user.json() if self.user else None
         }, success=True)
+
+    @authorized.role('user')
+    def evernote_authenticate(self, d):
+        '''
+        Step 1
+        '''
+        from services import flow_evernote
+        authorize_url = flow_evernote.get_request_token(self.user, self.request.host_url + "/app/integrations/evernote_connect")
+        self.success = bool(authorize_url)
+        self.set_response(data={
+            'redirect': authorize_url
+            })
+
+    @authorized.role('user')
+    def evernote_authorize(self, d):
+        '''
+        Step 2
+        '''
+        from services import flow_evernote
+        ot = self.request.get('oauth_token')
+        ot_secret = self.request.get('oauth_token_secret')
+        verifier = self.request.get('oauth_verifier')
+        access_token, en_user = flow_evernote.get_access_token(self.user, ot, ot_secret, verifier)
+        logging.debug([access_token, en_user])
+        if access_token:
+            self.user.set_integration_prop('evernote_access_token', access_token)
+            if en_user:
+                self.user.evernote_id = str(en_user.id)
+            self.user.put()
+            self.update_session_user(self.user)
+            # self.session['pocket_code'] = code
+            self.success = True
+        self.set_response(data={
+            'user': self.user.json()
+            })
+
+    @authorized.role('user')
+    def evernote_disconnect(self, d):
+        '''
+        '''
+        self.user.set_integration_prop('evernote_access_token', None)
+        self.user.evernote_id = None
+        self.user.put()
+        self.update_session_user(self.user)
+        self.set_response({
+            'user': self.user.json() if self.user else None
+        }, success=True)
+
+    @authorized.role()
+    def evernote_webhook(self, d):
+        '''
+        Evernote notifies us of a change
+
+        Webhook request for note creation of the form:
+        [base URL]/?userId=[user ID]&guid=[note GUID]&notebookGuid=[notebook GUID]&reason=create
+        '''
+        from services import flow_evernote
+        from models import Quote
+        config_notebook_ids = self.user.get_integration_prop('evernote_notebook_ids').split(',') # Comma sep
+        note_guid = self.request.get('guid')
+        evernote_id = self.request.get('userId')
+        notebook_guid = self.request.get('notebookGuid')
+        data = {}
+        user = User.query().filter(User.evernote_id == evernote_id)
+        if user and (not config_notebook_ids or notebook_guid in config_notebook_ids):
+            title, content = flow_evernote.get_note(note_guid)
+            if title and content:
+                # TODO: Link and Tags
+                q = Quote.Create(user, source=title, content=content)
+                q.put()
+                self.success = True
+            else:
+                self.message = "Failed ot parse note"
+        else:
+            logging.warning("Note from ignored notebook or user not found")
+        self.set_response(data=data)
 
 
 class AgentAPI(handlers.JsonRequestHandler):

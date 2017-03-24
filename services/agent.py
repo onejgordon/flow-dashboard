@@ -16,7 +16,6 @@ import json
 import tools
 import re
 import logging
-import random
 import imp
 import pickle
 try:

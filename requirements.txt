@@ -1,3 +1,4 @@
 # Install with pip install -t lib -r requirements.txt (into lib/)
 beautifulsoup4
 GoogleAppEngineCloudStorageClient==1.9.22.1
+evernote==1.25.2

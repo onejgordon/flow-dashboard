@@ -95,7 +95,20 @@ Visit `https://[project-id].appspot.com` to see the app live.
 * Flash card widget for spreadsheet access (e.g. random quotes, excerpts)
 * Export all data to CSV
 
-## Google Home Integration
+## Integrations
+
+All integrations work out of the box on flowdash.co, but if you're spinning up your own instance, you'll need to set up each integration you need.  See below for specific instructions.
+
+### Pocket
+
+Create an app at https://getpocket.com/developer/ and update secrets.POCKET_CONSUMER_KEY
+
+### Evernote
+
+1. Request an API Key at https://dev.evernote.com
+2. Request a webhook at https://dev.evernote.com/support/ pointing to [Your Domain]/api/integrations/evernote/webhook
+
+### Google Home Integration
 
 We've used API.AI to create an agent that integrates with Google Actions / Assistant / Home. To connect Assistant with a new instance of Flow:
 
@@ -106,10 +119,11 @@ We've used API.AI to create an agent that integrates with Google Actions / Assis
 5. Go to integrations and add and authorize 'Actions on Google'
 6. Preview the integration using the web preview
 
-## Facebook Messenger Integration
+### Facebook Messenger Integration
 
 The messenger bot lives at https://www.facebook.com/FlowDashboard/
 
+To create a new messenger bot for your own instance of Flow, see the Facebook quickstart: https://developers.facebook.com/docs/messenger-platform/guides/quick-start
 
 ## Planned Features
 

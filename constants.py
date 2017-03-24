@@ -118,10 +118,18 @@ class READABLE():
     # Type
     ARTICLE = 1
     BOOK = 2
+    PAPER = 3
 
     LABELS = {
         ARTICLE: "Article",
-        BOOK: "Book"
+        BOOK: "Book",
+        PAPER: "Paper"
+    }
+
+    LOOKUP = {
+        "article": 1,
+        "book": 2,
+        "paper": 3
     }
 
 

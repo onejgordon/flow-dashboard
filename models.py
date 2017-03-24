@@ -9,6 +9,7 @@ import random
 import logging
 import re
 import imp
+import hashlib
 from common.decorators import auto_cache
 try:
     imp.find_module('secrets')
@@ -60,6 +61,7 @@ class User(ndb.Model):
     # Integration IDs
     g_id = ndb.StringProperty()
     fb_id = ndb.StringProperty()
+    evernote_id = ndb.StringProperty()
 
     def __str__(self):
         parts = [x for x in [self.name, self.email] if x]
@@ -73,7 +75,8 @@ class User(ndb.Model):
             'integrations': tools.getJson(self.integrations),
             'settings': tools.getJson(self.settings, {}),
             'timezone': self.timezone,
-            'birthday': tools.iso_date(self.birthday) if self.birthday else None
+            'birthday': tools.iso_date(self.birthday) if self.birthday else None,
+            'evernote_id': self.evernote_id
         }
 
     @staticmethod
@@ -119,6 +122,8 @@ class User(ndb.Model):
             self.settings = json.dumps(params.get('settings'), {})
         if 'fb_id' in params:
             self.fb_id = params.get('fb_id')
+        if 'evernote_id' in params:
+            self.evernote_id = params.get('evernote_id')
 
     def admin(self):
         return self.level == USER.ADMIN
@@ -811,8 +816,10 @@ class Readable(UserAccessible):
     favorite = ndb.BooleanProperty(default=False)
     type = ndb.IntegerProperty(default=READABLE.ARTICLE)
     excerpt = ndb.TextProperty()
+    notes = ndb.TextProperty()
+    has_notes = ndb.BooleanProperty(default=False)
     source = ndb.TextProperty()  # e.g. 'pocket', 'goodreads'
-    tags = ndb.TextProperty(repeated=True)
+    tags = ndb.TextProperty(repeated=True)  # Lowercase
     read = ndb.BooleanProperty(default=False)
     word_count = ndb.IntegerProperty()
 
@@ -827,14 +834,30 @@ class Readable(UserAccessible):
             'source_url': self.get_source_url(),
             'type': self.type,
             'source': self.source,
+            'notes': self.notes,
+            'has_notes': self.has_notes,
             'read': self.read,
-            'word_count': self.word_count
+            'word_count': self.word_count,
+            'date_read': tools.iso_date(self.dt_read) if self.dt_read else None
         }
 
     @staticmethod
-    def Unread(user, limit=30):
-        readables = Readable.query(ancestor=user.key).filter(Readable.read == False).order(-Readable.dt_added).fetch(limit=limit)
-        return readables
+    def Fetch(user, favorites=False, with_notes=False, unread=False, read=False,
+              limit=30, since=None, offset=0, keys_only=False):
+        q = Readable.query(ancestor=user.key)
+        ordering_prop = Readable.dt_added if not read else Readable.dt_read
+        if with_notes:
+            q = q.filter(Readable.has_notes == True)
+        elif favorites:
+            q = q.filter(Readable.favorite == True)
+        elif unread:
+            q = q.filter(Readable.read == False)
+        elif read:
+            q = q.filter(Readable.read == True)
+        q = q.order(-ordering_prop)
+        if since:
+            q = q.filter(ordering_prop >= tools.fromISODate(since))
+        return q.fetch(limit=limit, offset=offset, keys_only=keys_only)
 
     @staticmethod
     @auto_cache()
@@ -853,19 +876,28 @@ class Readable(UserAccessible):
                        type=READABLE.ARTICLE, source=None,
                        author=None, image_url=None, excerpt=None,
                        tags=None, read=False, favorite=False,
-                       dt_read=None,
-                       word_count=0, dt_added=None):
+                       dt_read=None, notes=None,
+                       word_count=0, dt_added=None, **params):
         if title and source:
+            if source_id is None:
+                m = hashlib.md5()
+                m.update(tools.removeNonAscii(title))
+                source_id = m.hexdigest()
             if tags is None:
                 tags = []
+            tags = [t.lower() for t in tags if t]
             if not dt_added:
                 dt_added = datetime.now()
             id = source + ':' + source_id
-            r = Readable.get_or_insert(id, parent=user.key, source_id=source_id, title=title,
-                            url=url,
-                            type=type, source=source, read=read, dt_added=dt_added,
-                            excerpt=excerpt, favorite=favorite, tags=tags, dt_read=dt_read,
-                            image_url=image_url, author=author, word_count=word_count)
+            r = Readable.get_or_insert(id, parent=user.key, source_id=source_id,
+                                       title=title, url=url,
+                                       type=type, source=source, read=read,
+                                       dt_added=dt_added, notes=notes,
+                                       excerpt=excerpt, favorite=favorite,
+                                       tags=tags, dt_read=dt_read,
+                                       image_url=image_url, author=author,
+                                       word_count=word_count)
+            r.has_notes = bool(r.notes)
             return r
 
     def Update(self, **params):
@@ -882,6 +914,9 @@ class Readable(UserAccessible):
             self.source = params.get('source')
         if 'excerpt' in params:
             self.excerpt = params.get('excerpt')
+        if 'notes' in params:
+            self.notes = params.get('notes')
+            self.has_notes = bool(self.notes)
         if 'title' in params:
             self.title = params.get('title')
         if 'url' in params:
@@ -905,6 +940,64 @@ class Readable(UserAccessible):
     def get_source_url(self):
         if self.source == 'pocket':
             return "https://getpocket.com/a/read/%s" % self.source_id
+
+
+class Quote(UserAccessible):
+    """
+    Quotes
+
+    Key - ID md5([source + content])
+
+    """
+    source_id = ndb.TextProperty()
+    dt_added = ndb.DateTimeProperty(auto_now_add=True)
+    readable = ndb.KeyProperty()
+    source = ndb.TextProperty()  # Title of piece, person
+    link = ndb.TextProperty()
+    location = ndb.TextProperty()  # (optional) location in piece
+    tags = ndb.StringProperty(repeated=True)  # lower case, symbols removed
+    content = ndb.TextProperty()
+
+    def json(self):
+        return {
+            'id': self.key.id(),
+            'source': self.source,
+            'link': self.link,
+            'content': self.content,
+            'location': self.location,
+            'tags': self.tags
+        }
+
+    @staticmethod
+    def Create(user, source, content, dt_added=None, location=None, **params):
+        if source and content:
+            m = hashlib.md5()
+            m.update('|'.join([tools.removeNonAscii(x) for x in [source, content]]))
+            id = m.hexdigest()
+            if not dt_added:
+                dt_added = datetime.now()
+            return Quote(id=id, source=source, content=content,
+                         location=location,
+                         dt_added=dt_added, parent=user.key)
+
+    @staticmethod
+    def Fetch(user, limit=50, keys_only=False):
+        return Quote.query(ancestor=user.key).order(-Quote.dt_added).fetch(limit=limit, keys_only=keys_only)
+
+    def Update(self, **params):
+        if 'source' in params:
+            self.source = params.get('source')
+        if 'content' in params:
+            self.content = params.get('content')
+        if 'location' in params:
+            self.location = params.get('location')
+        if 'link' in params:
+            self.link = params.get('link')
+        if 'tags' in params:
+            logging.debug(params)
+            tags = params.get('tags', [])
+            if tags:
+                self.tags = tags
 
 
 class Report(UserAccessible):
