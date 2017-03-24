@@ -33,8 +33,8 @@ export default class BigProp extends React.Component {
     let cls = "text-center bigProp";
     if (clickable) cls += " clickable";
     let order = [
-      <div style={{fontSize: size, fontWeight: "bold", color: color}}>{icon}{value}</div>,
-      <small style={{color: 'gray'}}>{label}</small>
+      <div key="val" style={{fontSize: size, fontWeight: "bold", color: color}}>{icon}{value}</div>,
+      <small key="label" style={{color: 'gray'}}>{label}</small>
     ];
     if (labelPosition == 'top') order = order.reverse();
     return (
