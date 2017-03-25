@@ -8,8 +8,6 @@ import {findItemById} from 'utils/store-utils';
 @connectToStores
 export default class AnalysisMisc extends React.Component {
     static defaultProps = {
-        habitdays: {},
-        habits: [],
         tracking_days: []
     };
     constructor(props) {
@@ -33,34 +31,6 @@ export default class AnalysisMisc extends React.Component {
             console.log(res.readables);
             this.setState({readables_read: res.readables});
         })
-    }
-
-    habit_day_checked(iso_date, habit) {
-        let {habitdays} = this.props;
-        let id = `habit:${habit.id}_day:${iso_date}`;
-        if (habitdays[id]) return habitdays[id].done;
-        return false;
-    }
-
-    habit_data() {
-        let {iso_dates, habitdays, habits} = this.props;
-        let datasets = [];
-        habits.forEach((h) => {
-            let data = iso_dates.map((iso_date) => {
-                return this.habit_day_checked(iso_date, h) ? 1 : 0;
-            });
-            let dataset = {
-                label: h.name,
-                data: data,
-                backgroundColor: h.color || "#FFFFFF"
-            };
-            datasets.push(dataset);
-        })
-        let data = {
-            labels: iso_dates,
-            datasets: datasets
-        };
-        return data;
     }
 
     productivity_data() {
@@ -101,23 +71,8 @@ export default class AnalysisMisc extends React.Component {
     }
 
     render() {
-        let {loaded, tracking_days, habits} = this.props;
+        let {loaded, tracking_days} = this.props;
         let today = new Date();
-        let habitData = this.habit_data()
-        let habitOptions = {
-            scales: {
-                yAxes: [{
-                    stacked: true
-                }],
-                xAxes: [{
-                    type: 'time',
-                    time: {
-                        unit: 'day'
-                    },
-                    stacked: true
-                }]
-            }
-        }
         let trackingData = this.productivity_data();
         let trackingOps = {
             scales: {
@@ -140,11 +95,7 @@ export default class AnalysisMisc extends React.Component {
         return (
             <div>
 
-                <h4>Habits</h4>
-
-                <Bar data={habitData} options={habitOptions} width={1000} height={450}/>
-
-                <h4>Productivity</h4>
+                <h4>Misc &amp; Productivity</h4>
 
                 <Bar data={trackingData} options={trackingOps} width={1000} height={450}/>
 

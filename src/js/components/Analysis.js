@@ -1,8 +1,6 @@
 var React = require('react');
 
 var util = require('utils/util');
-
-var LoadStatus = require('components/common/LoadStatus');
 import {IconButton, FlatButton, AutoComplete} from 'material-ui';
 var api = require('utils/api');
 import {get} from 'lodash';
@@ -60,16 +58,16 @@ export default class Analysis extends React.Component {
         let params = {
             date_start: util.printDateObj(start, 'UTC'),
             date_end: util.printDateObj(end, 'UTC'),
-            with_tracking: 1
+            with_tracking: 1,
+            with_goals: 1,
+            with_tasks: 1
         }
         api.get("/api/analysis", params, (res) => {
             this.setState({
                 journals: res.journals,
                 iso_dates: res.dates,
-                habits: res.habits,
                 tasks: res.tasks,
                 tracking_days: res.tracking_days,
-                habitdays: res.habitdays,
                 goals: util.lookupDict(res.goals, 'month'),
                 loaded: true
             });
@@ -93,7 +91,8 @@ export default class Analysis extends React.Component {
                 <Link to="/app/analysis/goals"><FlatButton label="Goals" /></Link>
                 <Link to="/app/analysis/journals"><FlatButton label="Journals" /></Link>
                 <Link to="/app/analysis/tasks"><FlatButton label="Tasks" /></Link>
-                <Link to="/app/analysis/misc"><FlatButton label="Habits & Productivity" /></Link>
+                <Link to="/app/analysis/habits"><FlatButton label="Habits" /></Link>
+                <Link to="/app/analysis/misc"><FlatButton label="Misc & Productivity" /></Link>
 
                 { React.cloneElement(this.props.children, {
                     user: this.props.user,

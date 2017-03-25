@@ -25,7 +25,8 @@ export default class ReadWidget extends React.Component {
     };
     this.LABELS = {
       1: "Article",
-      2: "Book"
+      2: "Book",
+      3: "Paper"
     }
   }
 

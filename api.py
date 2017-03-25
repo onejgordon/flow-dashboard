@@ -721,7 +721,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def get(self, d):
         # TODO: Async fetches
-        with_habits = self.request.get_range('with_habits', default=1) == 1
+        with_habits = self.request.get_range('with_habits', default=0) == 1
         with_tracking = self.request.get_range('with_tracking', default=1) == 1
         with_goals = self.request.get_range('with_goals', default=1) == 1
         with_tasks = self.request.get_range('with_tasks', default=1) == 1
