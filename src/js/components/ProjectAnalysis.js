@@ -99,7 +99,7 @@ export default class ProjectAnalysis extends React.Component {
     return (
       <Dialog
           open={!!project}
-          title={project ? `Analysis: ${project.title}` : ""}
+          title={project ? `Progress: ${project.title}` : ""}
           onRequestClose={this.dismiss.bind(this)}
           height="80%"
           actions={actions}>

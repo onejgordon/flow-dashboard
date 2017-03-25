@@ -616,7 +616,7 @@ class UserAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def update_self(self, d):
-        params = tools.gets(self, strings=['timezone', 'birthday'], json=['settings'])
+        params = tools.gets(self, strings=['timezone', 'birthday', 'password'], json=['settings'])
         logging.debug(params)
         self.user.Update(**params)
         self.user.put()

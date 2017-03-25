@@ -124,6 +124,8 @@ class User(ndb.Model):
             self.fb_id = params.get('fb_id')
         if 'evernote_id' in params:
             self.evernote_id = params.get('evernote_id')
+        if 'password' in params:
+            self.setPass(pw=params.get('password'))
 
     def admin(self):
         return self.level == USER.ADMIN
