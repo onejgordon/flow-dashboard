@@ -117,6 +117,7 @@ def sync(user, access_token, since_timestamp=0):
         url=GET_ENDPOINT,
         payload=data,
         method=urlfetch.POST,
+        deadline=60,
         validate_certificate=True)
     logging.debug(res.status_code)
     latest_timestamp = 0

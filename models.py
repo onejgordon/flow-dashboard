@@ -967,6 +967,7 @@ class Quote(UserAccessible):
             'link': self.link,
             'content': self.content,
             'location': self.location,
+            'iso_date': tools.iso_date(self.dt_added) if self.dt_added else None,
             'tags': self.tags
         }
 
@@ -983,8 +984,8 @@ class Quote(UserAccessible):
                          dt_added=dt_added, parent=user.key)
 
     @staticmethod
-    def Fetch(user, limit=50, keys_only=False):
-        return Quote.query(ancestor=user.key).order(-Quote.dt_added).fetch(limit=limit, keys_only=keys_only)
+    def Fetch(user, limit=50, offset=0, keys_only=False):
+        return Quote.query(ancestor=user.key).order(-Quote.dt_added).fetch(limit=limit, offset=offset, keys_only=keys_only)
 
     def Update(self, **params):
         if 'source' in params:

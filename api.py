@@ -468,7 +468,8 @@ class QuoteAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        quotes = Quote.Fetch(self.user)
+        page, max, offset = tools.paging_params(self.request)
+        quotes = Quote.Fetch(self.user, limit=max, offset=offset)
         self.set_response({
             'quotes': [q.json() for q in quotes]
         }, success=True)
@@ -480,7 +481,6 @@ class QuoteAPI(handlers.JsonRequestHandler):
             strings=['source', 'content', 'link', 'location', 'date'],
             lists=['tags']
         )
-        logging.debug(params)
         quote = None
         if id:
             quote = Quote.get_by_id(id, parent=self.user.key)
