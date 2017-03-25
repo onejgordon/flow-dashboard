@@ -108,7 +108,8 @@ export default class AnalysisHabits extends React.Component {
             }
             let full_window = rwindow.length == this.ROLLING_WINDOW;
             if (full_window) {
-                series_data.push(util.sum(rwindow));
+                let {sum} = util.sum(rwindow);
+                series_data.push(sum);
                 labels.push(iso_date);
             }
         });
