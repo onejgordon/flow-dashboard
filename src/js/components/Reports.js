@@ -40,6 +40,7 @@ export default class Reports extends React.Component {
     }
 
     componentDidMount() {
+        util.set_title("Reports");
     }
 
     generate_report(type_int) {

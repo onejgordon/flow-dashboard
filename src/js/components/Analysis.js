@@ -50,6 +50,7 @@ export default class Analysis extends React.Component {
     }
 
     componentDidMount() {
+        util.set_title("Analysis");
         this.fetch_data();
     }
 

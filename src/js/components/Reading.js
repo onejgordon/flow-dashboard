@@ -39,6 +39,7 @@ export default class Reading extends React.Component {
     }
 
     componentDidMount() {
+        util.set_title("Reading");
     }
 
     maybe_refresh_quotes() {

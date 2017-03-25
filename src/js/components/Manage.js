@@ -42,6 +42,7 @@ export default class Manage extends React.Component {
     }
 
     componentDidMount() {
+        util.set_title("Manage");
     }
 
     componentDidUpdate(prevProps, prevState) {

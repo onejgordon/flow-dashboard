@@ -108,7 +108,7 @@ export default class AnalysisHabits extends React.Component {
             }
             let full_window = rwindow.length == this.ROLLING_WINDOW;
             if (full_window) {
-                series_data.push(util.average(rwindow));
+                series_data.push(util.sum(rwindow));
                 labels.push(iso_date);
             }
         });
@@ -165,7 +165,7 @@ export default class AnalysisHabits extends React.Component {
                 }],
                 yAxes: [{
                     ticks: {
-                        max: total_weekly_target + 3,
+                        suggestedMax: total_weekly_target + 3,
                         min: 0
                     }
                 }],
@@ -180,7 +180,7 @@ export default class AnalysisHabits extends React.Component {
                 <Bar data={habit_data} options={habitOptions} width={1000} height={450}/>
 
                 <h5>Overall Trend</h5>
-                <p className="lead">Weekly completion (rolling 7 day average)</p>
+                <p className="lead">Completions per week (rolling 7 day average)</p>
 
                 <Line data={trend_data} options={trendOpts} width={1000} height={450}/>
 

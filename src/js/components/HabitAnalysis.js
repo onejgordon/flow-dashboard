@@ -45,7 +45,6 @@ export default class HabitAnalysis extends React.Component {
     if (habit) {
       api.get(`/api/habit/${habit.id}`, {with_days: this.props.days}, (res) => {
         // dict of ids to habit days (if present)
-        console.log(res.habitdays);
         this.setState({habitdays: util.lookupDict(res.habitdays, 'id')});
       });
     }
@@ -54,9 +53,7 @@ export default class HabitAnalysis extends React.Component {
   render_content() {
     let {habit, days} = this.props;
     let {habitdays} = this.state;
-    console.log(habitdays)
     let _squares = [];
-    let today = new Date();
     let cursor = new Date();
     cursor.setDate(cursor.getDate() - days);
     let longest_streak = 0;

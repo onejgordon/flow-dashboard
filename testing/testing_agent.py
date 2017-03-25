@@ -88,6 +88,11 @@ class AgentTestCase(BaseTestCase):
 
     def test_parsing(self):
         volley = [
+            # Hello
+            ('hi', 'input.hello', None),
+            ("What's up", 'input.hello_question', None),
+            ("how's it going?", 'input.hello_question', None),
+
             # Goal requests
             ('what are my goals?', 'input.goals_request', None),
             ('remind me my goals', 'input.goals_request', None),

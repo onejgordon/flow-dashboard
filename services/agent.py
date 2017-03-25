@@ -99,6 +99,24 @@ class ConversationAgent(object):
         "Absolutely",
     ]
 
+    HELLO_BANTER = [
+        "Hi there!",
+        "Hi!",
+        "Hello!",
+        "Hi",
+        "Hello"
+    ]
+
+    HELLO_QUESTION_BANTER = [
+        "I'm great",
+        "Just fine",
+        "Swell!",
+        "Wonderful!",
+        "Taking it easy",
+        "Perfect!",
+        "I'm great!"
+    ]
+
     def __init__(self, type=AGENT_GOOGLE_ASST, user=None):
         self.type = type
         self.user = user
@@ -158,6 +176,12 @@ class ConversationAgent(object):
                     del session[key]
 
         return "Alright, you're disconnected."
+
+    def _hello(self, question=False):
+        if question:
+            return random.choice(ConversationAgent.HELLO_BANTER)
+        else:
+            return random.choice(ConversationAgent.HELLO_BANTER)
 
     def _journal(self, message=""):
         DONE_MESSAGES = ["done", "that's all", "exit", "finished", "no"]
@@ -393,6 +417,10 @@ class ConversationAgent(object):
         if self.user:
             if action == 'input.disconnect':
                 speech = self._user_disconnect(session=session)
+            elif action == 'input.hello':
+                speech = self._hello()
+            elif action == 'input.hello_question':
+                speech = self._hello(question=True)
             elif action == 'input.status_request':
                 speech = self._status_request()
             elif action == 'input.goals_request':
@@ -475,15 +503,17 @@ class ConversationAgent(object):
                 (r'(?:how do|tell me about|more info|learn about|help on|help with|what are) (?:journals|journaling|daily journals)', 'input.help_journals'),
                 (r'(?:how do|tell me about|more info|learn about|help on|help with) (?:goals|monthly goals|goal tracking)', 'input.help_goals'),
                 (r'(?:mark|set) [HABIT_OR_TASK_PATTERN] as (?:done|complete|finished)', 'input.habit_or_task_report'),
-                (r'(?:i finished|i just finished|completed) [HABIT_OR_TASK_PATTERN]', 'input.habit_or_task_report'),
+                (r'(?:i finished|just finished|completed) [HABIT_OR_TASK_PATTERN]', 'input.habit_or_task_report'),
                 (r'(?:add habit|new habit|create habit)[:-]? [HABIT_PATTERN]', 'input.habit_add'),
                 (r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)', 'input.habit_commit'),
-                (r'(?:my habits|habit progress|habits today)', 'input.habit_status'),
+                (r'(?:my habits|view habits|habit progress|habits today)', 'input.habit_status'),
                 (r'(?:add task|set task|new task) [TASK_PATTERN]', 'input.task_add'),
-                (r'(?:my tasks|view tasks|tasks today|today\'?s tasks)', 'input.task_view'),
-                (r'(?:help me|how does this work|what can i do|what can I say)', 'input.help'),
-                (r'^(help|\?\?\?$)', 'input.help'),
+                (r'(?:my tasks|my to ?do list|view tasks|tasks today|today\'?s tasks)', 'input.task_view'),
                 (r'(?:daily report|daily journal)', 'input.journal'),
+                (r'(?:what up|what\'s up|how are you|how\'s it going|what\'s new|you\'re well\?)', 'input.hello_question'),
+                (r'(?:hi|hello|yo|i see you|hey flow)', 'input.hello'),
+                (r'(?:help me|show commands|how does this work|what can i do|what can I say)', 'input.help'),
+                (r'^(help|\?\?\?$)', 'input.help'),
                 (r'^disconnect$', 'input.disconnect')
             ]
             for lookup in LOOKUP:

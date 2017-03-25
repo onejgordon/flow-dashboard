@@ -474,17 +474,23 @@ var util = {
     },
 
     average: function(arr) {
+        let {sum, count} = util.sum(arr);
+        return count > 0 ? sum / count : 0;
+    },
+
+    sum: function(arr) {
+        // Of non-null
+        let sum = 0;
+        let count = 0;
         if (arr.length > 0) {
-            var sum = 0;
-            let count = 0;
-            for (var i = 0; i < arr.length; i++) {
+            for (let i = 0; i < arr.length; i++) {
                 if (arr[i] != null) {
                     sum += arr[i];
                     count += 1;
                 }
             }
-            return sum / count;
-        } else return 0;
+        }
+        return {sum, count};
     },
 
     capitalize: function(s) {
@@ -603,8 +609,8 @@ var util = {
     },
 
     set_title(title) {
-        if (title != null) title = title + " | Gestalt";
-        else title = "Gestalt";
+        if (title != null) title = title + " | Flow";
+        else title = "Flow";
         document.title = title;
     },
 
