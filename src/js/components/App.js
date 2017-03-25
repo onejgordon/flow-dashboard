@@ -1,9 +1,9 @@
 'use strict';
 
 var React = require('react');
-import {Router, withRouter, Link, browserHistory} from 'react-router';
+import {browserHistory} from 'react-router';
 import { FontIcon, MenuItem,
-  IconButton, AppBar, Drawer, IconMenu, Divider, Subheader} from 'material-ui';
+  IconButton, AppBar, Drawer} from 'material-ui';
 var AppConstants = require('constants/AppConstants');
 var UserActions = require('actions/UserActions');
 var UserStore = require('stores/UserStore');
@@ -58,10 +58,8 @@ export default class Private extends React.Component {
     if (gUser && gUser.isSignedIn()) {
       var profile = gUser.getBasicProfile();
       var id_token = gUser.getAuthResponse().id_token;
-      console.log(profile);
       let {user} = this.props;
       let new_user = !user || profile.getEmail() != user.email;
-      console.log('new_user', new_user);
       if (new_user) {
         let data = {token: id_token};
         api.post('/api/auth/google_login', data, (res) => {

@@ -52,9 +52,12 @@ def role(role=None):
             if not handled:
                 if allow:
                     self.user = d['user'] = user
-                    d['logout_url'] = "/logout" #users.create_logout_url("/logout")
+                    d['logout_url'] = "/logout"
                     kwargs['d'] = d
                     handler_method(self, *args, **kwargs)
+                else:
+                    # Unauthorized
+                    self.set_response(success=False, message="Unauthorized", status=401)
 
         return check_login
     return wrapper

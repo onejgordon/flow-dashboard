@@ -314,7 +314,7 @@ class Task(UserAccessible):
             tz = user.get_timezone()
             local_now = tools.local_time(tz)
             schedule_for_same_day = local_now.hour < 16
-            due = datetime.combine(local_now.date(), time(22, 0)) if schedule_for_same_day else (datetime.now() + timedelta(days=1))
+            due = datetime.combine(local_now.date(), time(23, 0)) if schedule_for_same_day else (datetime.now() + timedelta(days=1))
             if due:
                 due = tools.server_time(tz, due)
         return Task(title=tools.capitalize(title), dt_due=due, parent=user.key)
