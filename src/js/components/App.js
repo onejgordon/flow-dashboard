@@ -81,6 +81,11 @@ export default class Private extends React.Component {
     })
   }
 
+  go_home() {
+    if (this.props.user) this.goto_page('/app/dashboard');
+    else this.goto_page('/app');
+  }
+
   render_nav_menu() {
     let {user} = this.props;
     let menu = [];
@@ -106,13 +111,13 @@ export default class Private extends React.Component {
   render() {
     let {user} = this.props;
     let {SITENAME} = AppConstants;
-    let LOGO = <img src="/images/logo_white.png" className="center-block" width="50" style={{marginTop: "7px"}} />
+    let LOGO = <img src="/images/logo_white.png" className="center-block glow" width="50" style={{marginTop: "7px", cursor: 'pointer'}} />
     return (
       <div>
         <AppBar
           title={LOGO}
           zDepth={0}
-          onTitleTouchTap={this.goto_page.bind(this, '/app')}
+          onTitleTouchTap={this.go_home.bind(this)}
           onLeftIconButtonTouchTap={this.handle_toggle_leftnav.bind(this)} />
 
         <Drawer docked={false} width={300} open={this.state.ln_open} onRequestChange={this.handle_leftnav_change.bind(this)}>
@@ -120,7 +125,7 @@ export default class Private extends React.Component {
             title={SITENAME}
             zDepth={0}
             iconElementLeft={<IconButton iconClassName="material-icons">arrow_back</IconButton>}
-            onTitleTouchTap={this.goto_page.bind(this, '/app')}
+            onTitleTouchTap={this.go_home.bind(this)}
             onLeftIconButtonTouchTap={this.handle_toggle_leftnav.bind(this)} />
           { this.render_nav_menu() }
         </Drawer>

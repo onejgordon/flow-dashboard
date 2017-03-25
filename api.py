@@ -621,9 +621,12 @@ class UserAPI(handlers.JsonRequestHandler):
         self.user.Update(**params)
         self.user.put()
         self.update_session_user(self.user)
-        message = "%s updated" % self.user
+        message = "User settings updated"
         self.success = True
-        self.set_response({'message': message, 'user': self.user.json()})
+        self.set_response({
+            'message': message,
+            'user': self.user.json()
+        }, debug=True)
 
 
 class AuthenticationAPI(handlers.JsonRequestHandler):

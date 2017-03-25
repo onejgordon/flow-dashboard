@@ -1,12 +1,13 @@
 var React = require('react');
-import {Link} from 'react-router';
 var api = require('utils/api');
+var UserActions = require('actions/UserActions');
 import {Drawer, AppBar, IconButton, FlatButton, RaisedButton,
-    List, ListItem, TextField, Dialog} from 'material-ui';
+    List, ListItem, TextField, Dialog, DatePicker} from 'material-ui';
 import {clone} from 'lodash';
 var ReactLifeTimeline = require('react-life-timeline');
 import connectToStores from 'alt-utils/lib/connectToStores';
 import {changeHandler} from 'utils/component-utils';
+var util = require('utils/util');
 
 @connectToStores
 @changeHandler
@@ -18,7 +19,7 @@ export default class Timeline extends React.Component {
             events: [],
             event_list_open: false,
             editing_index: null,
-            form: null
+            form: {}
         };
     }
 
@@ -34,10 +35,15 @@ export default class Timeline extends React.Component {
         this.fetch_events();
     }
 
+    save_birthday() {
+        let {form} = this.state;
+        if (form.birthday) UserActions.update({birthday: util.printDateObj(form.birthday)});
+    }
+
     fetch_events() {
       api.get("/api/event", {}, (res) => {
         this.setState({events: res.events}, () => {
-            this.refs.rlt.got_events(res.events);
+            if (this.refs.rtl) this.refs.rlt.got_events(res.events);
         });
       });
     }
@@ -91,8 +97,22 @@ export default class Timeline extends React.Component {
     }
 
     render() {
+        let {form} = this.state;
         let DOB = this.props.user.birthday;
-        if (!DOB) return <div className="empty">Set your birthday and add events on the <Link to="/app/manage">manage</Link> page.</div>;
+        let today = new Date();
+        if (!DOB) return (
+            <div className="empty">
+                To populate your timeline, first enter your birthday.
+
+                <DatePicker autoOk={true}
+                    floatingLabelText="Birthday"
+                    formatDate={util.printDateObj}
+                    maxDate={today}
+                    value={form.birthday} onChange={this.changeHandlerNilVal.bind(this, 'form', 'birthday')}/>
+
+                <RaisedButton primary={true} label="Save Birthday" onClick={this.save_birthday.bind(this)} disabled={form.birthday == null} />
+            </div>
+        );
         let events = this.state.events;
         return (
             <div>
@@ -118,7 +138,7 @@ export default class Timeline extends React.Component {
 
                 <div className="pull-right">
                     <FlatButton label="Show Event List" onTouchTap={this.setState.bind(this, {event_list_open: true})} />
-                    <FlatButton label="New Event" onTouchTap={this.new_event.bind(this)} />
+                    <RaisedButton label="New Event" onTouchTap={this.new_event.bind(this)} primary={true} />
                 </div>
 
                 <h2>Timeline</h2>

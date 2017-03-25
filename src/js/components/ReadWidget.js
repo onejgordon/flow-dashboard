@@ -148,7 +148,7 @@ export default class ReadWidget extends React.Component {
           </div>
           <div className="col-sm-6">
               <BigProp
-                label="Unread Pocket Articles"
+                label="Unread Articles"
                 value={ counts[1] || 0 }
                 onClick={this.show_readables.bind(this, 1)} />
 

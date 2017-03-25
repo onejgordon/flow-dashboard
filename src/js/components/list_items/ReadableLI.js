@@ -28,6 +28,7 @@ export default class ReadableLI extends React.Component {
       }
     };
     this.TYPES = ["Article", "Book", "Paper"];
+    this.FAV_COLOR = '#F9EB97';
   }
 
   update_readable(r, params) {
@@ -66,10 +67,11 @@ export default class ReadableLI extends React.Component {
     let {readable} = this.props;
     let {notes_visible, form} = this.state;
     let type = this.TYPES[readable.type - 1];
-    let subhead = [type, readable.read ? 'Read' : 'Unread', readable.source];
+    let subhead = [<span className="sh">{type}</span>, <span className="sh">{readable.read ? 'Read' : 'Unread'}</span>];
     let _notes;
-    if (readable.author) subhead.push(readable.author);
-    if (readable.favorite) subhead.push("Favorite");
+    if (readable.author) subhead.push(<span className="sh">{readable.author}</span>);
+    if (readable.favorite) subhead.push(<span className="sh" style={{color: this.FAV_COLOR}}>Favorite</span>);
+    if (readable.notes) subhead.push(<span className="sh" style={{color: '#F6335F'}}>Has Notes</span>);
     let mis = [];
     if (!readable.read) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">remove_red_eye</FontIcon>} key="mr" onClick={this.update_readable.bind(this, readable, {read: 1})}>Mark Read</MenuItem>);
     if (!readable.favorite) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">star</FontIcon>} key="mf" onClick={this.update_readable.bind(this, readable, {favorite: 1})}>Favorite</MenuItem>);
@@ -81,7 +83,7 @@ export default class ReadableLI extends React.Component {
       </IconMenu>
     );
     let av_st = {};
-    if (readable.favorite) av_st.border = '2px solid #F9EB97';
+    if (readable.favorite) av_st.border = `2px solid ${this.FAV_COLOR}`;
     let has_image = readable.image_url != null;
     if (!has_image) av_st.backgroundColor = util.stringToColor(readable.title);
     let avatar_content = has_image ? null : readable.title[0];
@@ -96,8 +98,9 @@ export default class ReadableLI extends React.Component {
     return (
       <div>
         <ListItem key={readable.id}
+          className="readable"
           primaryText={ readable.title }
-          secondaryText={ subhead.join(' | ') }
+          secondaryText={ subhead }
           onTouchTap={this.goto_url.bind(this, this.get_link_url(readable))}
           rightIconButton={menu}
           leftAvatar={avatar} />

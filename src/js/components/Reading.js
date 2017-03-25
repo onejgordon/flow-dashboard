@@ -2,7 +2,7 @@ var React = require('react');
 import {Link} from 'react-router';
 var UserStore = require('stores/UserStore');
 var ReadableLI = require('components/list_items/ReadableLI');
-import {Tabs, Tab, Toggle, Paper, RaisedButton, TextField,
+import {Tabs, Tab, RadioButton, RadioButtonGroup, Paper, RaisedButton, TextField,
     ListItem, DropDownMenu, MenuItem, FlatButton, Dialog} from 'material-ui';
 var util = require('utils/util');
 import connectToStores from 'alt-utils/lib/connectToStores';
@@ -20,8 +20,7 @@ export default class Reading extends React.Component {
         super(props);
         this.state = {
             form: {
-                favorites: false,
-                with_notes: false,
+                reading_filter: 'favorites',
                 quotes: '',
                 readings: ''
             },
@@ -41,6 +40,11 @@ export default class Reading extends React.Component {
 
     componentDidMount() {
     }
+
+    maybe_refresh_quotes() {
+        if (this.refs.quotes && this.refs.quotes.empty()) this.refs.quotes.refresh();
+    }
+
 
     pick_sample(items, type) {
         let st = {};
@@ -151,8 +155,7 @@ export default class Reading extends React.Component {
     render() {
         let {form} = this.state;
         let readable_params = {};
-        if (form.favorites) readable_params.favorites = 1;
-        if (form.with_notes) readable_params.with_notes = 1;
+        if (form.reading_filter) readable_params[form.reading_filter] = 1;
         return (
             <div>
 
@@ -173,8 +176,12 @@ export default class Reading extends React.Component {
                     <Tab label="Reading">
 
                         <div className="vpad">
-                            <Toggle label="Favorites" labelPosition="right" toggled={form.favorites} onToggle={this.changeHandlerToggle.bind(this, 'form', 'favorites')} />
-                            <Toggle label="With Notes" labelPosition="right" toggled={form.with_notes} onToggle={this.changeHandlerToggle.bind(this, 'form', 'with_notes')} />
+                            <RadioButtonGroup name="filter" onChange={this.changeHandlerEventValue.bind(this, 'form', 'reading_filter')} valueSelected={form.reading_filter}>
+                                <RadioButton value="favorites" label="Favorites" />
+                                <RadioButton value="with_notes" label="With Notes" />
+                                <RadioButton value="read" label="Read" />
+                                <RadioButton value="unread" label="Unread" />
+                            </RadioButtonGroup>
                         </div>
                         <FetchedList ref="readables" params={readable_params} url="/api/readable"
                             listStyle="mui" listProp="readables"
@@ -204,7 +211,7 @@ export default class Reading extends React.Component {
                         </div>
                     </Tab>
 
-                    <Tab label="Quotes & Excerpts">
+                    <Tab label="Quotes & Excerpts" onActive={this.maybe_refresh_quotes.bind(this)}>
                         <FetchedList ref="quotes" url="/api/quote"
                             listStyle="mui" listProp="quotes"
                             per_page={20}

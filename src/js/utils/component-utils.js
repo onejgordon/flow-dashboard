@@ -22,6 +22,9 @@ export default {
     target.prototype.changeHandlerSlider = function(key, attr, event, value) {
       this.changeHandlerVal(key, attr, value);
     };
+    target.prototype.changeHandlerEventValue = function(key, attr, event, value) {
+      this.changeHandlerVal(key, attr, value);
+    };
     target.prototype.changeHandlerToggle = function(key, attr, value) {
       var state = {};
       state[key] = this.state[key] || {};
