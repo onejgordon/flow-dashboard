@@ -3,9 +3,7 @@ var React = require('react');
 var util = require('utils/util');
 
 var LoadStatus = require('components/common/LoadStatus');
-import {FontIcon, IconButton, FlatButton, AutoComplete,
-    Checkbox} from 'material-ui';
-import {Bar, Line} from "react-chartjs-2";
+import {IconButton, FlatButton, AutoComplete} from 'material-ui';
 var api = require('utils/api');
 import {get} from 'lodash';
 import {Link} from 'react-router';
@@ -40,8 +38,6 @@ export default class Analysis extends React.Component {
             tags: [],
             loaded: false,
             tags_loading: false,
-            journal_tag_segment: null,
-            journal_segments: {}, // tag.id -> { data: [], labels: [] }
             questions: questions,
             chart_enabled_questions: chart_enabled
         };
@@ -67,8 +63,8 @@ export default class Analysis extends React.Component {
             with_tracking: 1
         }
         api.get("/api/analysis", params, (res) => {
-            console.log(res);
-            this.setState({journals: res.journals,
+            this.setState({
+                journals: res.journals,
                 iso_dates: res.dates,
                 habits: res.habits,
                 tasks: res.tasks,
@@ -81,8 +77,7 @@ export default class Analysis extends React.Component {
     }
 
     render() {
-        let {loaded, journal_tag_segment,
-            journal_segments, goals,
+        let {loaded, goals,
             habits, habitdays, iso_dates,
             tracking_days,
             journals, tasks} = this.state;

@@ -734,7 +734,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         today = datetime.today()
         if dt_start < dt_end:
             date_cursor = dt_start
-            while date_cursor <= dt_end:
+            while date_cursor < dt_end:
                 date_cursor += timedelta(days=1)
                 iso_date = tools.iso_date(date_cursor)
                 journal_keys.append(ndb.Key('MiniJournal', iso_date, parent=self.user.key))
@@ -810,7 +810,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         else:
             self.message = "Please link your Pocket account from the integrations page"
         self.set_response({
-            'readables': [r.json() for r in filter(lambda r: not r.read, readables)]
+            'readables': [r.json() for r in readables]
         })
 
     @authorized.role('user')

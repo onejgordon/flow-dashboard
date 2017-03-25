@@ -42,7 +42,7 @@ export default class ReadWidget extends React.Component {
     let _readables = util.flattenDict(this.state.readables);
     _readables.forEach((r) => {
       if (!counts[r.type]) counts[r.type] = 0;
-      counts[r.type] += 1;
+      if (!r.read) counts[r.type] += 1;
     });
     return counts;
   }

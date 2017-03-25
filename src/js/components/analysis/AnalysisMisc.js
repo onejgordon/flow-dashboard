@@ -74,12 +74,11 @@ export default class AnalysisMisc extends React.Component {
             if (!date_to_read_count[r.date_read]) date_to_read_count[r.date_read] = 0;
             date_to_read_count[r.date_read] += 1;
         });
-        console.log(date_to_read_count);
         iso_dates.forEach((date) => {
             let td = findItemById(tracking_days, date, 'iso_date');
             commit_data.push(td ? td.data.commits : 0);
             reading_data.push(date_to_read_count[date] || 0);
-            labels.push(new Date(date));
+            labels.push(date);
         });
         // Align reading counts with tracking days
         let pdata = {
@@ -111,6 +110,10 @@ export default class AnalysisMisc extends React.Component {
                     stacked: true
                 }],
                 xAxes: [{
+                    type: 'time',
+                    time: {
+                        unit: 'day'
+                    },
                     stacked: true
                 }]
             }
