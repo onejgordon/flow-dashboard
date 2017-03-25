@@ -43,7 +43,7 @@ export default class Timeline extends React.Component {
     fetch_events() {
       api.get("/api/event", {}, (res) => {
         this.setState({events: res.events}, () => {
-            if (this.refs.rtl) this.refs.rlt.got_events(res.events);
+            if (this.refs.rlt) this.refs.rlt.got_events(res.events);
         });
       });
     }

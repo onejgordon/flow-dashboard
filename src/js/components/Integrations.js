@@ -191,6 +191,8 @@ export default class Integrations extends React.Component {
 
                     <Tab label="Github">
 
+                        <p className="lead">Public commit counts from your profile will be synced daily.</p>
+
                         <b>Current Github Username:</b> <span>{ gh_user || "--" }</span><br/>
                         <b>Current Github PAT:</b> <span>{ gh_pat || "--" }</span><br/>
                         <TextField name="gh_username" placeholder="Github User ID" value={form.github_username} onChange={this.changeHandler.bind(this, 'form', 'github_username')} /><br/>
