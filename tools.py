@@ -316,7 +316,9 @@ def trunc_chars(text, n=120):
         return text
 
 
-def gets(self, strings=[], lists=[], floats=[], integers=[], booleans=[], dates=[], times=[], json=[], multi=False, addMultiBrackets=False, getDefault=None, ignoreMissing=True, supportTextBooleans=False):
+def gets(self, strings=[], lists=[], floats=[], integers=[], booleans=[],
+         dates=[], times=[], json=[], multi=False, addMultiBrackets=False,
+         getDefault=None, ignoreMissing=True, supportTextBooleans=False):
     '''
     Use ignoreMissing if resulting dictionary should not contain params that were not passed via request
     '''

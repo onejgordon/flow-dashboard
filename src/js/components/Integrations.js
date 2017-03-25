@@ -37,13 +37,18 @@ export default class Integrations extends React.Component {
     }
 
     componentDidMount() {
-        let action = this.props.location.query.action;
+        let action = this.props.location.query.action || this.props.params.action;
+        console.log('action: ' + action);
         if (action) {
             if (action == 'pocket_finish') {
                 this.finish_pocket_authentication();
+            } else if (action == 'evernote_connect') {
+                this.finish_evernote_authentication();
             }
         }
     }
+
+    // Pocket
 
     start_pocket_authentication() {
         this.setState({snack_message: "Pocket connecting...", snack_open: true})
@@ -66,6 +71,36 @@ export default class Integrations extends React.Component {
     disconnect_pocket() {
         this.setState({snack_message: "Disconnecting from Pocket...", snack_open: true})
         api.post("/api/integrations/pocket/disconnect", {}, (res) => {
+            if (res.user) {
+                UserActions.storeUser(res.user);
+            }
+        });
+    }
+
+    // Evernote
+
+    start_evernote_authentication() {
+        this.setState({snack_message: "Evernote connecting...", snack_open: true})
+        api.post("/api/integrations/evernote/authenticate", {}, (res) => {
+            if (res.redirect) window.location = res.redirect;
+        });
+    }
+
+    finish_evernote_authentication() {
+        this.setState({snack_message: "Signing in to Evernote...", snack_open: true})
+        let params = this.props.location.query;
+        api.post("/api/integrations/evernote/authorize", params, (res) => {
+            if (res.user) {
+                UserActions.storeUser(res.user);
+                this.setState({snack_message: "Evernote connected!", snack_open: true})
+                browserHistory.push('/app/integrations');
+            }
+        });
+    }
+
+    disconnect_evernote() {
+        this.setState({snack_message: "Disconnecting from Evernote...", snack_open: true})
+        api.post("/api/integrations/evernote/disconnect", {}, (res) => {
             if (res.user) {
                 UserActions.storeUser(res.user);
             }
@@ -101,12 +136,14 @@ export default class Integrations extends React.Component {
         let test = true;
         let {user} = this.props;
         if (!user) return;
-        let gr_user_id, gh_user, gh_pat;
+        let gr_user_id, gh_user, gh_pat, en_notebook_ids, evernote_connected;
         if (user && user.integrations) {
             let ints = user.integrations;
             gr_user_id = ints.goodreads_user_id;
             gh_user = ints.github_username;
             gh_pat = ints.github_pat;
+            en_notebook_ids = ints.evernote_notebook_ids;
+            evernote_connected = ints.evernote_access_token != null;
         }
         let pocket_connected = user.integrations && user.integrations.pocket_access_token != null;
         return (
@@ -125,17 +162,36 @@ export default class Integrations extends React.Component {
                         </div>
                     </Tab>
 
+                    <Tab label="Evernote">
+
+                        <p className="lead">Flow will receive new notes/quotes/excerpts added to specified notebooks on Evernote.</p>
+
+                        <FlatButton label={ evernote_connected ? "Connected" : "Connect" } onClick={this.start_evernote_authentication.bind(this)} disabled={evernote_connected}/>
+                        <div hidden={!evernote_connected}>
+                            <FlatButton label="Disconnect" onClick={this.disconnect_evernote.bind(this)} /><br/>
+
+                            <b>Evernote User ID:</b> <span>{ user.evernote_id || "--" }</span><br/>
+                            <b>Capture Notebook IDs:</b> <span>{ en_notebook_ids || "--" }</span><br/>
+                            <TextField name="user_id" placeholder="Evernote Notebook IDs (comma separated)" value={form.evernote_notebook_ids} onChange={this.changeHandler.bind(this, 'form', 'evernote_notebook_ids')} fullWidth /><br/>
+
+                            <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['evernote_notebook_ids'])} />
+
+                        </div>
+                    </Tab>
+
                     <Tab label="Good Reads">
 
-                        <p className="lead">Your currently reading shelf list will be synced daily from goodreads.</p>
+                        <p className="lead">Your currently reading shelf list will be synced daily from Goodreads.</p>
 
                         <b>Current User ID:</b> <span>{ gr_user_id || "--" }</span><br/>
-                        <TextField name="user_id" placeholder="goodreads User ID" value={form.goodreads_user_id} onChange={this.changeHandler.bind(this, 'form', 'goodreads_user_id')} /><br/>
+                        <TextField name="user_id" placeholder="Goodreads User ID" value={form.goodreads_user_id} onChange={this.changeHandler.bind(this, 'form', 'goodreads_user_id')} /><br/>
 
                         <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['goodreads_user_id'])} />
                     </Tab>
 
                     <Tab label="Github">
+
+                        <p className="lead">Public commit counts from your profile will be synced daily.</p>
 
                         <b>Current Github Username:</b> <span>{ gh_user || "--" }</span><br/>
                         <b>Current Github PAT:</b> <span>{ gh_pat || "--" }</span><br/>

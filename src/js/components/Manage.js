@@ -6,7 +6,7 @@ var UserStore = require('stores/UserStore');
 var UserActions = require('actions/UserActions');
 var SimpleAdmin = require('components/common/SimpleAdmin');
 var ReactJsonEditor = require('components/common/ReactJsonEditor');
-import {FlatButton, RaisedButton, TextField,
+import {RaisedButton, TextField,
     Paper} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 import {get, set, clone} from 'lodash';

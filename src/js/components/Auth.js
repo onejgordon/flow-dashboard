@@ -50,7 +50,6 @@ export default class Auth extends React.Component {
     }
 
     success(gUser) {
-        var profile = gUser.getBasicProfile();
         var id_token = gUser.getAuthResponse().id_token;
         this.finish_auth(id_token);
     }

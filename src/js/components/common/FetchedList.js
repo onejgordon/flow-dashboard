@@ -125,6 +125,10 @@ export default class FetchedList extends React.Component {
     }
   }
 
+  empty() {
+    return this.state.items.length == 0;
+  }
+
   render() {
     var _items = this.state.items.map(function(item, i, arr) {
       if (this.props.renderItem != null) return this.props.renderItem(item);
@@ -141,7 +145,7 @@ export default class FetchedList extends React.Component {
       }
     }, this);
     var ristatus = this.state.loading ? "loading" : "hide";
-    var empty = this.state.items.length == 0;
+    var empty = this.empty();
     var _list;
     if (this.props.listStyle == 'list') {
       _list = (

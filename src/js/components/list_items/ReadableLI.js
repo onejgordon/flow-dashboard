@@ -1,11 +1,17 @@
 var React = require('react');
-import {ListItem, FontIcon, Paper, Chip,
-  IconMenu, MenuItem, IconButton, Avatar} from 'material-ui';
-var util = require('utils/util');
-var DateTime = require('components/common/DateTime');
+import {ListItem, FontIcon, Paper, TextField,
+  IconMenu, MenuItem, IconButton, Avatar,
+  RaisedButton, FlatButton} from 'material-ui';
 var api = require('utils/api');
+import {changeHandler} from 'utils/component-utils';
+var util = require('utils/util');
 
+@changeHandler
 export default class ReadableLI extends React.Component {
+  static propTypes = {
+    readable: React.PropTypes.object
+  }
+
   static defaultProps = {
     readable: null,
     onClick: null,
@@ -14,20 +20,32 @@ export default class ReadableLI extends React.Component {
 
   constructor(props) {
     super(props);
+    let r = this.props.readable;
     this.state = {
+      notes_visible: false,
+      form: {
+        notes: r ? r.notes || '' : ''
+      }
     };
-    this.TYPES = ["Article", "Book"];
-    this.FAVORITE_ENABLED_SOURCES = ['pocket'];
-    this.READ_ENABLED_SOURCES = ['pocket', 'goodreads'];
+    this.TYPES = ["Article", "Book", "Paper"];
+    this.FAV_COLOR = '#F9EB97';
   }
-
 
   update_readable(r, params) {
     params.id = r.id;
-    console.log(params)
     api.post("/api/readable", params, (res) => {
       this.props.onUpdate(res.readable);
     });
+  }
+
+  save_notes() {
+    let {readable} = this.props;
+    let {form} = this.state;
+    let params = {
+      notes: form.notes
+    }
+    this.update_readable(readable, params);
+    this.setState({notes_visible: false});
   }
 
   delete_readable(r) {
@@ -47,30 +65,49 @@ export default class ReadableLI extends React.Component {
 
   render() {
     let {readable} = this.props;
+    let {notes_visible, form} = this.state;
     let type = this.TYPES[readable.type - 1];
-    let subhead = [type, readable.read ? 'Read' : 'Unread', readable.source];
-    if (readable.author) subhead.push(readable.author);
-    if (readable.favorite) subhead.push("Favorite");
+    let subhead = [<span className="sh">{type}</span>, <span className="sh">{readable.read ? 'Read' : 'Unread'}</span>];
+    let _notes;
+    if (readable.author) subhead.push(<span className="sh">{readable.author}</span>);
+    if (readable.favorite) subhead.push(<span className="sh" style={{color: this.FAV_COLOR}}>Favorite</span>);
+    if (readable.notes) subhead.push(<span className="sh" style={{color: '#F6335F'}}>Has Notes</span>);
     let mis = [];
-    let source = readable.source;
-    if (!readable.read && this.READ_ENABLED_SOURCES.indexOf(source) > -1) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">remove_red_eye</FontIcon>} key="mr" onClick={this.update_readable.bind(this, readable, {read: 1})}>Mark Read</MenuItem>);
-    if (!readable.favorite && this.FAVORITE_ENABLED_SOURCES.indexOf(source) > -1) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">star</FontIcon>} key="mf" onClick={this.update_readable.bind(this, readable, {favorite: 1})}>Favorite</MenuItem>);
+    if (!readable.read) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">remove_red_eye</FontIcon>} key="mr" onClick={this.update_readable.bind(this, readable, {read: 1})}>Mark Read</MenuItem>);
+    if (!readable.favorite) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">star</FontIcon>} key="mf" onClick={this.update_readable.bind(this, readable, {favorite: 1})}>Favorite</MenuItem>);
     mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">delete</FontIcon>} key="del" onClick={this.delete_readable.bind(this, readable)}>Delete</MenuItem>);
+    mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">mode_edit</FontIcon>} key="notes" onClick={this.setState.bind(this, {notes_visible: true})}>Edit Notes</MenuItem>);
     let menu = (
       <IconMenu iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
         { mis }
       </IconMenu>
     );
     let av_st = {};
-    if (readable.favorite) av_st.border = '2px solid #F9EB97';
-    let avatar = <Avatar src={readable.image_url} style={av_st} />
+    if (readable.favorite) av_st.border = `2px solid ${this.FAV_COLOR}`;
+    let has_image = readable.image_url != null;
+    if (!has_image) av_st.backgroundColor = util.stringToColor(readable.title);
+    let avatar_content = has_image ? null : readable.title[0];
+    let avatar = <Avatar src={readable.image_url} style={av_st}>{ avatar_content }</Avatar>
+    if (notes_visible) _notes = (
+        <Paper style={{padding: "10px"}}>
+          <TextField floatingLabelText="Notes" name="notes" value={form.notes || ""} onChange={this.changeHandler.bind(this, 'form', 'notes')} multiLine={true} fullWidth />
+          <RaisedButton primary={true} label="Save Notes" onClick={this.save_notes.bind(this)} />
+          <FlatButton label="Cancel" onClick={this.setState.bind(this, {notes_visible: false})} />
+        </Paper>
+      )
     return (
+      <div>
         <ListItem key={readable.id}
+          className="readable"
           primaryText={ readable.title }
-          secondaryText={ subhead.join(' | ') }
+          secondaryText={ subhead }
           onTouchTap={this.goto_url.bind(this, this.get_link_url(readable))}
           rightIconButton={menu}
           leftAvatar={avatar} />
+
+        { _notes }
+
+      </div>
     );
   }
 }

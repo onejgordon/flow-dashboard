@@ -1,5 +1,6 @@
 var React = require('react');
-import { FontIcon, IconButton, MenuItem, IconMenu, Paper, List,
+import {browserHistory} from 'react-router';
+import { FontIcon, IconButton, MenuItem, IconMenu, List,
   Dialog } from 'material-ui';
 var api = require('utils/api');
 var util = require('utils/util');
@@ -59,7 +60,7 @@ export default class ReadWidget extends React.Component {
   }
 
   fetch_readables() {
-    api.get("/api/readable", {}, (res) => {
+    api.get("/api/readable", {unread: 1}, (res) => {
       this.merge_readables(res.readables);
     });
   }
@@ -89,6 +90,9 @@ export default class ReadWidget extends React.Component {
     return this.LABELS[showing_type] + 's';
   }
 
+  goto_advanced() {
+    browserHistory.push(`/app/reading`);
+  }
   readable_update(r) {
     this.merge_readables([r]);
   }
@@ -127,8 +131,9 @@ export default class ReadWidget extends React.Component {
           </div>
           <div className="col-sm-6">
             <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
-              <MenuItem key="gr" primaryText="Refresh from Goodreads" onClick={this.fetch_from_goodreads.bind(this)} />
-              <MenuItem key="po" primaryText="Refresh from Pocket" onClick={this.fetch_from_pocket.bind(this)} />
+              <MenuItem key="gr" primaryText="Refresh from Goodreads" onClick={this.fetch_from_goodreads.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
+              <MenuItem key="po" primaryText="Refresh from Pocket" onClick={this.fetch_from_pocket.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
+              <MenuItem key="adv" primaryText="Advanced" onClick={this.goto_advanced.bind(this)} leftIcon={<FontIcon className="material-icons">list</FontIcon>} />
             </IconMenu>
           </div>
         </div>
@@ -143,7 +148,7 @@ export default class ReadWidget extends React.Component {
           </div>
           <div className="col-sm-6">
               <BigProp
-                label="Unread Pocket Articles"
+                label="Unread Articles"
                 value={ counts[1] || 0 }
                 onClick={this.show_readables.bind(this, 1)} />
 

@@ -1,9 +1,9 @@
 'use strict';
 
 var React = require('react');
-import {Router, withRouter, Link, browserHistory} from 'react-router';
+import {browserHistory} from 'react-router';
 import { FontIcon, MenuItem,
-  IconButton, AppBar, Drawer, IconMenu, Divider, Subheader} from 'material-ui';
+  IconButton, AppBar, Drawer} from 'material-ui';
 var AppConstants = require('constants/AppConstants');
 var UserActions = require('actions/UserActions');
 var UserStore = require('stores/UserStore');
@@ -58,10 +58,8 @@ export default class Private extends React.Component {
     if (gUser && gUser.isSignedIn()) {
       var profile = gUser.getBasicProfile();
       var id_token = gUser.getAuthResponse().id_token;
-      console.log(profile);
       let {user} = this.props;
       let new_user = !user || profile.getEmail() != user.email;
-      console.log('new_user', new_user);
       if (new_user) {
         let data = {token: id_token};
         api.post('/api/auth/google_login', data, (res) => {
@@ -83,6 +81,11 @@ export default class Private extends React.Component {
     })
   }
 
+  go_home() {
+    if (this.props.user) this.goto_page('/app/dashboard');
+    else this.goto_page('/app');
+  }
+
   render_nav_menu() {
     let {user} = this.props;
     let menu = [];
@@ -94,6 +97,7 @@ export default class Private extends React.Component {
         <MenuItem key="ana" onClick={this.goto_page.bind(this, "/app/analysis")} leftIcon={<FontIcon className="material-icons">bubble_chart</FontIcon>}>Analysis</MenuItem>,
         <MenuItem key="mng" onClick={this.goto_page.bind(this, "/app/manage")} leftIcon={<FontIcon className="material-icons">settings</FontIcon>}>Manage</MenuItem>,
         <MenuItem key="int" onClick={this.goto_page.bind(this, "/app/integrations")} leftIcon={<FontIcon className="material-icons">share</FontIcon>}>Integrations</MenuItem>,
+        <MenuItem key="read" onClick={this.goto_page.bind(this, "/app/reading")} leftIcon={<FontIcon className="material-icons">book</FontIcon>}>Reading</MenuItem>,
         <MenuItem key="rep" onClick={this.goto_page.bind(this, "/app/reports")} leftIcon={<FontIcon className="material-icons">file_download</FontIcon>}>Reports</MenuItem>,
         <MenuItem key="exit" onClick={this.signout.bind(this)} leftIcon={<FontIcon className="material-icons">exit_to_app</FontIcon>}>Sign Out</MenuItem>
       ]);
@@ -107,13 +111,13 @@ export default class Private extends React.Component {
   render() {
     let {user} = this.props;
     let {SITENAME} = AppConstants;
-    let LOGO = <img src="/images/logo_white.png" className="center-block" width="50" style={{marginTop: "7px"}} />
+    let LOGO = <img src="/images/logo_white.png" className="center-block glow" width="50" style={{marginTop: "7px", cursor: 'pointer'}} />
     return (
       <div>
         <AppBar
           title={LOGO}
           zDepth={0}
-          onTitleTouchTap={this.goto_page.bind(this, '/app')}
+          onTitleTouchTap={this.go_home.bind(this)}
           onLeftIconButtonTouchTap={this.handle_toggle_leftnav.bind(this)} />
 
         <Drawer docked={false} width={300} open={this.state.ln_open} onRequestChange={this.handle_leftnav_change.bind(this)}>
@@ -121,7 +125,7 @@ export default class Private extends React.Component {
             title={SITENAME}
             zDepth={0}
             iconElementLeft={<IconButton iconClassName="material-icons">arrow_back</IconButton>}
-            onTitleTouchTap={this.goto_page.bind(this, '/app')}
+            onTitleTouchTap={this.go_home.bind(this)}
             onLeftIconButtonTouchTap={this.handle_toggle_leftnav.bind(this)} />
           { this.render_nav_menu() }
         </Drawer>

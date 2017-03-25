@@ -65,13 +65,15 @@ export default class AnalysisGoals extends React.Component {
                 }]
             }
         }
-        if (Object.keys(goals).length == 0) return null;
+        let content;
+        if (Object.keys(goals).length == 0) content = <div className="empty">No goal assessments yet</div>
+        else content = <Bar data={goalData} options={goalOptions} width={1000} height={450}/>
         return (
             <div>
 
                 <h4>Goal Assessments ({today.getFullYear()})</h4>
 
-                <Bar data={goalData} options={goalOptions} width={1000} height={450}/>
+                { content }
 
             </div>
         );
