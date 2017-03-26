@@ -800,6 +800,12 @@ class TrackingDay(UserAccessible):
         if 'data' in params:
             self.data = json.dumps(params.get('data'))
 
+    def set_properties(self, property_dict):
+        data = tools.getJson(self.data, default={})
+        data.update(property_dict)
+        self.data = json.dumps(data)
+
+
 
 class Readable(UserAccessible):
     """

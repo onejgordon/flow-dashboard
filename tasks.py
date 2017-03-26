@@ -2,7 +2,7 @@ import logging
 from models import User, TrackingDay
 import handlers
 from google.appengine.ext import ndb
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import tools
 
 
@@ -58,6 +58,27 @@ class SyncProductivity(handlers.BaseRequestHandler):
                     td.put()
                     # TODO: put_multi
                     res = td.json()
+            else:
+                logging.debug("Github updater can't run")
+        self.json_out(res, debug=True)
+
+
+class SyncFromGoogleFit(handlers.BaseRequestHandler):
+    def get(self):
+        from services.gfit import FitClient
+        users = User.query().fetch(limit=100)
+        res = {}
+        date = (datetime.today() - timedelta(days=1)).date()
+        for user in users:
+            logging.debug("Running SyncFromGoogleFit cron for %s on %s..." % (user, date))
+            fit_enabled = bool(user.get_integration_prop('gfit_activities'))
+            if fit_enabled:
+                fit_client = FitClient(user)
+                if fit_client:
+                    var_durations = fit_client.aggregate_activity_durations(date)
+                    td = TrackingDay.Create(user, date)
+                    td.set_properties(var_durations)
+                    td.put()
             else:
                 logging.debug("Github updater can't run")
         self.json_out(res, debug=True)

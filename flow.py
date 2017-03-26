@@ -93,6 +93,8 @@ app = webapp2.WSGIApplication(
 
         webapp2.Route('/api/auth/google_login', handler=api.AuthenticationAPI, handler_method="google_login"),
         webapp2.Route('/api/auth/google_auth', handler=api.AuthenticationAPI, handler_method="google_auth"),
+        webapp2.Route('/api/auth/google/oauth2callback', handler=api.AuthenticationAPI, handler_method="google_oauth2_callback"),
+        webapp2.Route('/api/auth/google/<service_name>/authenticate', handler=api.AuthenticationAPI, handler_method="google_service_authenticate"),
         webapp2.Route('/api/auth/fbook_auth', handler=api.AuthenticationAPI, handler_method="fbook_auth"),
         webapp2.Route('/api/auth/logout', handler=api.AuthenticationAPI, handler_method="logout"),
 
@@ -119,6 +121,7 @@ app = webapp2.WSGIApplication(
         # Cron jobs (see cron.yaml)
         webapp2.Route('/cron/readables/sync', handler=tasks.SyncReadables),
         webapp2.Route('/cron/productivity/sync', handler=tasks.SyncProductivity),
+        webapp2.Route('/cron/pull/google_fit', handler=tasks.SyncFromGoogleFit),
         webapp2.Route('/cron/reports/delete_old', handler=tasks.DeleteOldReports),
         webapp2.Route('/_ah/warmup', handler=tasks.WarmupHandler),
 

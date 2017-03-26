@@ -4,6 +4,10 @@ cron:
   url: /cron/readables/sync
   schedule: every day 20:30
 
+- description: sync from google fit
+  url: /cron/pull/google_fit
+  schedule: every day 03:00
+
 - description: sync with github
   url: /cron/productivity/sync
   schedule: every day 00:00
