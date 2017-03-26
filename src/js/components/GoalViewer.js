@@ -139,7 +139,7 @@ export default class GoalViewer extends React.Component {
         </ul>
 
         <div hidden={!show_assessment}>
-          <p className="lead">How&apos;d you do?</p>
+          <p className="lead">The month is almost over - how&apos;d you do?</p>
 
           <Slider name='assessment' value={assessment_form.assessment} onChange={this.changeHandlerSlider.bind(this, 'assessment_form', 'assessment')} max={5} min={1} defaultValue={1} step={1} />
           <RaisedButton label={`Submit Assessment (${assess_label})`} onClick={this.save_assessment.bind(this, g)} primary={true} />

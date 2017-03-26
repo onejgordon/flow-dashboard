@@ -34,6 +34,9 @@ class FitClient(GoogleServiceFetcher):
         return sessions
 
     def aggregate_activity_durations(self, date):
+        '''
+        Return mapping of activity (str) to seconds of duration on date
+        '''
         start = datetime.combine(date, time(0, 0))
         end = datetime.combine(date, time(23, 59))  # Midnight UTC yesterday
         gfit_activities = self.user.get_integration_prop("gfit_activities", "").split(',')

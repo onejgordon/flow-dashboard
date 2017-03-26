@@ -175,7 +175,7 @@ export default class ReactJSONEditor extends React.Component {
         content = attributes.map((att, i) => {
           let val = form[att.name];
           let hint;
-          if (att.hint) hint = <small>{ att.hint }</small>
+          if (att.hint) hint = <div><small>{ att.hint }</small></div>
           return (
             <div key={i}>
               <label>{ att.title }</label>

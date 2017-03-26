@@ -52,7 +52,7 @@ class SyncProductivity(handlers.BaseRequestHandler):
                 commits = gh_client.get_contributions_on_day(date)
                 if commits is not None:
                     td = TrackingDay.Create(user, date)
-                    td.Update(data={
+                    td.set_properties({
                         'commits': commits
                     })
                     td.put()
@@ -79,8 +79,6 @@ class SyncFromGoogleFit(handlers.BaseRequestHandler):
                     td = TrackingDay.Create(user, date)
                     td.set_properties(var_durations)
                     td.put()
-            else:
-                logging.debug("Github updater can't run")
         self.json_out(res, debug=True)
 
 

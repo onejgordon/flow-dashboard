@@ -1,5 +1,5 @@
 var React = require('react');
-
+import {Link} from 'react-router';
 var util = require('utils/util');
 var api = require('utils/api');
 var UserStore = require('stores/UserStore');
@@ -224,6 +224,12 @@ export default class Manage extends React.Component {
                 { name: 'label', title: 'Label', type: 'text' },
                 { name: 'url', title: 'URL', type: 'text' }
             ];
+            let tracking_var_atts = [
+                { name: 'label', title: 'Label', type: 'text' },
+                { name: 'name', title: 'Variable Name', type: 'text' },
+                { name: 'color', title: 'Color (hex)', type: 'text' },
+                { name: 'mult', title: 'Multiplier (e.g. 0.1)', hint: "Multiplier to scale this variable for easier comparability", type: 'number' },
+            ];
             let journal_pref_atts = [
                 { name: 'location_capture', title: 'Capture Lat/Lon Upon Submission', type: 'checkbox', default_value: false },
             ];
@@ -255,6 +261,19 @@ export default class Manage extends React.Component {
                         onChange={this.handle_settings_change.bind(this, ['journals', 'questions'])}
                         addButtonLabel="Add Question"
                         primaryProp="text" secondaryProp="name" />
+
+                    <h3>Configure Tracking Chart (Custom Variables)</h3>
+
+                    <p className="lead">
+                        Choose which variables to display on the <Link to="/app/analysis/misc">tracking chart</Link>.
+                    </p>
+
+                    <ReactJsonEditor title="Tracking Chart Variables"
+                        array={true} data={get(settings, ['tracking', 'chart_vars'], [])}
+                        attributes={tracking_var_atts}
+                        onChange={this.handle_settings_change.bind(this, ['tracking', 'chart_vars'])}
+                        addButtonLabel="Add Variable"
+                        primaryProp="label" secondaryProp="name" />
 
                     <h3>Configure Flashcards</h3>
 
