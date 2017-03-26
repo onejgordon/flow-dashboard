@@ -121,6 +121,12 @@ export default class Integrations extends React.Component {
         });
     }
 
+    authenticate_google_service(service_name) {
+        api.get(`/api/auth/google/${service_name}/authenticate`, {}, (res) => {
+            if (res.uri) window.location = res.uri;
+        });
+    }
+
     google_disconnect() {
         var auth2 = gapi.auth2.getAuthInstance();
         auth2.disconnect();
@@ -203,6 +209,10 @@ export default class Integrations extends React.Component {
 
                     <Tab label="Google">
                         <FlatButton label="Disconnect" onClick={this.google_disconnect.bind(this)} />
+                    </Tab>
+
+                    <Tab label="Google Fit">
+                        <FlatButton label="Authenticate" onClick={this.authenticate_google_service.bind(this, 'fit')} />
                     </Tab>
 
                 </Tabs>
