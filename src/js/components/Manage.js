@@ -42,6 +42,7 @@ export default class Manage extends React.Component {
     }
 
     componentDidMount() {
+        util.set_title("Manage");
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -219,14 +220,20 @@ export default class Manage extends React.Component {
                 { name: 'link', title: 'Link sheet header', type: 'text' },
                 { name: 'icon', title: 'Icon', type: 'text' }
             ];
+            let static_link_atts = [
+                { name: 'label', title: 'Label', type: 'text' },
+                { name: 'url', title: 'URL', type: 'text' }
+            ];
             let journal_pref_atts = [
                 { name: 'location_capture', title: 'Capture Lat/Lon Upon Submission', type: 'checkbox', default_value: false },
             ];
             _more = (
                 <Paper style={{padding: "10px", marginTop: "10px"}}>
                     <h2>{ user.email }</h2>
-                    <TextField name="timezone" placeholder="Timezone" value={form.timezone} onChange={this.changeHandler.bind(this, 'form', 'timezone')} /><br/>
-                    <TextField name="birthday" placeholder="Birthday (YYYY-MM-DD)" value={form.birthday} onChange={this.changeHandler.bind(this, 'form', 'birthday')} /><br/>
+
+                    <TextField name="timezone" floatingLabelText="Timezone" value={form.timezone} onChange={this.changeHandler.bind(this, 'form', 'timezone')} /><br/>
+                    <TextField name="birthday" floatingLabelText="Birthday (YYYY-MM-DD)" value={form.birthday} onChange={this.changeHandler.bind(this, 'form', 'birthday')} /><br/>
+                    <TextField name="password" floatingLabelText="Update Password" value={form.password} onChange={this.changeHandler.bind(this, 'form', 'password')} /><br/>
 
                     <h3>Daily Journal Questions</h3>
 
@@ -262,6 +269,19 @@ export default class Manage extends React.Component {
                         onChange={this.handle_settings_change.bind(this, ['flashcards'])}
                         addButtonLabel="Add Flashcard"
                         primaryProp="card_title" secondaryProp="id" />
+
+                    <h3>Configure Static Links</h3>
+
+                    <p className="lead">
+                        Static links appear on the main dashboard in the more menu.
+                    </p>
+
+                    <ReactJsonEditor title="Static Links"
+                        array={true} data={get(settings, ['links'], [])}
+                        attributes={static_link_atts}
+                        onChange={this.handle_settings_change.bind(this, ['links'])}
+                        addButtonLabel="Add Link"
+                        primaryProp="label" secondaryProp="url" />
 
                     <RaisedButton primary={true} label="Save" onClick={this.save_user_settings.bind(this)} />
 

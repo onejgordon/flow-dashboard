@@ -31,6 +31,7 @@ export default class ProjectAnalysis extends React.Component {
   render_content() {
     let {project} = this.props;
     let points = [];
+    let today = new Date();
     project.progress_ts.forEach((p, decile) => {
       if (p != 0) {
         points.push({
@@ -64,6 +65,7 @@ export default class ProjectAnalysis extends React.Component {
             type: 'time',
             time: {
                 displayFormats: {},
+                max: today
             }
         }]
       }
@@ -97,7 +99,7 @@ export default class ProjectAnalysis extends React.Component {
     return (
       <Dialog
           open={!!project}
-          title={project ? `Analysis: ${project.title}` : ""}
+          title={project ? `Progress: ${project.title}` : ""}
           onRequestClose={this.dismiss.bind(this)}
           height="80%"
           actions={actions}>

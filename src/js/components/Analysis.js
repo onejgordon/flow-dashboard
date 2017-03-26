@@ -1,11 +1,7 @@
 var React = require('react');
 
 var util = require('utils/util');
-
-var LoadStatus = require('components/common/LoadStatus');
-import {FontIcon, IconButton, FlatButton, AutoComplete,
-    Checkbox} from 'material-ui';
-import {Bar, Line} from "react-chartjs-2";
+import {IconButton, FlatButton, AutoComplete} from 'material-ui';
 var api = require('utils/api');
 import {get} from 'lodash';
 import {Link} from 'react-router';
@@ -40,8 +36,6 @@ export default class Analysis extends React.Component {
             tags: [],
             loaded: false,
             tags_loading: false,
-            journal_tag_segment: null,
-            journal_segments: {}, // tag.id -> { data: [], labels: [] }
             questions: questions,
             chart_enabled_questions: chart_enabled
         };
@@ -56,6 +50,7 @@ export default class Analysis extends React.Component {
     }
 
     componentDidMount() {
+        util.set_title("Analysis");
         this.fetch_data();
     }
 
@@ -64,16 +59,16 @@ export default class Analysis extends React.Component {
         let params = {
             date_start: util.printDateObj(start, 'UTC'),
             date_end: util.printDateObj(end, 'UTC'),
-            with_tracking: 1
+            with_tracking: 1,
+            with_goals: 1,
+            with_tasks: 1
         }
         api.get("/api/analysis", params, (res) => {
-            console.log(res);
-            this.setState({journals: res.journals,
+            this.setState({
+                journals: res.journals,
                 iso_dates: res.dates,
-                habits: res.habits,
                 tasks: res.tasks,
                 tracking_days: res.tracking_days,
-                habitdays: res.habitdays,
                 goals: util.lookupDict(res.goals, 'month'),
                 loaded: true
             });
@@ -81,8 +76,7 @@ export default class Analysis extends React.Component {
     }
 
     render() {
-        let {loaded, journal_tag_segment,
-            journal_segments, goals,
+        let {loaded, goals,
             habits, habitdays, iso_dates,
             tracking_days,
             journals, tasks} = this.state;
@@ -98,7 +92,8 @@ export default class Analysis extends React.Component {
                 <Link to="/app/analysis/goals"><FlatButton label="Goals" /></Link>
                 <Link to="/app/analysis/journals"><FlatButton label="Journals" /></Link>
                 <Link to="/app/analysis/tasks"><FlatButton label="Tasks" /></Link>
-                <Link to="/app/analysis/misc"><FlatButton label="Habits & Productivity" /></Link>
+                <Link to="/app/analysis/habits"><FlatButton label="Habits" /></Link>
+                <Link to="/app/analysis/misc"><FlatButton label="Misc & Productivity" /></Link>
 
                 { React.cloneElement(this.props.children, {
                     user: this.props.user,

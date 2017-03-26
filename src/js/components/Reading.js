@@ -39,6 +39,7 @@ export default class Reading extends React.Component {
     }
 
     componentDidMount() {
+        util.set_title("Reading");
     }
 
     maybe_refresh_quotes() {
@@ -95,6 +96,7 @@ export default class Reading extends React.Component {
     render_quote(q) {
         let subs = [q.source];
         if (q.location) subs.push(q.location);
+        if (q.iso_date) subs.push(q.iso_date);
         let sec = subs.join(' | ');
         return <ListItem primaryText={util.truncate(q.content, 120)}
                 secondaryText={sec} />

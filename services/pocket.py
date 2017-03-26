@@ -117,6 +117,7 @@ def sync(user, access_token, since_timestamp=0):
         url=GET_ENDPOINT,
         payload=data,
         method=urlfetch.POST,
+        deadline=60,
         validate_certificate=True)
     logging.debug(res.status_code)
     latest_timestamp = 0
@@ -157,12 +158,13 @@ def sync(user, access_token, since_timestamp=0):
                     if author_keys:
                         author = authors.get(author_keys[0], {}).get('name')
                 archived = int(status) == 1
+                read = archived and (not tags or 'unread' not in tags)
                 r = Readable.CreateOrUpdate(user, source_id=id, title=title, url=url,
                                             image_url=image_url, author=author,
                                             excerpt=excerpt, favorite=favorite,
                                             dt_added=dt_added, word_count=word_count,
                                             dt_read=dt_read,
-                                            tags=tags, source=source, read=archived)
+                                            tags=tags, source=source, read=read)
                 if r:
                     r.Update(read=archived, favorite=favorite, dt_read=dt_read)
                     save.append(r)

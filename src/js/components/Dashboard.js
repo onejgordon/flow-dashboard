@@ -7,6 +7,7 @@ var MiniJournalWidget = require('components/MiniJournalWidget');
 var TaskWidget = require('components/TaskWidget');
 var FlashCard = require('components/FlashCard');
 import {findItemById} from 'utils/store-utils';
+var util = require('utils/util');
 import {get} from 'lodash';
 import {Dialog, IconButton, FontIcon,
     IconMenu, MenuItem} from 'material-ui';
@@ -22,6 +23,7 @@ export default class Dashboard extends React.Component {
 
     componentWillMount() {
         document.addEventListener("keydown", this.handle_key_down.bind(this));
+        util.set_title("Dashboard");
     }
 
     componentWillUnmount() {
@@ -58,6 +60,11 @@ export default class Dashboard extends React.Component {
         return get(user, 'settings.flashcards', []);
     }
 
+    static_links() {
+        let {user} = this.props;
+        return get(user, 'settings.links', []);
+    }
+
     render_more() {
         let {more} = this.state;
         let fc = findItemById(this.flashcards(), more, 'id');
@@ -65,8 +72,12 @@ export default class Dashboard extends React.Component {
         return null;
     }
 
-    any_flashcards() {
-        return this.flashcards().length > 0;
+    no_more_menu() {
+        return this.flashcards().length == 0 && this.static_links().length == 0;
+    }
+
+    goto_page(url) {
+        window.open(url, "_blank");
     }
 
     render() {
@@ -81,6 +92,9 @@ export default class Dashboard extends React.Component {
         let _more_options = this.flashcards().map((fc) => {
             return <MenuItem key={fc.id} leftIcon={<FontIcon className="material-icons">{fc.icon}</FontIcon>} onClick={this.show_more.bind(this, fc.id)}>{fc.card_title}</MenuItem>
         });
+        _more_options = _more_options.concat(this.static_links().map((link) => {
+            return <MenuItem key={link.url} leftIcon={<FontIcon className="material-icons">link</FontIcon>} onClick={this.goto_page.bind(this, link.url)}>{link.label}</MenuItem>
+        }));
         return (
             <div>
 
@@ -101,7 +115,7 @@ export default class Dashboard extends React.Component {
                 <MiniJournalWidget questions={journal_qs} include_location={journal_location} />
 
 
-                <div className="text-center" style={{marginTop: "20px"}} hidden={!this.any_flashcards()}>
+                <div className="text-center" style={{marginTop: "20px"}} hidden={this.no_more_menu()}>
                     <IconMenu iconButtonElement={<IconButton iconClassName="material-icons">games</IconButton>}>
                         { _more_options }
                     </IconMenu>

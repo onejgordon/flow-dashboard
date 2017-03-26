@@ -33,6 +33,7 @@ export default class Timeline extends React.Component {
 
     componentDidMount() {
         this.fetch_events();
+        util.set_title("Timeline");
     }
 
     save_birthday() {

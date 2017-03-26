@@ -468,7 +468,8 @@ class QuoteAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        quotes = Quote.Fetch(self.user)
+        page, max, offset = tools.paging_params(self.request)
+        quotes = Quote.Fetch(self.user, limit=max, offset=offset)
         self.set_response({
             'quotes': [q.json() for q in quotes]
         }, success=True)
@@ -480,7 +481,6 @@ class QuoteAPI(handlers.JsonRequestHandler):
             strings=['source', 'content', 'link', 'location', 'date'],
             lists=['tags']
         )
-        logging.debug(params)
         quote = None
         if id:
             quote = Quote.get_by_id(id, parent=self.user.key)
@@ -616,7 +616,7 @@ class UserAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def update_self(self, d):
-        params = tools.gets(self, strings=['timezone', 'birthday'], json=['settings'])
+        params = tools.gets(self, strings=['timezone', 'birthday', 'password'], json=['settings'])
         logging.debug(params)
         self.user.Update(**params)
         self.user.put()
@@ -721,7 +721,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def get(self, d):
         # TODO: Async fetches
-        with_habits = self.request.get_range('with_habits', default=1) == 1
+        with_habits = self.request.get_range('with_habits', default=0) == 1
         with_tracking = self.request.get_range('with_tracking', default=1) == 1
         with_goals = self.request.get_range('with_goals', default=1) == 1
         with_tasks = self.request.get_range('with_tasks', default=1) == 1
@@ -734,7 +734,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         today = datetime.today()
         if dt_start < dt_end:
             date_cursor = dt_start
-            while date_cursor <= dt_end:
+            while date_cursor < dt_end:
                 date_cursor += timedelta(days=1)
                 iso_date = tools.iso_date(date_cursor)
                 journal_keys.append(ndb.Key('MiniJournal', iso_date, parent=self.user.key))
@@ -810,7 +810,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         else:
             self.message = "Please link your Pocket account from the integrations page"
         self.set_response({
-            'readables': [r.json() for r in filter(lambda r: not r.read, readables)]
+            'readables': [r.json() for r in readables]
         })
 
     @authorized.role('user')

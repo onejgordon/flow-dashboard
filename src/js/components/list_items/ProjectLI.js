@@ -129,7 +129,7 @@ export default class ProjectLI extends React.Component {
               <IconMenu iconButtonElement={<IconButton><FontIcon className="material-icons">more_vert</FontIcon></IconButton>}>
                 <MenuItem primaryText="Toggle progress tracking" onClick={this.toggle_progress.bind(this)} />
                 <MenuItem primaryText="Archive project" onClick={this.archive.bind(this)} />
-                <MenuItem primaryText="Analysis" onClick={this.show_analysis.bind(this)} />
+                <MenuItem primaryText="Chart Progress" onClick={this.show_analysis.bind(this)} />
               </IconMenu>
             </div>
             <h2 style={this.H}>

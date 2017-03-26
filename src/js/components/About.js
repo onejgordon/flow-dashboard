@@ -10,6 +10,10 @@ export default class About extends React.Component {
         };
     }
 
+    componentDidMount() {
+        util.set_title("About");
+    }
+
     render() {
         let {user} = this.props;
         let _feedback;
