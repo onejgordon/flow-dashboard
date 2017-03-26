@@ -16,7 +16,8 @@ export default class ReactJSONEditor extends React.Component {
     secondaryProp: null,
     editButtonLabel: "Edit Object",
     addButtonLabel: "New Item",
-    enableRawJSONEditing: true
+    enableRawJSONEditing: true,
+    changeCallbackType: "json"
   }
 
   constructor(props) {
@@ -46,11 +47,15 @@ export default class ReactJSONEditor extends React.Component {
 
   save() {
     let {editing_index, form, editing_raw} = this.state;
+    let {changeCallbackType} = this.props;
+    let raw;
     if (editing_raw) {
-      let raw = form.raw;
+      raw = form.raw;
       form = JSON5.parse(raw);
     }
-    this.props.onChange(editing_index, form);
+    console.log(changeCallbackType)
+    if (changeCallbackType == 'json') this.props.onChange(editing_index, form);
+    else if (changeCallbackType == 'full_string') this.props.onChange(raw);
     this.close_editor();
   }
 
@@ -87,8 +92,13 @@ export default class ReactJSONEditor extends React.Component {
   }
 
   new_item() {
-    let new_index = this.props.data.length;
-    this.props.onChange(new_index, {});
+    let {data, changeCallbackType} = this.props;
+    let new_index = data.length;
+    if (changeCallbackType == 'json') this.props.onChange(new_index, {});
+    else if (changeCallbackType == 'full_string') {
+      data.push({});
+      this.props.onChange(JSON.stringify(data));
+    }
   }
 
   render_data() {
@@ -132,7 +142,7 @@ export default class ReactJSONEditor extends React.Component {
 
   render_input(att, val) {
     let {editing_index} = this.state;
-    if (att.type == 'text') {
+    if (att.type == 'text' || att.type == 'number') {
       return <TextField name={att.name} value={val || att.default_value} onChange={this.handleTargetChange.bind(this, att.name)} placeholder={att.title} fullWidth />
     } else if (att.type == 'checkbox') {
       return <Toggle name={att.name} toggled={val || att.default_value } onToggle={this.handleToggleChange.bind(this, att.name)} label={att.title} labelPosition="right" />
@@ -164,9 +174,12 @@ export default class ReactJSONEditor extends React.Component {
       } else {
         content = attributes.map((att, i) => {
           let val = form[att.name];
+          let hint;
+          if (att.hint) hint = <small>{ att.hint }</small>
           return (
             <div key={i}>
               <label>{ att.title }</label>
+              { hint }
               { this.render_input(att, val) }
             </div>
             )

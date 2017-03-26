@@ -42,9 +42,11 @@ class GoogleServiceFetcher(object):
         flow = client.OAuth2WebServerFlow(client_id=GOOGLE_CLIENT_ID,
                                           client_secret=GOOGLE_CLIENT_SECRET,
                                           scope=scope,
+                                          access_type = 'offline',
+                                          approval_prompt='force',
                                           redirect_uri=base + "/api/auth/google/oauth2callback")
         flow.params['include_granted_scopes'] = 'true'
-        flow.params['access_type'] = 'offline'
+        # flow.params['access_type'] = 'offline'
         return flow
 
     def get_credentials_object(self):
@@ -56,8 +58,13 @@ class GoogleServiceFetcher(object):
                 expires_in = cr.token_expiry - datetime.utcnow()
                 logging.debug("expires_in: %s" % expires_in)
                 if expires_in < timedelta(minutes=15):
-                    cr.refresh(httplib2.Http())
-                    self.set_google_credentials(cr)
+                    try:
+                        cr.refresh(httplib2.Http())
+                    except client.HttpAccessTokenRefreshError, e:
+                        logging.error("HttpAccessTokenRefreshError: %s" % e)
+                        cr = None
+                    else:
+                        self.set_google_credentials(cr)
                 self.credentials = cr
                 return cr
 
