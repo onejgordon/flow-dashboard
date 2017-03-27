@@ -9,7 +9,13 @@ var AppConstants = {
 	JOURNAL_END_HOUR: 4,
 	SECURE_BASE: "https://genzai-app.appspot.com",
 	TAGLINE: "Flow is a habit tracker and personal data analytics app that lets you keep focus on what matters. Flow owns none of your data. That's yours.",
-
+	INTEGRATIONS: [
+        { value: 'pocket', label: "Pocket" },
+        { value: 'goodreads', label: "Goodreads" },
+        { value: 'evernote', label: "Evernote" },
+        { value: 'github', label: "Github" },
+        { value: 'gfit', label: "Google Fit" },
+    ],
 	// Habits
 	COMMIT_COLOR: '#F9D23D'
 };

@@ -58,6 +58,7 @@ class User(ndb.Model):
     birthday = ndb.DateProperty()
     integrations = ndb.TextProperty()  # Flat JSON dict
     settings = ndb.TextProperty()  # JSON
+    sync_services = ndb.StringProperty(repeated=True)  # See AppConstants.INTEGRATIONS
     # Integration IDs
     g_id = ndb.StringProperty()
     fb_id = ndb.StringProperty()
@@ -76,7 +77,8 @@ class User(ndb.Model):
             'settings': tools.getJson(self.settings, {}),
             'timezone': self.timezone,
             'birthday': tools.iso_date(self.birthday) if self.birthday else None,
-            'evernote_id': self.evernote_id
+            'evernote_id': self.evernote_id,
+            'sync_services': self.sync_services
         }
 
     @staticmethod
@@ -91,6 +93,15 @@ class User(ndb.Model):
     def GetByGoogleId(id):
         u = User.query().filter(User.g_id == id).get()
         return u
+
+    @staticmethod
+    def SyncActive(sync_integration_id, limit=100):
+        multi = type(sync_integration_id) is list
+        if multi:
+            fltr = User.sync_services.IN(sync_integration_id)
+        else:
+            fltr = User.sync_services == sync_integration_id
+        return User.query().filter(fltr).fetch(limit=limit)
 
     @staticmethod
     def Create(email=None, g_id=None, name=None, password=None):
@@ -126,6 +137,8 @@ class User(ndb.Model):
             self.evernote_id = params.get('evernote_id')
         if 'password' in params:
             self.setPass(pw=params.get('password'))
+        if 'sync_services' in params:
+            self.sync_services = params.get('sync_services')
 
     def admin(self):
         return self.level == USER.ADMIN

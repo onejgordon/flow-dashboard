@@ -4,12 +4,15 @@ var util = require('utils/util');
 var UserStore = require('stores/UserStore');
 var UserActions = require('actions/UserActions');
 var AppConstants = require('constants/AppConstants');
-import {Tabs, Tab, FontIcon, FlatButton, RaisedButton, TextField, Snackbar} from 'material-ui';
+import {Tabs, Tab, FontIcon, FlatButton, RaisedButton,
+    IconMenu, MenuItem, Toggle, TextField, Snackbar, IconButton} from 'material-ui';
 var api = require('utils/api');
 import connectToStores from 'alt-utils/lib/connectToStores';
 var toastr = require('toastr');
+import {clone} from 'lodash';
 import {browserHistory} from 'react-router';
 import {changeHandler} from 'utils/component-utils';
+
 
 @connectToStores
 @changeHandler
@@ -17,12 +20,16 @@ export default class Integrations extends React.Component {
     static defaultProps = {};
     constructor(props) {
         super(props);
+        let sync_services = [];
+        if (props.user) sync_services = clone(props.user.sync_services)
         this.state = {
             form: {
+                sync_services: sync_services
             },
             snack_message: null,
             snack_open: false
         };
+
     }
 
     static getStores() {
@@ -103,6 +110,14 @@ export default class Integrations extends React.Component {
         });
     }
 
+    update_user() {
+        let {form} = this.state;
+        let params = {
+            sync_services: form.sync_services.join(',')
+        };
+        UserActions.update(params);
+    }
+
     save_integration_props(props, opts) {
         let {form} = this.state;
         let params = {};
@@ -139,10 +154,46 @@ export default class Integrations extends React.Component {
         this.setState({snack_open: false});
     }
 
+    service_sync_toggle(int_val)  {
+        let {form} = this.state;
+        form.sync_services = util.toggleInList(form.sync_services, int_val);
+        this.setState({form});
+    }
+
+    sync_enabled(int_val) {
+        let {user} = this.props;
+        let sync_services = user.sync_services || [];
+        return sync_services.indexOf(int_val) > -1;
+    }
+
+    tab_style(int_val) {
+        let st = {};
+        if (this.sync_enabled(int_val)) {
+            st.backgroundColor = '#41CAFB';
+        } else {
+            st.backgroundColor = '#22647C';
+        }
+        return st;
+    }
+
+    render_toggles() {
+        let {form} = this.state;
+        return AppConstants.INTEGRATIONS.map((int) => {
+            return ( <Toggle
+                key={int.value}
+                name={int.value}
+                toggled={form.sync_services.indexOf(int.value) > -1}
+                labelPosition="right"
+                label={int.label}
+                onToggle={this.service_sync_toggle.bind(this, int.value)} />
+            );
+        })
+    }
+
     render() {
         let {form} = this.state;
         let {user} = this.props;
-        if (!user) return;
+        if (!user) return <div></div>;
         let gr_user_id, gh_user, gh_pat, en_notebook_ids, evernote_connected;
         let ints = {};
         let gfit_activities = [];
@@ -159,10 +210,29 @@ export default class Integrations extends React.Component {
         return (
             <div>
 
+                <div className="pull-right">
+                    <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
+                      <MenuItem key="gr" primaryText="Revoke all Google Scopes" onClick={this.google_disconnect.bind(this)} />
+                    </IconMenu>
+                </div>
+
                 <h1>Integrations</h1>
 
+                <div className="vpad">
+                    <p className="lead">Sync enabled on <b>{ user.sync_services.length }</b> service(s).</p>
+
+                    <p>
+                        Enable toggles below to enable daily synchronization from the specified services.
+                        Note that you may need to add additional information or credentials to enable
+                        sync with some services.
+                    </p>
+
+                    { this.render_toggles() }
+                    <RaisedButton primary={true} label="Save Sync Settings" onClick={this.update_user.bind(this)} />
+                </div>
+
                 <Tabs>
-                    <Tab label="Pocket">
+                    <Tab label="Pocket" style={this.tab_style('pocket')}>
 
                         <p className="lead">Your reading list will be synced daily from Pocket.</p>
 
@@ -172,7 +242,7 @@ export default class Integrations extends React.Component {
                         </div>
                     </Tab>
 
-                    <Tab label="Evernote">
+                    <Tab label="Evernote" style={this.tab_style('evernote')}>
 
                         <p className="lead">Flow will receive new notes/quotes/excerpts added to specified notebooks on Evernote.</p>
 
@@ -189,7 +259,7 @@ export default class Integrations extends React.Component {
                         </div>
                     </Tab>
 
-                    <Tab label="Good Reads">
+                    <Tab label="Goodreads" style={this.tab_style('goodreads')}>
 
                         <p className="lead">Your currently reading shelf list will be synced daily from Goodreads.</p>
 
@@ -199,7 +269,7 @@ export default class Integrations extends React.Component {
                         <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['goodreads_user_id'])} />
                     </Tab>
 
-                    <Tab label="Github">
+                    <Tab label="Github" style={this.tab_style('github')}>
 
                         <p className="lead">Public commit counts from your profile will be synced daily.</p>
 
@@ -211,11 +281,7 @@ export default class Integrations extends React.Component {
                         <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['github_username', 'github_pat'])} />
                     </Tab>
 
-                    <Tab label="Google">
-                        <FlatButton label="Disconnect" onClick={this.google_disconnect.bind(this)} />
-                    </Tab>
-
-                    <Tab label="Google Fit">
+                    <Tab label="Google Fit" style={this.tab_style('gfit')}>
                         <FlatButton label="Authenticate with Fit" onClick={this.authenticate_google_service.bind(this, 'fit')} />
 
                         <h4>Configure Activity Capture</h4>
@@ -233,6 +299,7 @@ export default class Integrations extends React.Component {
                         <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['gfit_activities'])} />
 
                     </Tab>
+
 
                 </Tabs>
 

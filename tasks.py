@@ -16,7 +16,7 @@ class SyncReadables(handlers.BaseRequestHandler):
         from services import pocket, goodreads
         logging.debug("Running SyncReadables cron...")
         TS_KEY = 'pocket_last_timestamp'
-        users = User.query().fetch(limit=100)
+        users = User.SyncActive(['pocket', 'goodreads'])
         user_put = []
         for user in users:
             # Pocket
@@ -35,7 +35,7 @@ class SyncReadables(handlers.BaseRequestHandler):
         ndb.put_multi(user_put)
 
 
-class SyncProductivity(handlers.BaseRequestHandler):
+class SyncGithub(handlers.BaseRequestHandler):
     def get(self):
         from services.github import GithubClient
         date = self.request.get('date')
@@ -43,11 +43,11 @@ class SyncProductivity(handlers.BaseRequestHandler):
             date = tools.fromISODate(date).date()
         else:
             date = (datetime.today() - timedelta(days=1)).date()
-        users = User.query().fetch(limit=100)
+        users = User.SyncActive('github')
         res = {}
         for user in users:
-            logging.debug("Running SyncProductivity cron for %s on %s..." % (user, date))
             gh_client = GithubClient(user)
+            logging.debug("Running SyncGithub cron for %s on %s..." % (user, date))
             if gh_client._can_run():
                 commits = gh_client.get_contributions_on_day(date)
                 if commits is not None:
@@ -66,19 +66,23 @@ class SyncProductivity(handlers.BaseRequestHandler):
 class SyncFromGoogleFit(handlers.BaseRequestHandler):
     def get(self):
         from services.gfit import FitClient
-        users = User.query().fetch(limit=100)
+        users = User.SyncActive('gfit')
         res = {}
         date = (datetime.today() - timedelta(days=1)).date()
         for user in users:
-            logging.debug("Running SyncFromGoogleFit cron for %s on %s..." % (user, date))
             fit_enabled = bool(user.get_integration_prop('gfit_activities'))
+            logging.debug("Running SyncFromGoogleFit cron for %s on %s..." % (user, date))
             if fit_enabled:
                 fit_client = FitClient(user)
                 if fit_client:
                     var_durations = fit_client.aggregate_activity_durations(date)
-                    td = TrackingDay.Create(user, date)
-                    td.set_properties(var_durations)
-                    td.put()
+                    logging.debug(var_durations)
+                    if var_durations:
+                        td = TrackingDay.Create(user, date)
+                        td.set_properties(var_durations)
+                        td.put()
+            else:
+                logging.debug("Fit not authorized")
         self.json_out(res, debug=True)
 
 

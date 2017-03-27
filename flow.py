@@ -120,7 +120,7 @@ app = webapp2.WSGIApplication(
 
         # Cron jobs (see cron.yaml)
         webapp2.Route('/cron/readables/sync', handler=tasks.SyncReadables),
-        webapp2.Route('/cron/productivity/sync', handler=tasks.SyncProductivity),
+        webapp2.Route('/cron/pull/github', handler=tasks.SyncGithub),
         webapp2.Route('/cron/pull/google_fit', handler=tasks.SyncFromGoogleFit),
         webapp2.Route('/cron/reports/delete_old', handler=tasks.DeleteOldReports),
         webapp2.Route('/_ah/warmup', handler=tasks.WarmupHandler),

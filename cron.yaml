@@ -9,7 +9,7 @@ cron:
   schedule: every day 03:00
 
 - description: sync with github
-  url: /cron/productivity/sync
+  url: /cron/pull/github
   schedule: every day 00:00
 
 - description: Delete reports older than 30 days

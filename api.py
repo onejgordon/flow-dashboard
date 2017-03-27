@@ -295,6 +295,7 @@ class GoalAPI(handlers.JsonRequestHandler):
                 params['text'] = text
             goal.Update(**params)
             goal.put()
+            self.message = "Assessment saved" if 'assessment' in params else "Goal saved"
             self.success = True
         else:
             self.message = "Couldn't create goal"
@@ -617,7 +618,10 @@ class UserAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def update_self(self, d):
-        params = tools.gets(self, strings=['timezone', 'birthday', 'password'], json=['settings'])
+        params = tools.gets(self,
+                            strings=['timezone', 'birthday', 'password'],
+                            lists=['sync_services'],
+                            json=['settings'])
         logging.debug(params)
         self.user.Update(**params)
         self.user.put()
