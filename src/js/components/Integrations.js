@@ -261,10 +261,19 @@ export default class Integrations extends React.Component {
 
                     <Tab label="Goodreads" style={this.tab_style('goodreads')}>
 
-                        <p className="lead">Your currently reading shelf list will be synced daily from Goodreads.</p>
+                        <p className="lead">
+                            Your currently reading shelf list will be synced daily from Goodreads.
+                        </p>
 
-                        <b>Current User ID:</b> <span>{ gr_user_id || "--" }</span><br/>
-                        <TextField name="user_id" placeholder="Goodreads User ID" value={form.goodreads_user_id} onChange={this.changeHandler.bind(this, 'form', 'goodreads_user_id')} /><br/>
+                        <p>
+                            <b>Current User ID:</b> <span>{ gr_user_id || "--" }</span><br/>
+                        </p>
+
+                        <p>
+                            To find your Goodreads User ID, visit your Goodreads profile, and find the number that appears before your username. Ignore hyphens, etc.
+                        </p>
+
+                        <TextField name="user_id" placeholder="Goodreads User ID (e.g. 2901234)" value={form.goodreads_user_id} onChange={this.changeHandler.bind(this, 'form', 'goodreads_user_id')} /><br/>
 
                         <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['goodreads_user_id'])} />
                     </Tab>

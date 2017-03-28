@@ -53,7 +53,6 @@ class User(ndb.Model):
     create_dt = ndb.DateTimeProperty(auto_now_add=True)
     login_dt = ndb.DateTimeProperty(auto_now_add=True)
     level = ndb.IntegerProperty(default=USER.USER)
-    gender = ndb.StringProperty()
     timezone = ndb.StringProperty(default="UTC", indexed=False)
     birthday = ndb.DateProperty()
     integrations = ndb.TextProperty()  # Flat JSON dict

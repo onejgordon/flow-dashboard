@@ -646,6 +646,7 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
                 u.put()
             if u:
                 self.update_session_user(u)
+                self.login_dt = datetime.now()
                 self.success = True
                 self.message = "Signed in"
         else:

@@ -199,7 +199,8 @@ export default class Manage extends React.Component {
                 { name: 'text', title: 'Question Text', type: 'text' },
                 { name: 'response_type', title: 'Response Type', type: 'dropdown', options: [
                     { value: 'text', label: "Text" },
-                    { value: 'number', label: "Number (Slider)" }
+                    { value: 'number', label: "Number" },
+                    { value: 'slider', label: "Slider" }
                     ], default_value: 'text' },
                 { name: 'chart', title: 'Is Charted', type: 'checkbox' },
                 { name: 'tag_segment_chart', title: 'Tag Segment Chart?', type: 'checkbox' },
