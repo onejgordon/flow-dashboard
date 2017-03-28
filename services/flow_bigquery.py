@@ -11,7 +11,8 @@ from datetime import datetime, timedelta, time
 from oauth2client.client import GoogleCredentials
 from google.cloud import bigquery
 from google.cloud.bigquery.schema import SchemaField
-from models import Habit, HabitDay, Task, Readable
+from constants import JOURNAL
+from models import Habit, HabitDay, Task, Readable, MiniJournal
 import logging
 import tools
 
@@ -35,7 +36,8 @@ class BigQueryClient(object):
 
     def _maybe_get_journal_questions(self):
         if self.journal_questions is None:
-            self.journal_questions = tools.getJson(self.user.settings, {}).get('journals', {}).get('questions', [])
+            qs = tools.getJson(self.user.settings, {}).get('journals', {}).get('questions', [])
+            self.journal_questions = [q for q in qs if q.get('response_type') in JOURNAL.NUMERIC_RESPONSES]
 
     def _bq_schema(self):
         # Genreate bigquery schema from user
@@ -60,12 +62,10 @@ class BigQueryClient(object):
         for q in self.journal_questions:
             name = q.get('name')
             label = q.get('label')
-            response_type = q.get('response_type')
-            if response_type in ['slider', 'number']:
-                user_fields.append(
-                    SchemaField(name, "INT64",
-                                mode="NULLABLE",
-                                description="Journal response: %s" % label))
+            user_fields.append(
+                SchemaField(name, "FLOAT64",
+                            mode="NULLABLE",
+                            description="Journal response: %s" % label))
         schema = common_fields + user_fields
         # TODO: How do schema changes work?
         return schema
@@ -99,12 +99,16 @@ class BigQueryClient(object):
                            until=tools.iso_date(until)),
             lambda r: tools.iso_date(r.dt_read)
         )
+        journals, iso_dates = MiniJournal.Fetch(self.user, start=since, end=until)
+        journals_by_day = tools.partition(journals, lambda jrnl: tools.iso_date(jrnl.date))
         cursor = since
         while cursor <= until:
             iso_date = tools.iso_date(cursor)
             tasks = tasks_by_day.get(iso_date, [])
             habits = habitdays_by_day.get(iso_date, [])
             readables = readables_by_day.get(iso_date, [])
+            journals = journals_by_day.get(iso_date, [])
+            journal = journals[0] if journals else None
             tasks_done = tasks_undone = habits_done = habits_cmt = habits_cmt_undone = items_read = 0
             for t in tasks:
                 if t.is_done():
@@ -131,16 +135,31 @@ class BigQueryClient(object):
             for h in self.habits:
                 this_habit_done = 0
                 row.append('true' if this_habit_done else 'false')
+            for q in self.journal_questions:
+                name = q.get('name')
+                value = None
+                if journal:
+                    value = journal.get_data_value(name)
+                    if value:
+                        value = float(value)
+                    else:
+                        value = 0
+                row.append(value)
             rows.append(tuple(row))
             row_ids.append(iso_date)
             cursor += timedelta(days=1)
         return (rows, row_ids)
 
     def push_data(self, rows, row_ids):
-        logging.debug("Inserting into table '%s' with %s rows" % (self.table.table_id, self.table.num_rows))
-        self.table.insert_data(rows, row_ids=row_ids,
-                               skip_invalid_rows=True,
+        logging.debug(self.table)
+        logging.debug(rows)
+        logging.debug(row_ids)
+        logging.debug("Inserting %d rows into table '%s'" % (len(rows), self.table_name))
+        errors = self.table.insert_data(rows, row_ids=row_ids,
+                               ignore_unknown_values=True,
                                client=self.client)
+        if errors:
+            logging.debug(errors)
 
 
     def run(self):

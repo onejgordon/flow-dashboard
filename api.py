@@ -780,22 +780,12 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         date_start = self.request.get('date_start')
         date_end = self.request.get('date_end')
         dt_start, dt_end = tools.fromISODate(date_start), tools.fromISODate(date_end)
-        journal_keys = []
         iso_dates = []
         habits = []
         today = datetime.today()
-        if dt_start < dt_end:
-            date_cursor = dt_start
-            while date_cursor < dt_end:
-                date_cursor += timedelta(days=1)
-                iso_date = tools.iso_date(date_cursor)
-                journal_keys.append(ndb.Key('MiniJournal', iso_date, parent=self.user.key))
-                iso_dates.append(iso_date)
         habitdays = []
-        journals = []
         goals = []
-        if journal_keys:
-            journals = ndb.get_multi(journal_keys)
+        journals, iso_dates = MiniJournal.Fetch(self.user, date_start, date_end)
         if with_habits:
             habits = Habit.Active(self.user)
             habitdays = HabitDay.Range(self.user, habits, dt_start, dt_end)

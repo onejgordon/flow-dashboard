@@ -597,6 +597,19 @@ class MiniJournal(UserAccessible):
         return MiniJournal(id=id, date=date, parent=user.key)
 
     @staticmethod
+    def Fetch(user, start, end):
+        journal_keys = []
+        iso_dates = []
+        if start < end:
+            date_cursor = start
+            while date_cursor < end:
+                date_cursor += timedelta(days=1)
+                iso_date = tools.iso_date(date_cursor)
+                journal_keys.append(ndb.Key('MiniJournal', iso_date, parent=user.key))
+                iso_dates.append(iso_date)
+        return ([j for j in ndb.get_multi(journal_keys) if j], iso_dates)
+
+    @staticmethod
     def Get(user, date=None):
         if not date:
             date = MiniJournal.CurrentSubmissionDate()
