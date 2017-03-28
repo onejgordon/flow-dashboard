@@ -3,6 +3,7 @@ var React = require('react');
 import {Bar} from "react-chartjs-2";
 import connectToStores from 'alt-utils/lib/connectToStores';
 var api = require('utils/api');
+import {get, set, clone} from 'lodash';
 import {findItemById} from 'utils/store-utils';
 
 @connectToStores
@@ -34,12 +35,15 @@ export default class AnalysisMisc extends React.Component {
     }
 
     productivity_data() {
-        let {tracking_days, iso_dates} = this.props;
+        let {tracking_days, iso_dates, user} = this.props;
         let {readables_read} = this.state;
         let labels = [];
         let commit_data = [];
         let reading_data = [];
         let date_to_read_count = {};
+        let vars = [];
+        if (user.settings) vars = get(user.settings, ['tracking', 'chart_vars'], []);
+        let var_data = {}; // var.name -> data array
         readables_read.forEach((r) => {
             if (!date_to_read_count[r.date_read]) date_to_read_count[r.date_read] = 0;
             date_to_read_count[r.date_read] += 1;
@@ -48,24 +52,41 @@ export default class AnalysisMisc extends React.Component {
             let td = findItemById(tracking_days, date, 'iso_date');
             commit_data.push(td ? td.data.commits : 0);
             reading_data.push(date_to_read_count[date] || 0);
+            vars.forEach((v) => {
+                if (!var_data[v.name]) var_data[v.name] = [];
+                let val = 0;
+                if (td) val = td.data[v.name] || 0;
+                if (v.mult) val *= v.mult;
+                var_data[v.name].push(val);
+            });
             labels.push(date);
         });
         // Align reading counts with tracking days
+        let datasets = [
+            {
+                label: "Commits",
+                data: commit_data,
+                backgroundColor: '#44ff44'
+            },
+            {
+                label: "Items Read",
+                data: reading_data,
+                backgroundColor: '#E846F9'
+            }
+        ];
+        vars.forEach((v) => {
+            if (var_data[v.name]) {
+                datasets.push({
+                    label: v.label,
+                    data: var_data[v.name],
+                    backgroundColor: v.color || '#FFFFFF'
+                })
+            }
+        })
+        console.log(datasets);
         let pdata = {
             labels: labels,
-            datasets: [
-                {
-                    label: "Commits",
-                    data: commit_data,
-                    backgroundColor: '#44ff44'
-                },
-                {
-                    label: "Items Read",
-                    data: reading_data,
-                    backgroundColor: '#E846F9'
-                }
-
-            ]
+            datasets: datasets
         };
         return pdata;
     }
@@ -84,8 +105,7 @@ export default class AnalysisMisc extends React.Component {
                 }],
                 yAxes: [{
                     ticks: {
-                        min: 0,
-                        stepSize: 1
+                        min: 0
                     }
                 }],
             }
@@ -95,7 +115,7 @@ export default class AnalysisMisc extends React.Component {
         return (
             <div>
 
-                <h4>Misc &amp; Productivity</h4>
+                <h4>Tracking</h4>
 
                 <Bar data={trackingData} options={trackingOps} width={1000} height={450}/>
 
