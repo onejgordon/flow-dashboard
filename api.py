@@ -17,9 +17,9 @@ import imp
 try:
     imp.find_module('secrets')
 except ImportError:
-    import secrets_template as secrets
+    from settings import secrets_template as secrets
 else:
-    import secrets
+    from settings import secrets
 
 
 class ProjectAPI(handlers.JsonRequestHandler):
@@ -136,7 +136,7 @@ class HabitAPI(handlers.JsonRequestHandler):
         habitdays = HabitDay.Range(self.user, habits, start_date)
         self.set_response({
             'habits': [habit.json() for habit in habits],
-            'habitdays': tools.lookupDict([hd for hd in habitdays if hd],
+            'habitdays': tools.lookupDict(habitdays,
                     keyprop="key_id",
                     valueTransform=lambda hd: hd.json())
         })
@@ -152,7 +152,7 @@ class HabitAPI(handlers.JsonRequestHandler):
         habitdays = HabitDay.Range(self.user, habits, tools.fromISODate(start), until_date=tools.fromISODate(end))
         self.set_response({
             'habits': [habit.json() for habit in habits],
-            'habitdays': tools.lookupDict([hd for hd in habitdays if hd],
+            'habitdays': tools.lookupDict(habitdays,
                     keyprop="key_id",
                     valueTransform=lambda hd: hd.json())
         }, success=True)
@@ -639,6 +639,7 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         from constants import ADMIN_EMAIL
         token = self.request.get('token')
         ok, _email, name = self.validate_google_id_token(token)
+        u = None
         if ok:
             u = User.GetByEmail(_email)
             if not u:
@@ -704,7 +705,7 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         scope = self.request.get('scope')
         # state_scopes = self.request.get('state')
         if code:
-            from secrets import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+            from settings.secrets import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
             from constants import SECURE_BASE
             base = 'http://localhost:8080' if tools.on_dev_server() else SECURE_BASE
             credentials = client.credentials_from_code(
@@ -724,6 +725,7 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         self.redirect("/app/integrations")
 
     def validate_google_id_token(self, token):
+        from settings import secrets
         success = False
         email = name = None
         g_response = urlfetch.fetch("https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=%s" % token)
@@ -735,6 +737,8 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
                     success = True
                     email = json_response.get("email", None)
                     name = json_response.get("name", None)
+                else:
+                    logging.error("Client ID mismatch")
         return (success, email, name)
 
     def fbook_auth(self):
@@ -808,7 +812,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
             'goals': [g.json() for g in goals],
             'tasks': [t.json() for t in tasks],
             'tracking_days': [p.json() for p in tracking_days],
-            'habitdays': tools.lookupDict([hd for hd in habitdays if hd],
+            'habitdays': tools.lookupDict(habitdays,
                     keyprop="key_id",
                     valueTransform=lambda hd: hd.json())
 

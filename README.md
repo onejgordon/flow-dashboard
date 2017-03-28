@@ -58,6 +58,8 @@ Create secrets.py, client_secrets.js from the templates.
 
 ### Run the dev server locally
 
+To avoid conflicts sometimes seen with gcloud and google.cloud python libs it is often helpful to run the dev server in a virtualenv.
+
 Make sure dev_appserver.py is in your path, and run `./server.sh` to start the dev server locally, and gulp to build JS etc.
 
 ### Deploy

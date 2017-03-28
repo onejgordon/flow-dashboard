@@ -1,5 +1,5 @@
 import logging
-from secrets import POCKET_CONSUMER_KEY
+from settings.secrets import POCKET_CONSUMER_KEY
 from google.appengine.api import urlfetch
 from google.appengine.ext import ndb
 from models import Readable

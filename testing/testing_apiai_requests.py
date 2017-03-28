@@ -11,9 +11,9 @@ import imp
 try:
     imp.find_module('secrets')
 except ImportError:
-    import secrets_template as secrets
+    from settings import secrets_template as secrets
 else:
-    import secrets
+    from settings import secrets
 
 
 class DummyRequest():

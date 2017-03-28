@@ -87,3 +87,6 @@ libraries:
   version: "2.3.5"
 - name: pycrypto
   version: "2.6"
+
+env_variables:
+  GOOGLE_APPLICATION_CREDENTIALS: 'settings/genzai-app-f02b0e933bb4.json'

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, date
 import hashlib
 import pytz
 import urllib
+from collections import defaultdict
 from constants import *
 import json
 from google.appengine.ext import deferred
@@ -105,6 +106,14 @@ def variable_replacement(text, repl_dict=None, parens="[]"):
                         val = ""
                     text = text.replace(key, val)
     return text
+
+
+def partition(seq, key):
+    d = defaultdict(list)
+    for x in seq:
+        d[key(x)].append(x)
+    return d
+
 
 def lookupDict(item_list, keyprop="key_string", valueTransform=None):
     """

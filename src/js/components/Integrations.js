@@ -178,7 +178,10 @@ export default class Integrations extends React.Component {
 
     render_toggles() {
         let {form} = this.state;
-        return AppConstants.INTEGRATIONS.map((int) => {
+        let admin = UserStore.admin();
+        return AppConstants.INTEGRATIONS.filter((int) => {
+            return admin || !int.admin;
+        }).map((int) => {
             return ( <Toggle
                 key={int.value}
                 name={int.value}
@@ -188,6 +191,47 @@ export default class Integrations extends React.Component {
                 onToggle={this.service_sync_toggle.bind(this, int.value)} />
             );
         })
+    }
+
+    render_admin_section() {
+        let {form} = this.state;
+        let {user} = this.props;
+        let bigquery_dataset_name = null, bigquery_table_name = null;
+        if (user && user.integrations) {
+            ({bigquery_dataset_name, bigquery_table_name} = user.integrations);
+        }
+        let admin = UserStore.admin();
+        if (admin) {
+            return (
+                <div>
+                    <h4>Admin (beta) Integrations</h4>
+
+                    <Tabs>
+                        <Tab label="BigQuery" style={this.tab_style('bigquery')}>
+                            <p className="lead">
+                                Flow can push daily panel data to a table in BigQuery for additional analysis.
+                                Data is currently aggregated and pushed in a weekly cron.
+                            </p>
+
+                            <p className="lead">
+                                Note that habit and journal changes may require a data table schema update, or in some cases,
+                                creation of a new table.
+                            </p>
+
+                            <b>Dataset name:</b> { bigquery_dataset_name }<br/>
+                            <b>Table name:</b> { bigquery_table_name }<br/>
+
+                            <h5>Update Configuration</h5>
+                            <TextField name="bq_dataset_name" placeholder="BigQuery dataset name" value={form.bigquery_dataset_name} onChange={this.changeHandler.bind(this, 'form', 'bigquery_dataset_name')} fullWidth /><br/>
+                            <TextField name="bq_table_name" placeholder="BigQuery dataset name" value={form.bigquery_table_name} onChange={this.changeHandler.bind(this, 'form', 'bigquery_table_name')} fullWidth /><br/>
+
+                            <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['bigquery_dataset_name', 'bigquery_table_name'])} />
+
+                        </Tab>
+                    </Tabs>
+                </div>
+                )
+        } else return null;
     }
 
     render() {
@@ -207,6 +251,7 @@ export default class Integrations extends React.Component {
             if (ints.gfit_activities) gfit_activities = ints.gfit_activities.split(',');
         }
         let pocket_connected = user.integrations && user.integrations.pocket_access_token != null;
+        let _admin_section;
         return (
             <div>
 
@@ -309,8 +354,9 @@ export default class Integrations extends React.Component {
 
                     </Tab>
 
-
                 </Tabs>
+
+                { this.render_admin_section() }
 
                 <Snackbar message={this.state.snack_message || ""}
                     open={this.state.snack_open}

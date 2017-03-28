@@ -21,9 +21,9 @@ import pickle
 try:
     imp.find_module('secrets')
 except ImportError:
-    import secrets_template as secrets
+    from settings import secrets_template as secrets
 else:
-    import secrets
+    from settings import secrets
 
 AGENT_GOOGLE_ASST = 1
 AGENT_FBOOK_MESSENGER = 2
