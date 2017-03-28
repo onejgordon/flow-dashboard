@@ -10,7 +10,7 @@ from evernote.api.client import EvernoteClient
 import re
 from google.appengine.api import memcache
 
-SANDBOX = True
+SANDBOX = False
 USE_DEV_TOKEN = False
 SECRET_MCK = "user:%s:evernote:secret"
 
