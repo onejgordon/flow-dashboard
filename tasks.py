@@ -86,6 +86,25 @@ class SyncFromGoogleFit(handlers.BaseRequestHandler):
         self.json_out(res, debug=True)
 
 
+class PushToBigQuery(handlers.BaseRequestHandler):
+    def get(self):
+        from services.flow_bigquery import BigQueryClient
+        users = User.SyncActive('bigquery')
+        res = {}
+        date = (datetime.today() - timedelta(days=1)).date()
+        for user in users:
+            enabled = bool(user.get_integration_prop('bigquery_dataset_name')) and \
+                bool(user.get_integration_prop('bigquery_table_name'))
+            if enabled:
+                logging.debug("Running PushToBigQuery cron for %s on %s..." % (user, date))
+                bq_client = BigQueryClient(user)
+                if bq_client:
+                    bq_client.run()
+            else:
+                logging.debug("BigQuery not enabled")
+        self.json_out(res, debug=True)
+
+
 class DeleteOldReports(handlers.BaseRequestHandler):
     def get(self):
         from models import Report

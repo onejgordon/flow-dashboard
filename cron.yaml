@@ -15,3 +15,7 @@ cron:
 - description: Delete reports older than 30 days
   url: /cron/reports/delete_old
   schedule: every sunday 00:00
+
+- description: push to bigquery
+  url: /cron/push/bigquery
+  schedule: every saturday 00:00

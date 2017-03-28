@@ -70,14 +70,11 @@ class BigQueryClient(object):
         # TODO: How do schema changes work?
         return schema
 
-    def table_created(self):
-        table = self.dataset.table(self.table_name)
-        return table.exists(client=self.client)
-
-    def create_table(self):
-        logging.debug("Creating table...")
+    def get_table(self):
         self.table = self.dataset.table(self.table_name, self._bq_schema())
-        self.table.create(client=self.client)
+        if not self.table.exists(client=self.client):
+            logging.debug("Creating table...")
+            self.table.create(client=self.client)
 
     def fetch_daily_panel_data(self, since=None, until=None):
         self._maybe_get_habits()
@@ -140,14 +137,14 @@ class BigQueryClient(object):
         return (rows, row_ids)
 
     def push_data(self, rows, row_ids):
-        logging.debug("Inserting into table '%s' with %d rows" % (self.table.friendly_name, self.table.num_rows))
+        logging.debug("Inserting into table '%s' with %s rows" % (self.table.table_id, self.table.num_rows))
         self.table.insert_data(rows, row_ids=row_ids,
                                skip_invalid_rows=True,
                                client=self.client)
 
+
     def run(self):
-        if not self.table_created():
-            self.create_table()
+        self.get_table()
         rows, row_ids = self.fetch_daily_panel_data()
         self.push_data(rows, row_ids)
 
