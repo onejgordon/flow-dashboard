@@ -208,6 +208,7 @@ export default class Reading extends React.Component {
 
                         <div style={{margin: "10px"}}>
                             <label>Batch Upload from JSON array</label>
+                            <p>Each JSON object should include properties: <code>type</code> ('article', 'book', or 'paper'), <code>title</code>, and <code>source</code>. Optional properties: <code>tags</code> (array), <code>image_url</code>, <code>author</code>, and <code>notes</code>.</p>
                             <TextField placeholder="Readings (JSON)" name="readings" value={form.readings} onChange={this.changeHandler.bind(this, 'form', 'readings')} multiLine={true} fullWidth />
                             <RaisedButton label="Batch Upload from JSON" onClick={this.upload_readings.bind(this)} />
                         </div>
@@ -232,6 +233,7 @@ export default class Reading extends React.Component {
 
                         <div style={{margin: "10px"}}>
                             <label>Batch Upload from JSON array</label>
+                            <p>Each JSON object should include properties: <code>source</code> and <code>content</code>. Optional properties: <code>tags</code> (array), <code>dt_added</code> (ISO date), <code>location</code>, and <code>link</code>.</p>
                             <TextField placeholder="Quotes (JSON)" name="quotes" value={form.quotes} onChange={this.changeHandler.bind(this, 'form', 'quotes')} multiLine={true} fullWidth />
                             <RaisedButton label="Batch Upload from JSON" onClick={this.upload_quotes.bind(this)} />
                         </div>

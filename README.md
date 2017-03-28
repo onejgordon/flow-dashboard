@@ -77,8 +77,6 @@ Visit `https://[project-id].appspot.com` to see the app live.
 	* Commitments
 * Tracking top tasks for each day (submitted with journal)
 * Monthly/year goals & assessments
-* Store productivity metrics e.g. github commits (daily, hourly)
-	* Scrape Github commits chart
 * Ongoing Projects tracking
 	* Track time of each progress increment
 	* View 'burn-up' chart of completion progress over time
@@ -91,24 +89,34 @@ Visit `https://[project-id].appspot.com` to see the app live.
 	* "Mark 'run' as complete"
 	* "Daily report"
 * Reading widget
-	* Show currently-reading shelf on Good Reads / Pocket
+	* Show currently-reading articles / books
 * Flash card widget for spreadsheet access (e.g. random quotes, excerpts)
 * Export all data to CSV
 
 ## Integrations
 
+### Data source integrations
+
+* Public Github commits
+* Google Fit (track any activity durations by keyword)
+* Evernote (pull excerpts from specified notebooks)
+* Pocket - Sync stored articles & add notes
+* Goodreads - Sync currently reading shelf
+
+### Setup (for separate instance)
+
 All integrations work out of the box on flowdash.co, but if you're spinning up your own instance, you'll need to set up each integration you need.  See below for specific instructions.
 
-### Pocket
+#### Pocket
 
 Create an app at https://getpocket.com/developer/ and update secrets.POCKET_CONSUMER_KEY
 
-### Evernote
+#### Evernote
 
 1. Request an API Key at https://dev.evernote.com
 2. Request a webhook at https://dev.evernote.com/support/ pointing to [Your Domain]/api/integrations/evernote/webhook
 
-### Google Home Integration
+#### Google Home
 
 We've used API.AI to create an agent that integrates with Google Actions / Assistant / Home. To connect Assistant with a new instance of Flow:
 
@@ -119,7 +127,7 @@ We've used API.AI to create an agent that integrates with Google Actions / Assis
 5. Go to integrations and add and authorize 'Actions on Google'
 6. Preview the integration using the web preview
 
-### Facebook Messenger Integration
+#### Facebook Messenger
 
 The messenger bot lives at https://www.facebook.com/FlowDashboard/
 
@@ -128,8 +136,6 @@ To create a new messenger bot for your own instance of Flow, see the Facebook qu
 ## Planned Features
 
 * Track happiness / activities throughout day (push), ala https://www.trackyourhappiness.org/
-* Actual book start date Readable (good reads)
 * Desktop notifs
 * Push panel data to compute engine for ML / prediction / regression
 * Mobile app via react-native?
-* Google Fit REST API integration - https://developers.google.com/fit/rest/

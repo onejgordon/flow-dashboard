@@ -32,6 +32,10 @@ handlers:
   static_dir: static
   expiration: "99d"
 
+- url: /cron/.*
+  script: flow.app
+  login: admin
+
 - url: /admin/gauth.*
   script: flow.app
   login: admin

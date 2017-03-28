@@ -4,6 +4,7 @@ from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
     Readable, TrackingDay, Event, JournalTag, Report, Quote
 from constants import READABLE
 from google.appengine.ext import ndb
+from oauth2client import client
 import authorized
 import handlers
 import tools
@@ -294,6 +295,7 @@ class GoalAPI(handlers.JsonRequestHandler):
                 params['text'] = text
             goal.Update(**params)
             goal.put()
+            self.message = "Assessment saved" if 'assessment' in params else "Goal saved"
             self.success = True
         else:
             self.message = "Couldn't create goal"
@@ -616,7 +618,10 @@ class UserAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def update_self(self, d):
-        params = tools.gets(self, strings=['timezone', 'birthday', 'password'], json=['settings'])
+        params = tools.gets(self,
+                            strings=['timezone', 'birthday', 'password'],
+                            lists=['sync_services'],
+                            json=['settings'])
         logging.debug(params)
         self.user.Update(**params)
         self.user.put()
@@ -641,6 +646,7 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
                 u.put()
             if u:
                 self.update_session_user(u)
+                self.login_dt = datetime.now()
                 self.success = True
                 self.message = "Signed in"
         else:
@@ -674,6 +680,48 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         else:
             self.message = "Malformed"
         self.set_response({'redirect': redir_url}, debug=True)
+
+    @authorized.role('user')
+    def google_service_authenticate(self, service_name, d):
+        data = {}
+        if service_name == 'fit':
+            from services.gfit import FitClient
+            service = FitClient(self.user)
+            uri = service.get_auth_uri()
+            data['uri'] = uri
+            self.success = True
+        else:
+            self.message = "Unknown service: %s" % service_name
+        self.set_response(data)
+
+    @authorized.role('user')
+    def google_oauth2_callback(self, d):
+        '''
+        Handle server-side oauth2 callback
+        '''
+        error = self.request.get('error')
+        code = self.request.get('code')
+        scope = self.request.get('scope')
+        # state_scopes = self.request.get('state')
+        if code:
+            from secrets import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+            from constants import SECURE_BASE
+            base = 'http://localhost:8080' if tools.on_dev_server() else SECURE_BASE
+            credentials = client.credentials_from_code(
+                GOOGLE_CLIENT_ID,
+                GOOGLE_CLIENT_SECRET,
+                scope,
+                code,
+                redirect_uri=base + "/api/auth/google/oauth2callback")
+            if self.user:
+                cr_json = credentials.to_json()
+                logging.debug(type(cr_json))
+                self.user.set_integration_prop('google_credentials', cr_json)
+                self.user.put()
+                self.update_session_user(self.user)
+        elif error:
+            logging.error(error)
+        self.redirect("/app/integrations")
 
     def validate_google_id_token(self, token):
         success = False
