@@ -785,7 +785,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         today = datetime.today()
         habitdays = []
         goals = []
-        journals, iso_dates = MiniJournal.Fetch(self.user, date_start, date_end)
+        journals, iso_dates = MiniJournal.Fetch(self.user, dt_start, dt_end)
         if with_habits:
             habits = Habit.Active(self.user)
             habitdays = HabitDay.Range(self.user, habits, dt_start, dt_end)
