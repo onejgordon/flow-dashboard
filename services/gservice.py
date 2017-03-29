@@ -22,7 +22,7 @@ class GoogleServiceFetcher(object):
         self.version = version
         self.credentials = None
         self.http_auth = None
-        self.credtyp = credential_type
+        self.credential_type = credential_type
         if credential_type == 'user':
             self.get_user_credentials_object()
         else:

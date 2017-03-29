@@ -5,6 +5,7 @@
 
 # TODO:
 # - User authentication for own bigquery dataset access (otherwise datasets created in flow account?)
+# - Build in push date overlap to handle late-reported data
 
 from __future__ import absolute_import
 from datetime import datetime, timedelta, time

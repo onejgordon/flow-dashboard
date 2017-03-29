@@ -75,6 +75,9 @@ skip_files:
 - ^design/.*$
 - ^lib/.*(\.(?!py)).*$
 - ^scripts/.*$
+- ^env/.*$
+- ^\.Python$
+- ^bin/.*$
 
 libraries:
 - name: django
