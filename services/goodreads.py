@@ -1,5 +1,5 @@
 import logging
-from secrets import GR_API_KEY
+from settings.secrets import GR_API_KEY
 from google.appengine.api import urlfetch
 from google.appengine.ext import ndb
 from lxml import etree

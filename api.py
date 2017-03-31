@@ -15,11 +15,11 @@ import json
 import urllib
 import imp
 try:
-    imp.find_module('secrets')
+    imp.find_module('secrets', ['settings'])
 except ImportError:
     import secrets_template as secrets
 else:
-    import secrets
+    from settings import secrets
 
 
 class ProjectAPI(handlers.JsonRequestHandler):
@@ -51,7 +51,7 @@ class ProjectAPI(handlers.JsonRequestHandler):
             supportTextBooleans=True
         )
         if id:
-            prj = Project.get_by_id(int(id), parent=self.user.key)
+            prj = self.user.get(Project, id=id)
         else:
             prj = Project.Create(self.user)
         if prj:
@@ -76,7 +76,7 @@ class ProjectAPI(handlers.JsonRequestHandler):
     def delete(self, d):
         id = self.request.get_range('id')
         if id:
-            prj = Project.get_by_id(id, parent=self.user.key)
+            prj = self.user.get(Project, id=id)
             prj.key.delete()
             self.success = True
         self.set_response()
@@ -103,7 +103,7 @@ class TaskAPI(handlers.JsonRequestHandler):
         )
         logging.debug(params)
         if id:
-            task = Task.get_by_id(int(id), parent=self.user.key)
+            task = self.user.get(Task, id=id)
         else:
             task = Task.Create(self.user, None)
         if task:
@@ -157,22 +157,20 @@ class HabitAPI(handlers.JsonRequestHandler):
                     valueTransform=lambda hd: hd.json())
         }, success=True)
 
-
     @authorized.role('user')
     def toggle(self, d):
         '''
         Mark done/not-done for a habit day
         '''
         from constants import HABIT_DONE_REPLIES
-        habitday_id = self.request.get('habitday_id')
         habit_id = self.request.get_range('habit_id')
         day_iso = self.request.get('date')
         habit = Habit.get_by_id(habit_id, parent=self.user.key)
         hd = None
-        if habit and habitday_id:
+        if habit:
             marked_done, hd = HabitDay.Toggle(habit, tools.fromISODate(day_iso))
             if marked_done:
-                message = random.choice(HABIT_DONE_REPLIES)
+                self.message = random.choice(HABIT_DONE_REPLIES)
             self.success = True
         self.set_response({
             'habitday': hd.json() if hd else None
@@ -184,11 +182,11 @@ class HabitAPI(handlers.JsonRequestHandler):
         Mark done/not-done for a habit day
         '''
         from constants import HABIT_COMMIT_REPLIES
-        habitday_id = self.request.get('habitday_id')
         habit_id = self.request.get_range('habit_id')
         day_iso = self.request.get('date')
-        habit = Habit.get_by_id(habit_id, parent=self.user.key)
-        if habit and habitday_id:
+        habit = self.user.get(Habit, id=habit_id)
+        hd = None
+        if habit:
             hd = HabitDay.Commit(habit, tools.fromISODate(day_iso))
             self.message = random.choice(HABIT_COMMIT_REPLIES)
             self.success = True
@@ -210,7 +208,7 @@ class HabitAPI(handlers.JsonRequestHandler):
                             )
         habit = None
         if id:
-            habit = Habit.get_by_id(int(id), parent=self.user.key)
+            habit = self.user.get(Habit, id=id)
         else:
             name = params.get('name')
             if not name:
@@ -231,7 +229,7 @@ class HabitAPI(handlers.JsonRequestHandler):
         habit = None
         habitdays = []
         if id:
-            habit = Habit.get_by_id(id, parent=self.user.key)
+            habit = self.user.get(Habit, id=id)
             if habit:
                 if with_days:
                     since = datetime.today() - timedelta(days=with_days)
@@ -245,11 +243,13 @@ class HabitAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def delete(self, d):
         id = self.request.get_range('id')
-        if id:
+        habit = self.user.get(Habit, id=id)
+        if habit:
             habit = Habit.get_by_id(int(id), parent=self.user.key)
             habit.key.delete()
             self.success = True
         self.set_response()
+
 
 class GoalAPI(handlers.JsonRequestHandler):
 
@@ -279,8 +279,7 @@ class GoalAPI(handlers.JsonRequestHandler):
             strings=['text1', 'text2', 'text3', 'text4'],
             integers=['assessment']
         )
-        if id:
-            goal = Goal.get_by_id(id, parent=self.user.key)
+        goal = self.user.get(Goal, id=id)
         if not goal:
             goal = Goal.Create(self.user, id=id)
         if goal:
@@ -324,9 +323,7 @@ class EventAPI(handlers.JsonRequestHandler):
             strings=['title', 'details', 'color'],
             dates=['date_start', 'date_end']
         )
-        event = None
-        if id:
-            event = Event.get_by_id(id, parent=self.user.key)
+        event = self.user.get(Event, id=id)
         if not event:
             start = params.get('date_start')
             if start:
@@ -363,8 +360,8 @@ class EventAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def delete(self, d):
         id = self.request.get_range('id')
-        if id:
-            ev = Event.get_by_id(id, parent=self.user.key)
+        ev = self.user.get(Event, id=id)
+        if ev:
             ev.key.delete()
             self.success = True
         self.set_response()
@@ -395,9 +392,8 @@ class ReadableAPI(handlers.JsonRequestHandler):
             integers=['type'],
             strings=['notes', 'title', 'url', 'author', 'source'],
             booleans=['read', 'favorite'])
-        logging.debug(params)
         if id:
-            r = Readable.get_by_id(id, parent=self.user.key)
+            r = self.user.get(Readable, id=id)
         else:
             # New
             r = Readable.CreateOrUpdate(self.user, None, **params)
@@ -451,7 +447,7 @@ class ReadableAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def delete(self, d):
         id = self.request.get('id')
-        r = Readable.get_by_id(id, parent=self.user.key)
+        r = self.user.get(Readable, id=id)
         if r:
             if r.source == 'pocket':
                 access_token = self.user.get_integration_prop('pocket_access_token')
@@ -485,7 +481,7 @@ class QuoteAPI(handlers.JsonRequestHandler):
         )
         quote = None
         if id:
-            quote = Quote.get_by_id(id, parent=self.user.key)
+            quote = self.user.get(Quote, id=id)
         else:
             if 'date' in params:
                 params['dt_added'] = tools.fromISODate(params.get('date'))
@@ -526,6 +522,7 @@ class QuoteAPI(handlers.JsonRequestHandler):
         self.set_response({
             'quotes': [q.json() for q in quotes]
             }, success=True)
+
 
 class JournalTagAPI(handlers.JsonRequestHandler):
 
@@ -915,7 +912,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         self.success = bool(authorize_url)
         self.set_response(data={
             'redirect': authorize_url
-            })
+            }, debug=True)
 
     @authorized.role('user')
     def evernote_authorize(self, d):
@@ -926,6 +923,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         ot = self.request.get('oauth_token')
         ot_secret = self.request.get('oauth_token_secret')
         verifier = self.request.get('oauth_verifier')
+        self.log_request_params()
         access_token, en_user = flow_evernote.get_access_token(self.user, ot, ot_secret, verifier)
         logging.debug([access_token, en_user])
         if access_token:
@@ -938,7 +936,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
             self.success = True
         self.set_response(data={
             'user': self.user.json()
-            })
+            }, debug=True)
 
     @authorized.role('user')
     def evernote_disconnect(self, d):

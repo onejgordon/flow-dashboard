@@ -5,8 +5,7 @@ from datetime import datetime
 from base_test_case import BaseTestCase
 from models import Goal
 from flow import app as tst_app
-from models import Habit, Task
-import json
+from models import Habit, Task, Project, Event
 
 
 class APITestCase(BaseTestCase):
@@ -44,6 +43,23 @@ class APITestCase(BaseTestCase):
         h = response.get('habit')
         self.assertEqual(h.get('name'), 'Walk')
 
+        # Actions
+        DAY = '2017-01-02'
+        hid = h.get('id')
+        actions = [
+            {'action': 'commit', 'expected_prop': 'committed'},
+            {'action': 'toggle', 'expected_prop': 'done'}
+        ]
+        for act in actions:
+            params = {
+                'habit_id': hid,
+                'date': DAY
+            }
+            response = self.post_json("/api/habit/%s" % act.get('action'), params, headers=self.api_headers)
+            hd = response.get('habitday')
+            prop = act.get('expected_prop')
+            self.assertTrue(hd.get(prop))
+
         # Delete
         response = self.post_json("/api/habit/delete", {'id': h.get('id')}, headers=self.api_headers)
         h = Habit.get_by_id(h.get('id'), parent=self.u.key)
@@ -70,3 +86,49 @@ class APITestCase(BaseTestCase):
         task = response.get('task')
         self.assertEqual(task.get('title'), 'Dont forget the sugar')
 
+    def test_project_calls(self):
+        p = Project.Create(self.u)
+        p.Update(urls=['http://www.x.com','http://www.y.com'],
+                 title="New Project",
+                 subhead="Details")
+        p.put()
+
+        # List
+        response = self.get_json("/api/project", {}, headers=self.api_headers)
+        h = response.get('projects')[0]
+        self.assertEqual(h.get('title'), "New Project")
+
+        # Update
+        response = self.post_json("/api/project", {'id': h.get('id'), 'title': 'New Name'}, headers=self.api_headers)
+        h = response.get('project')
+        self.assertEqual(h.get('title'), 'New Name')
+
+        # Delete
+        response = self.post_json("/api/project/delete", {'id': h.get('id')}, headers=self.api_headers)
+        h = self.u.get(Project, id=h.get('id'))
+        self.assertIsNone(h)  # Confirm deletion
+
+    def test_event_calls(self):
+        date_start = datetime.today()
+        e = Event.Create(self.u, date_start)
+        e.Update(title="New Event",
+                 details="Details")
+        e.put()
+
+        self.assertEqual(e.title, "New Event")
+        self.assertEqual(e.details, "Details")
+
+        # List
+        response = self.get_json("/api/event", {}, headers=self.api_headers)
+        h = response.get('events')[0]
+        self.assertEqual(h.get('title'), "New Event")
+
+        # Update
+        response = self.post_json("/api/event", {'id': h.get('id'), 'title': 'New Name'}, headers=self.api_headers)
+        h = response.get('event')
+        self.assertEqual(h.get('title'), 'New Name')
+
+        # Delete
+        response = self.post_json("/api/event/delete", {'id': h.get('id')}, headers=self.api_headers)
+        h = self.u.get(Event, id=h.get('id'))
+        self.assertIsNone(h)  # Confirm deletion

@@ -7,11 +7,11 @@ import imp
 import api
 import tasks
 try:
-    imp.find_module('secrets')
+    imp.find_module('secrets', ['settings'])
 except ImportError:
     import secrets_template as secrets
 else:
-    import secrets
+    from settings import secrets
 
 SECS_PER_WEEK = 60 * 60 * 24 * 7
 # Enable ctypes -> Jinja2 tracebacks
