@@ -8,7 +8,7 @@ import httplib2
 from datetime import datetime, timedelta
 import tools
 from constants import SECURE_BASE
-from secrets import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+from settings.secrets import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
 
 class GoogleServiceFetcher(object):

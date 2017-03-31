@@ -7,6 +7,7 @@
 import logging
 from datetime import datetime
 from evernote.api.client import EvernoteClient
+from evernote.edam.error.ttypes import EDAMSystemException
 import re
 from google.appengine.api import memcache
 
@@ -16,7 +17,7 @@ SECRET_MCK = "user:%s:evernote:secret"
 
 
 def user_access_token(user):
-    from secrets import EVERNOTE_DEV_TOKEN
+    from settings.secrets import EVERNOTE_DEV_TOKEN
     if USE_DEV_TOKEN:
         access_token = EVERNOTE_DEV_TOKEN
     else:
@@ -28,7 +29,7 @@ def get_request_token(user, callback):
     '''
     Get request token
     '''
-    from secrets import EVERNOTE_CONSUMER_KEY, EVERNOTE_CONSUMER_SECRET
+    from settings.secrets import EVERNOTE_CONSUMER_KEY, EVERNOTE_CONSUMER_SECRET
     client = EvernoteClient(
         consumer_key=EVERNOTE_CONSUMER_KEY,
         consumer_secret=EVERNOTE_CONSUMER_SECRET,
@@ -45,7 +46,7 @@ def get_access_token(user, oauth_token, oauth_token_secret, oauth_verifier):
     '''
     Get request token
     '''
-    from secrets import EVERNOTE_CONSUMER_KEY, EVERNOTE_CONSUMER_SECRET
+    from settings.secrets import EVERNOTE_CONSUMER_KEY, EVERNOTE_CONSUMER_SECRET
     client = EvernoteClient(
         consumer_key=EVERNOTE_CONSUMER_KEY,
         consumer_secret=EVERNOTE_CONSUMER_SECRET,
@@ -69,7 +70,11 @@ def get_access_token(user, oauth_token, oauth_token_secret, oauth_verifier):
 def get_evernote_user(access_token):
     client = EvernoteClient(token=access_token)
     userStore = client.get_user_store()
-    en_user = userStore.getUser(access_token)
+    en_user = None
+    try:
+        en_user = userStore.getUser(access_token)
+    except EDAMSystemException, e:
+        logging.error(str(e))
     return en_user
 
 
@@ -91,7 +96,7 @@ def get_note(user, note_id):
     return (title, content)
 
 if __name__ == "__main__":
-    from secrets import EVERNOTE_DEV_TOKEN
+    from settings.secrets import EVERNOTE_DEV_TOKEN
     client = EvernoteClient(token=EVERNOTE_DEV_TOKEN)
     noteStore = client.get_note_store()
     print noteStore.getNote("x")

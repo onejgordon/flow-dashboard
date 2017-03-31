@@ -12,11 +12,11 @@ import imp
 import hashlib
 from common.decorators import auto_cache
 try:
-    imp.find_module('secrets')
+    imp.find_module('settings.secrets')
 except ImportError:
     import secrets_template as secrets
 else:
-    import secrets
+    from settings import secrets
 
 
 class UserAccessible(ndb.Model):

@@ -15,11 +15,11 @@ import json
 import urllib
 import imp
 try:
-    imp.find_module('secrets')
+    imp.find_module('settings.secrets')
 except ImportError:
     import secrets_template as secrets
 else:
-    import secrets
+    from settings import secrets
 
 
 class ProjectAPI(handlers.JsonRequestHandler):
@@ -923,6 +923,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         ot = self.request.get('oauth_token')
         ot_secret = self.request.get('oauth_token_secret')
         verifier = self.request.get('oauth_verifier')
+        self.log_request_params()
         access_token, en_user = flow_evernote.get_access_token(self.user, ot, ot_secret, verifier)
         logging.debug([access_token, en_user])
         if access_token:
