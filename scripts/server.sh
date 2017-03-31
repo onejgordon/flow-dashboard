@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+cd ../
 if [ "$1" == "kill" ]; then
 	echo "Killing server..."
 	lsof -P | grep ':8080' | awk '{print $2}' | xargs kill -9

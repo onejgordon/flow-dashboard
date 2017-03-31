@@ -9,4 +9,9 @@ lib/*
 dist/*
 secrets.py
 src/js/constants/client_secrets.js
+env/*
+bin/*
+include/*
+settings/*.json
+.Python
 client_secret.json

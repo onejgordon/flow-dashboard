@@ -639,6 +639,7 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         from constants import ADMIN_EMAIL
         token = self.request.get('token')
         ok, _email, name = self.validate_google_id_token(token)
+        u = None
         if ok:
             u = User.GetByEmail(_email)
             if not u:
@@ -724,6 +725,7 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         self.redirect("/app/integrations")
 
     def validate_google_id_token(self, token):
+        from settings import secrets
         success = False
         email = name = None
         g_response = urlfetch.fetch("https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=%s" % token)
