@@ -139,6 +139,12 @@ class User(ndb.Model):
         if 'sync_services' in params:
             self.sync_services = params.get('sync_services')
 
+    def get(self, cls, id=None):
+        if id:
+            if isinstance(id, basestring) and id.isdigit():
+                id = int(id)
+            return cls.get_by_id(id, parent=self.key)
+
     def admin(self):
         return self.level == USER.ADMIN
 
