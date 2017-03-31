@@ -15,7 +15,7 @@ import json
 import urllib
 import imp
 try:
-    imp.find_module('settings.secrets')
+    imp.find_module('secrets', ['settings'])
 except ImportError:
     import secrets_template as secrets
 else:
@@ -912,7 +912,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         self.success = bool(authorize_url)
         self.set_response(data={
             'redirect': authorize_url
-            })
+            }, debug=True)
 
     @authorized.role('user')
     def evernote_authorize(self, d):
@@ -936,7 +936,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
             self.success = True
         self.set_response(data={
             'user': self.user.json()
-            })
+            }, debug=True)
 
     @authorized.role('user')
     def evernote_disconnect(self, d):

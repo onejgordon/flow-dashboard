@@ -7,7 +7,7 @@ import imp
 import api
 import tasks
 try:
-    imp.find_module('settings.secrets')
+    imp.find_module('secrets', ['settings'])
 except ImportError:
     import secrets_template as secrets
 else:

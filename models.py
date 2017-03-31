@@ -12,7 +12,7 @@ import imp
 import hashlib
 from common.decorators import auto_cache
 try:
-    imp.find_module('settings.secrets')
+    imp.find_module('secrets', ['settings'])
 except ImportError:
     import secrets_template as secrets
 else:
