@@ -18,7 +18,7 @@ except ImportError:
 else:
     from settings import secrets
 
-SANDBOX = True
+SANDBOX = False
 USE_DEV_TOKEN = False
 SECRET_MCK = "user:%s:evernote:secret"
 
