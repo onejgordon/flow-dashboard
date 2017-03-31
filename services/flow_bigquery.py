@@ -10,12 +10,14 @@
 from __future__ import absolute_import
 from datetime import datetime, timedelta, time
 from oauth2client.client import GoogleCredentials
+import google
 from google.cloud import bigquery
 from google.cloud.bigquery.schema import SchemaField
 from constants import JOURNAL
 from models import Habit, HabitDay, Task, Readable, MiniJournal
 import logging
 import tools
+import os
 
 
 class BigQueryClient(object):
@@ -30,6 +32,11 @@ class BigQueryClient(object):
         self.table = None
         self.habits = None
         self.journal_questions = None
+        here = os.path.dirname(os.path.abspath(__file__))
+        logging.debug('google: {} google.cloud.bigquery: {}'.format(
+            os.path.relpath(google.__file__, here),
+            os.path.relpath(bigquery.__file__, here)
+        ))
 
     def _maybe_get_habits(self):
         if self.habits is None:

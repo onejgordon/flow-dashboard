@@ -1,8 +1,7 @@
 # Install with pip install -r requirements.txt (local machine)
-gsutil==4.16
+google-cloud
 funcsigs==1.0.2
 pbr==1.10.0
 mock==1.0.1
-npm==0.1.1
 WebTest==2.0.21
 pycrypto==2.6
