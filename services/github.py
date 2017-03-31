@@ -46,26 +46,6 @@ class GithubClient(object):
             logging.debug(response.content)
         return (response, None)
 
-    def get_repo_names(self, updated_since=None):
-        mckey = REPO_MEMKEY % self.github_username
-        repo_names = memcache.get(mckey)
-        if repo_names is None:
-            url = '/user/repos?%s' % (urllib.urlencode([
-              ('visibility', 'all'),
-              # ('affiliation', 'owner,collaborator')
-            ]))
-            response, repos = self.api_call(url)
-            repo_names = []
-            for r in repos:
-                pushed = self._parse_raw_date(r.get('pushed_at'))
-                include = updated_since is None or pushed > updated_since
-                if include:
-                    repo_names.append(r.get('full_name'))
-            if repo_names:
-                logging.debug(repo_names)
-                memcache.set(mckey, repo_names, time=60*60)  # 1 hr
-        return repo_names
-
     def get_contributions_on_day(self, date):
         '''
         Currently scraping Github public overview page (no API yet)

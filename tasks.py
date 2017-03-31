@@ -45,6 +45,7 @@ class SyncGithub(handlers.BaseRequestHandler):
             date = (datetime.today() - timedelta(days=1)).date()
         users = User.SyncActive('github')
         res = {}
+        td_put = []
         for user in users:
             gh_client = GithubClient(user)
             logging.debug("Running SyncGithub cron for %s on %s..." % (user, date))
@@ -55,11 +56,12 @@ class SyncGithub(handlers.BaseRequestHandler):
                     td.set_properties({
                         'commits': commits
                     })
-                    td.put()
-                    # TODO: put_multi
+                    td_put.append(td)
                     res = td.json()
             else:
                 logging.debug("Github updater can't run")
+        if td_put:
+            ndb.put_multi(td_put)
         self.json_out(res, debug=True)
 
 

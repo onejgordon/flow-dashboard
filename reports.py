@@ -33,6 +33,7 @@ class GCSReportWorker(object):
             return
         self.report.status = REPORT.GENERATING
         self.report.put()
+        self.specs = self.report.get_specs()
         self.user = self.report.key.parent().get()
         self.ancestor = self.user
         self.FILTERS = []
@@ -221,7 +222,7 @@ class HabitReportWorker(GCSReportWorker):
     def __init__(self, rkey):
         super(HabitReportWorker, self).__init__(rkey, start_att="dt_created")
         title_kwargs = {}
-        specs = self.report.get_specs()
+
         start = specs.get("start", 0)
         end = specs.get("end", 0)
         self.report.generate_title("Habit Report", ts_start=start, ts_end=end, **title_kwargs)
@@ -249,9 +250,8 @@ class TaskReportWorker(GCSReportWorker):
     def __init__(self, rkey):
         super(TaskReportWorker, self).__init__(rkey, start_att="dt_created")
         title_kwargs = {}
-        specs = self.report.get_specs()
-        start = specs.get("start", 0)
-        end = specs.get("end", 0)
+        start = self.specs.get("start", 0)
+        end = self.specs.get("end", 0)
         self.report.generate_title("Task Report", ts_start=start, ts_end=end, **title_kwargs)
         self.prefetch_props = ['habit']
         self.headers = ["Date Created", "Date Due", "Date Done", "Title", "Done", "Archived"]
@@ -276,9 +276,8 @@ class GoalReportWorker(GCSReportWorker):
     def __init__(self, rkey):
         super(GoalReportWorker, self).__init__(rkey, start_att="dt_created")
         title_kwargs = {}
-        specs = self.report.get_specs()
-        start = specs.get("start", 0)
-        end = specs.get("end", 0)
+        start = self.specs.get("start", 0)
+        end = self.specs.get("end", 0)
         self.report.generate_title("Goal Report", ts_start=start, ts_end=end, **title_kwargs)
         self.prefetch_props = ['habit']
         self.headers = ["Date Created", "Text 1", "Text 2", "Text 3", "Text 4", "Assessment"]
@@ -304,9 +303,8 @@ class JournalReportWorker(GCSReportWorker):
     def __init__(self, rkey):
         super(JournalReportWorker, self).__init__(rkey, start_att="dt_created")
         title_kwargs = {}
-        specs = self.report.get_specs()
-        start = specs.get("start", 0)
-        end = specs.get("end", 0)
+        start = self.specs.get("start", 0)
+        end = self.specs.get("end", 0)
         self.report.generate_title("Journal Report", ts_start=start, ts_end=end, **title_kwargs)
         self.prefetch_props = ['habit']
         self.headers = ["Date", "Tags", "Location", "Data"]

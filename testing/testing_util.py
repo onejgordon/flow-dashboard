@@ -22,7 +22,6 @@ class UtilTestCase(BaseTestCase):
         self.init_taskqueue_stub()
         self.register_search_api_stub()
 
-
     def testValidJson(self):
         volley=[
             {'json':"{}",'to_return':{}},
@@ -112,7 +111,6 @@ class UtilTestCase(BaseTestCase):
             actual = tools.normalize_to_ascii(v[0])
             self.assertEqual(actual, target)
 
-
     def testStripSymbols(self):
         # Remove non-ascii
         volley = [
@@ -125,6 +123,18 @@ class UtilTestCase(BaseTestCase):
             target = v[1]
             actual = tools.strip_symbols(v[0])
             self.assertEqual(actual, target)
+
+    def testVariableReplacement(self):
+        # Remove non-ascii
+        volley = [
+            ('Hello [NAME]', {'name': 'Louise'}, "Hello Louise"),
+            ('[STARS] stars and [MOONS] moons', {'STARS': 1000, 'MOONS': 2}, "1000 stars and 2 moons")
+        ]
+
+        for v in volley:
+            text, lookup, expected = v
+            actual = tools.variable_replacement(text, lookup)
+            self.assertEqual(actual, expected)
 
     def testFromISO(self):
         volley = [
