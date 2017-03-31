@@ -6,7 +6,7 @@ import handlers
 class App(handlers.BaseRequestHandler):
     @authorized.role()
     def get(self, *args, **kwargs):
-        from secrets import G_MAPS_API_KEY
+        from settings.secrets import G_MAPS_API_KEY
         # gmods = {
         #   "modules": [
         #   ]
