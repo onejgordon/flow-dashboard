@@ -2,7 +2,7 @@ var React = require('react');
 var api = require('utils/api');
 import {RefreshIndicator, IconButton, List, ListItem} from 'material-ui';
 import {clone} from 'lodash';
-var $ = require('jquery');
+var util = require('utils/util');
 
 export default class FetchedList extends React.Component {
   static defaultProps = {
@@ -97,22 +97,8 @@ export default class FetchedList extends React.Component {
     var add_to = _add_to || "top";
     var do_delete = _delete || false;
     var keyProp = _keyProp || "key";
-    // TODO: Add lookup dict?
-    var success = false;
     var items = this.state.items;
-    for (var i=0; i<items.length; i++) {
-      var _item = items[i];
-      if (_item) {
-        var keyval = _item[keyProp];
-        if (keyval == item[keyProp]) {
-          // Match
-          if (do_delete) items.splice(i, 1);
-          else items[i] = item;
-          success = true;
-          break;
-        }
-      }
-    }
+    let success = util.updateByKey(item, items, keyProp, do_delete);
     if (success) {
       this.setState({items: items})
     } else {

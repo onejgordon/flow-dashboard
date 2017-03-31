@@ -18,7 +18,6 @@ def main(sdk_path, test_path, module=None):
     sys.path.append(p)
     sys.path.insert(0, sdk_path)
     sys.path.insert(0, 'lib')
-    print sys.path
 
     import dev_appserver
 

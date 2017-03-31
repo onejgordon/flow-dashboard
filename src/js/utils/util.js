@@ -1,5 +1,6 @@
 var $ = require('jquery');
 var moment = require('moment-timezone');
+import {findIndexById} from 'utils/store-utils';
 
 var util = {
 
@@ -53,21 +54,14 @@ var util = {
 
 
     updateByKey: function(item, items, _keyattr, _do_delete) {
-        var success = false;
+        let success = false;
         var do_delete = _do_delete || false;
         var keyattr = _keyattr || "key";
-        for (var i=0; i<items.length; i++) {
-          var _item = items[i];
-          if (_item) {
-            var keyval = _item[keyattr];
-            if (keyval == item[keyattr]) {
-              // Match
-              if (do_delete) items.splice(i, 1);
-              else items[i] = item;
-              success = true;
-              break;
-            }
-          }
+        let i = findIndexById(items, item[keyattr], keyattr);
+        if (i > -1) {
+            if (do_delete) items.splice(i, 1);
+            else items[i] = item;
+            success = true;
         }
         return success;
     },

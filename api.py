@@ -76,7 +76,7 @@ class ProjectAPI(handlers.JsonRequestHandler):
     def delete(self, d):
         id = self.request.get_range('id')
         if id:
-            prj = Project.get_by_id(int(id), parent=self.user.key)
+            prj = Project.get_by_id(id, parent=self.user.key)
             prj.key.delete()
             self.success = True
         self.set_response()
@@ -231,7 +231,7 @@ class HabitAPI(handlers.JsonRequestHandler):
         habit = None
         habitdays = []
         if id:
-            habit = Habit.get_by_id(int(id), parent=self.user.key)
+            habit = Habit.get_by_id(id, parent=self.user.key)
             if habit:
                 if with_days:
                     since = datetime.today() - timedelta(days=with_days)
@@ -364,7 +364,7 @@ class EventAPI(handlers.JsonRequestHandler):
     def delete(self, d):
         id = self.request.get_range('id')
         if id:
-            ev = Event.get_by_id(int(id), parent=self.user.key)
+            ev = Event.get_by_id(id, parent=self.user.key)
             ev.key.delete()
             self.success = True
         self.set_response()

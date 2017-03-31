@@ -192,7 +192,6 @@ class ConversationAgent(object):
         end_convo = False
         hr = local_time.hour
         in_journal_window = hr >= JOURNAL.START_HOUR or hr < JOURNAL.END_HOUR or tools.on_dev_server()
-        # TODO: Check if submitted
         if questions:
             if in_journal_window:
                 jrnl = MiniJournal.Get(self.user)
