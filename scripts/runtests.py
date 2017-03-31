@@ -1,8 +1,8 @@
 #!/usr/bin/python
 import optparse
 import sys
-import os
 import unittest
+from os.path import dirname, abspath
 
 USAGE = """%prog SDK_PATH TEST_PATH
 Run unit tests for App Engine apps.
@@ -14,7 +14,7 @@ MODULE      Name of test module to run (optional, if not provided, run all)
 
 
 def main(sdk_path, test_path, module=None):
-    p = os.path.abspath(os.path.dirname(test_path))
+    p = dirname(abspath(test_path))
     sys.path.append(p)
     sys.path.insert(0, sdk_path)
     sys.path.insert(0, 'lib')

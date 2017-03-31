@@ -7,8 +7,16 @@
 import logging
 from datetime import datetime
 from evernote.api.client import EvernoteClient
+from evernote.edam.error.ttypes import EDAMSystemException
 import re
 from google.appengine.api import memcache
+import imp
+try:
+    imp.find_module('secrets', ['settings'])
+except ImportError:
+    import secrets_template as secrets
+else:
+    from settings import secrets
 
 SANDBOX = False
 USE_DEV_TOKEN = False
@@ -28,13 +36,13 @@ def get_request_token(user, callback):
     '''
     Get request token
     '''
-    from settings.secrets import EVERNOTE_CONSUMER_KEY, EVERNOTE_CONSUMER_SECRET
     client = EvernoteClient(
-        consumer_key=EVERNOTE_CONSUMER_KEY,
-        consumer_secret=EVERNOTE_CONSUMER_SECRET,
+        consumer_key=secrets.EVERNOTE_CONSUMER_KEY,
+        consumer_secret=secrets.EVERNOTE_CONSUMER_SECRET,
         sandbox=SANDBOX
     )
     request_token = client.get_request_token(callback)
+    logging.debug(request_token)
     # Save secret
     memcache.set(SECRET_MCK % user.key.id(), request_token['oauth_token_secret'])
     authorize_url = client.get_authorize_url(request_token)
@@ -45,10 +53,9 @@ def get_access_token(user, oauth_token, oauth_token_secret, oauth_verifier):
     '''
     Get request token
     '''
-    from settings.secrets import EVERNOTE_CONSUMER_KEY, EVERNOTE_CONSUMER_SECRET
     client = EvernoteClient(
-        consumer_key=EVERNOTE_CONSUMER_KEY,
-        consumer_secret=EVERNOTE_CONSUMER_SECRET,
+        consumer_key=secrets.EVERNOTE_CONSUMER_KEY,
+        consumer_secret=secrets.EVERNOTE_CONSUMER_SECRET,
         sandbox=SANDBOX
     )
     access_token = en_user = None
@@ -67,9 +74,15 @@ def get_access_token(user, oauth_token, oauth_token_secret, oauth_verifier):
 
 
 def get_evernote_user(access_token):
-    client = EvernoteClient(token=access_token)
+    client = EvernoteClient(token=access_token,
+                            consumer_key=secrets.EVERNOTE_CONSUMER_KEY,
+                            consumer_secret=secrets.EVERNOTE_CONSUMER_SECRET)
     userStore = client.get_user_store()
-    en_user = userStore.getUser(access_token)
+    en_user = None
+    try:
+        en_user = userStore.getUser(access_token)
+    except EDAMSystemException, e:
+        logging.error(str(e))
     return en_user
 
 

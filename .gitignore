@@ -15,3 +15,5 @@ env/*
 bin/*
 include/*
 .Python
+client_secret.json
+.coverage

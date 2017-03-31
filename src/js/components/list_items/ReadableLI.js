@@ -67,11 +67,11 @@ export default class ReadableLI extends React.Component {
     let {readable} = this.props;
     let {notes_visible, form} = this.state;
     let type = this.TYPES[readable.type - 1];
-    let subhead = [<span className="sh">{type}</span>, <span className="sh">{readable.read ? 'Read' : 'Unread'}</span>];
+    let subhead = [<span key="type" className="sh">{type}</span>, <span key="read" className="sh">{readable.read ? 'Read' : 'Unread'}</span>];
     let _notes;
-    if (readable.author) subhead.push(<span className="sh">{readable.author}</span>);
-    if (readable.favorite) subhead.push(<span className="sh" style={{color: this.FAV_COLOR}}>Favorite</span>);
-    if (readable.notes) subhead.push(<span className="sh" style={{color: '#F6335F'}}>Has Notes</span>);
+    if (readable.author) subhead.push(<span key="author" className="sh">{readable.author}</span>);
+    if (readable.favorite) subhead.push(<span key="fav" className="sh" style={{color: this.FAV_COLOR}}>Favorite</span>);
+    if (readable.notes) subhead.push(<span key="notes" className="sh" style={{color: '#F6335F'}}>Has Notes</span>);
     let mis = [];
     if (!readable.read) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">remove_red_eye</FontIcon>} key="mr" onClick={this.update_readable.bind(this, readable, {read: 1})}>Mark Read</MenuItem>);
     if (!readable.favorite) mis.push(<MenuItem leftIcon={<FontIcon className="material-icons">star</FontIcon>} key="mf" onClick={this.update_readable.bind(this, readable, {favorite: 1})}>Favorite</MenuItem>);

@@ -122,19 +122,21 @@ export default class Integrations extends React.Component {
         let {form} = this.state;
         let params = {};
         let stringify_json = opts && opts.stringify_json;
+        let new_form = clone(form); // To clear form fields
         props.forEach((prop) => {
             let val = form[prop];
             if (stringify_json && (Array.isArray(val) || val instanceof Object)) {
                 val = JSON.stringify(val);
             }
             params[prop] = val;
+            delete new_form[prop];
         })
         params.props = props.join(',');
         api.post("/api/integrations/update_integration_settings", params, (res) => {
             if (res.user) {
                 UserActions.storeUser(res.user);
             }
-            this.setState({form: {}})
+            this.setState({form: new_form})
         });
     }
 
@@ -294,11 +296,19 @@ export default class Integrations extends React.Component {
                         <FlatButton label={ evernote_connected ? "Connected" : "Connect" } onClick={this.start_evernote_authentication.bind(this)} disabled={evernote_connected}/>
 
                         <div hidden={!evernote_connected}>
+
                             <FlatButton label="Disconnect" onClick={this.disconnect_evernote.bind(this)} /><br/>
 
                             <b>Evernote User ID:</b> <span>{ user.evernote_id || "--" }</span><br/>
+
                             <b>Capture Notebook IDs:</b> <span>{ en_notebook_ids || "--" }</span><br/>
-                            <TextField name="user_id" placeholder="Evernote Notebook IDs (comma separated)" value={form.evernote_notebook_ids} onChange={this.changeHandler.bind(this, 'form', 'evernote_notebook_ids')} fullWidth /><br/>
+
+                            <p>
+                                To find your notebook ID, visit the notebook in Evernote, and find the series of characters between the <code>b=</code> and the <code>&amp;</code>.<br/>
+                                For example, if part of the URL looks like this <code>#b=XXX-XX-XXXXX&ses=4&sh=1</code>, the notebook ID is <code>XXX-XX-XXXXX</code>.
+                            </p>
+
+                            <TextField name="user_id" placeholder="Evernote Notebook IDs (comma separated)" value={form.evernote_notebook_ids || ''} onChange={this.changeHandler.bind(this, 'form', 'evernote_notebook_ids')} fullWidth /><br/>
 
                             <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['evernote_notebook_ids'])} />
 
@@ -319,7 +329,7 @@ export default class Integrations extends React.Component {
                             To find your Goodreads User ID, visit your Goodreads profile, and find the number that appears before your username. Ignore hyphens, etc.
                         </p>
 
-                        <TextField name="user_id" placeholder="Goodreads User ID (e.g. 2901234)" value={form.goodreads_user_id} onChange={this.changeHandler.bind(this, 'form', 'goodreads_user_id')} /><br/>
+                        <TextField name="user_id" placeholder="Goodreads User ID (e.g. 2901234)" value={form.goodreads_user_id || ''} onChange={this.changeHandler.bind(this, 'form', 'goodreads_user_id')} /><br/>
 
                         <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['goodreads_user_id'])} />
                     </Tab>
