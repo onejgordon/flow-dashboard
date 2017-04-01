@@ -10,6 +10,7 @@ import base64
 from models import User
 import logging
 
+
 def role(role=None):
     def wrapper(handler_method):
         def check_login(self, *args, **kwargs):

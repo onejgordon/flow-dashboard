@@ -35,7 +35,7 @@ class Init(handlers.BaseRequestHandler):
         self.json_out({'message': message})
 
 
-class Hacks(handlers.BaseRequestHandler):
+class Hacks(handlers.JsonRequestHandler):
     @authorized.role("admin")
     def get(self, d):
         hack_id = self.request.get('hack_id')
