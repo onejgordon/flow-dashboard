@@ -210,6 +210,7 @@ export default class Integrations extends React.Component {
 
                     <Tabs>
                         <Tab label="BigQuery" style={this.tab_style('bigquery')}>
+                            <FlatButton label="Authenticate with BigQuery" onClick={this.authenticate_google_service.bind(this, 'bigquery')} />
                             <p className="lead">
                                 Flow can push daily panel data to a table in BigQuery for additional analysis.
                                 Data is currently aggregated and pushed in a weekly cron.

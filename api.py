@@ -706,6 +706,12 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
             uri = service.get_auth_uri()
             data['uri'] = uri
             self.success = True
+        elif service_name == 'bigquery':
+            from services.flow_bigquery import BigQueryClient
+            service = BigQueryClient(self.user)
+            uri = service.get_auth_uri()
+            data['uri'] = uri
+            self.success = True
         else:
             self.message = "Unknown service: %s" % service_name
         self.set_response(data)
