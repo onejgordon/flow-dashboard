@@ -1,10 +1,10 @@
 import django_version
 from datetime import datetime
-from models import *
+from models import Quote, Goal, User, Habit, Project, Readable, Task, MiniJournal, HabitDay
 import authorized
 import handlers
-import tools
 from google.appengine.ext import ndb
+
 
 class Init(handlers.BaseRequestHandler):
     @authorized.role("admin")
@@ -40,18 +40,30 @@ class Hacks(handlers.BaseRequestHandler):
     def get(self, d):
         hack_id = self.request.get('hack_id')
         res = {}
-        if hack_id == 'fix_task_ids':
-            db_put = []
-            db_delete = []
-            for task in Task.query().iter():
-                new_task = tools.clone_entity(task, parent=task.key.parent())
-                db_put.append(new_task)
-                db_delete.append(task.key)
-            res['putting'] = len(db_put)
-            res['deleting'] = len(db_delete)
-            ndb.delete_multi(db_delete)
-            ndb.put_multi(db_put)
-
+        if hack_id == 'index_quotes_readables':
+            page = self.request.get_range('page')
+            PAGE_SIZE = 50
+            index_lookup = {}  # index_name -> (index, list of items)
+            for q in Quote.query().fetch(limit=PAGE_SIZE, offset=page * PAGE_SIZE):
+                sd, index = q.update_sd(index_put=False)
+                if index and index.name not in index_lookup:
+                    index_lookup[index.name] = (index, [sd])
+                else:
+                    index_lookup[index.name][1].append(sd)
+            for r in Readable.query().fetch(limit=PAGE_SIZE, offset=page * PAGE_SIZE):
+                sd, index = r.update_sd(index_put=False)
+                if index and index.name not in index_lookup:
+                    index_lookup[index.name] = (index, [sd])
+                else:
+                    index_lookup[index.name][1].append(sd)
+            if index_lookup:
+                n = 0
+                for index_tuple in index_lookup.values():
+                    index, items = index_tuple
+                    index.put(items)
+                    n += len(items)
+                res['result'] = "Put %d items in %d indexes" % (n, len(index_tuple))
+                res['page'] = page
 
         elif hack_id == 'normalize_key_props':
             dbp = []

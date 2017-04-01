@@ -86,9 +86,11 @@ class UserSearchable(UserAccessible):
                     sd = self.generate_sd()
                     if sd and index_put:
                         index.put(sd)
+            return (sd, index)
         except search.Error, e:
             logging.debug(
                 "Search Index Error when updating search doc: %s" % e)
+            return (None, None)
 
     @classmethod
     def Search(cls, user, term, limit=20):
