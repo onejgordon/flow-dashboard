@@ -1,9 +1,12 @@
 var React = require('react');
 var api = require('utils/api');
-import {RefreshIndicator, IconButton, List, ListItem} from 'material-ui';
+import {RefreshIndicator, IconButton, List, ListItem, FlatButton, TextField} from 'material-ui';
 import {clone} from 'lodash';
 var util = require('utils/util');
+import {changeHandler} from 'utils/component-utils';
 
+
+@changeHandler
 export default class FetchedList extends React.Component {
   static defaultProps = {
     url: null,
@@ -14,6 +17,8 @@ export default class FetchedList extends React.Component {
     listStyle: 'list', // or 'mui'
     autofetch: false,
     per_page: 30,
+    fts_url: null,
+    fts_prop: null,
     paging_enabled: false,
     renderItem: null // Function
   };
@@ -21,6 +26,7 @@ export default class FetchedList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      form: {},
       items: [],
       loading: false,
       page: 0,
@@ -44,6 +50,18 @@ export default class FetchedList extends React.Component {
     this.fetchData();
   }
 
+  search() {
+    let {form} = this.state;
+    if (form.search_term && form.search_term.length > 0) {
+      let term = form.search_term;
+      this.setState({items: [], loading: true}, () => {
+        api.get(this.props.fts_url, {term: term}, (res) => {
+          this.setState({items: res[this.props.fts_prop], more_data: false, loading: false});
+        });
+      });
+    }
+  }
+
   fetchData() {
     if (this.props.url) {
       var params = clone(this.props.params);
@@ -51,20 +69,22 @@ export default class FetchedList extends React.Component {
         params.page = this.state.page;
         params.max = this.props.per_page;
       }
-      api.get(this.props.url, params, (res) => {
-        if (res.success) {
-          var fetched_items = res[this.props.listProp];
-          var st = {};
-          if (this.props.paging_enabled) {
-            st.items = this.state.items.concat(fetched_items);
-            st.page = params.page + 1;
-            st.more_data = fetched_items != null && fetched_items.length == this.props.per_page;
-          } else {
-            st.items = fetched_items;
+      this.setState({loading: true}, () => {
+        api.get(this.props.url, params, (res) => {
+          if (res.success) {
+            var fetched_items = res[this.props.listProp];
+            var st = {loading: false};
+            if (this.props.paging_enabled) {
+              st.items = this.state.items.concat(fetched_items);
+              st.page = params.page + 1;
+              st.more_data = fetched_items != null && fetched_items.length == this.props.per_page;
+            } else {
+              st.items = fetched_items;
+            }
+            this.setState(st)
           }
-          this.setState(st)
-        }
-      });
+        });
+      })
     }
   }
 
@@ -116,6 +136,9 @@ export default class FetchedList extends React.Component {
   }
 
   render() {
+    let {form} = this.state;
+    let {fts_url} = this.props;
+    let _search_box;
     var _items = this.state.items.map(function(item, i, arr) {
       if (this.props.renderItem != null) return this.props.renderItem(item);
       else {
@@ -158,10 +181,19 @@ export default class FetchedList extends React.Component {
         </div>
       </div>
     );
-
+    if (fts_url) _search_box = (
+      <span>
+        <TextField name="search"
+          floatingLabelText="Enter search query..."
+          value={form.search_term || ''}
+          onChange={this.changeHandler.bind(this, 'form', 'search_term')} />
+        <FlatButton label="Search" onClick={this.search.bind(this)} />
+      </span>
+      );
     return (
       <div>
         <RefreshIndicator status={ristatus} size={50} top={50} left={50} />
+        { _search_box }
         <IconButton iconClassName="material-icons" onClick={this.refresh.bind(this)}>refresh</IconButton>
         { _list }
         <div hidden={!empty}>
