@@ -932,7 +932,6 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
                 self.user.evernote_id = str(en_user.id)
             self.user.put()
             self.update_session_user(self.user)
-            # self.session['pocket_code'] = code
             self.success = True
         self.set_response(data={
             'user': self.user.json()
@@ -977,7 +976,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
                 self.message = "Failed ot parse note"
         else:
             logging.warning("Note from ignored notebook or user not found")
-        self.set_response(data=data)
+        self.set_response(data=data, debug=True)
 
 
 class AgentAPI(handlers.JsonRequestHandler):
