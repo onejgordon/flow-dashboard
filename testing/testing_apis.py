@@ -5,7 +5,7 @@ from datetime import datetime
 from base_test_case import BaseTestCase
 from models import Goal
 from flow import app as tst_app
-from models import Habit, Task, Project, Event
+from models import Habit, Task, Project, Event, Readable, Quote
 
 
 class APITestCase(BaseTestCase):
@@ -132,3 +132,61 @@ class APITestCase(BaseTestCase):
         response = self.post_json("/api/event/delete", {'id': h.get('id')}, headers=self.api_headers)
         h = self.u.get(Event, id=h.get('id'))
         self.assertIsNone(h)  # Confirm deletion
+
+    def test_readable_calls(self):
+        # Create
+        r = Readable.CreateOrUpdate(self.u, '1234', title="An Article", source='x', url="http://www.nytimes.com/1")
+        r.put()
+
+        self.assertEqual(r.title, "An Article")
+        self.assertEqual(r.url, "http://www.nytimes.com/1")
+
+        # List
+        response = self.get_json("/api/readable", {}, headers=self.api_headers)
+        r = response.get('readables')[0]
+        self.assertEqual(r.get('title'), "An Article")
+
+        # Update
+        response = self.post_json("/api/readable", {
+            'id': r.get('id'),
+            'title': 'New Article Name',
+            'author': "Andy Clark"}, headers=self.api_headers)
+        r = response.get('readable')
+        self.assertEqual(r.get('title'), 'New Article Name')
+        self.assertEqual(r.get('author'), 'Andy Clark')
+
+        # Search
+        response = self.get_json("/api/readable/search", {'term': "clark"}, headers=self.api_headers)
+        readables = response.get('readables')
+        self.assertEqual(len(readables), 1)
+
+        # Delete
+        response = self.post_json("/api/readable/delete", {'id': r.get('id')}, headers=self.api_headers)
+        r = self.u.get(Readable, id=r.get('id'))
+        self.assertIsNone(r)  # Confirm deletion
+
+    def test_quote_calls(self):
+        # Create
+        q = Quote.Create(self.u, 'Overheard', "I think therefore I am")
+        q.put()
+
+        self.assertEqual(q.content, "I think therefore I am")
+        self.assertEqual(q.source, "Overheard")
+
+        # List
+        response = self.get_json("/api/quote", {}, headers=self.api_headers)
+        q = response.get('quotes')[0]
+        self.assertEqual(q.get('content'), "I think therefore I am")
+
+        # Update
+        response = self.post_json("/api/quote", {
+            'id': q.get('id'),
+            'source': 'Somewhere else'}, headers=self.api_headers)
+        q = response.get('quote')
+        self.assertEqual(q.get('source'), 'Somewhere else')
+
+        # Search
+        response = self.get_json("/api/quote/search", {'term': "think"}, headers=self.api_headers)
+        quotes = response.get('quotes')
+        self.assertEqual(len(quotes), 1)
+
