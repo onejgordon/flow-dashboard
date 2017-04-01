@@ -11,6 +11,7 @@ from __future__ import absolute_import
 from datetime import datetime, timedelta, time
 from oauth2client.client import GoogleCredentials
 import google
+print google.__path__[0]
 from google.cloud import bigquery
 from google.cloud.bigquery.schema import SchemaField
 from constants import JOURNAL

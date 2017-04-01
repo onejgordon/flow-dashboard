@@ -77,19 +77,6 @@ class UtilTestCase(BaseTestCase):
             out = tools.pluralize(_in, count=_count)
             self.assertEqual(out, _expect)
 
-    def testValidJson(self):
-        volley=[
-            ("{}", "{}", None),
-            ("{\"hello\": \"hi\"}", "{\"hello\": \"hi\"}", None),
-            ("{'x'}", 0, 0),
-        ]
-
-        for v in volley:
-            _in, _expect, _default = v
-            out = tools.validJson(_in, default=_default)
-            self.assertEqual(out, _expect)
-
-
     def testTextSanitization(self):
         # Remove non-ascii
         from decimal import Decimal

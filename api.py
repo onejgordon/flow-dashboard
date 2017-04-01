@@ -10,7 +10,7 @@ import handlers
 import tools
 import logging
 import random
-from google.appengine.api import urlfetch
+from google.appengine.api import urlfetch, search
 import json
 import urllib
 import imp
@@ -445,6 +445,15 @@ class ReadableAPI(handlers.JsonRequestHandler):
             }, success=True)
 
     @authorized.role('user')
+    def search(self, d):
+        term = self.request.get('term')
+        self.success, self.message, readables = Readable.Search(self.user, term)
+        data = {
+            'readables': [r.json() for r in readables if r]
+        }
+        self.set_response(data)
+
+    @authorized.role('user')
     def delete(self, d):
         id = self.request.get('id')
         r = self.user.get(Readable, id=id)
@@ -488,7 +497,7 @@ class QuoteAPI(handlers.JsonRequestHandler):
             quote = Quote.Create(self.user, **params)
             self.message = "Quote saved!" if quote else "Couldn't create quote"
             self.success = quote is not None
-        quote.Update(tags=params.get('tags'))
+        quote.Update(**params)
         quote.put()
         self.set_response({
             'quote': quote.json() if quote else None
@@ -522,6 +531,15 @@ class QuoteAPI(handlers.JsonRequestHandler):
         self.set_response({
             'quotes': [q.json() for q in quotes]
             }, success=True)
+
+    @authorized.role('user')
+    def search(self, d):
+        term = self.request.get('term')
+        self.success, self.message, quotes = Quote.Search(self.user, term)
+        data = {
+            'quotes': [q.json() for q in quotes]
+        }
+        self.set_response(data)
 
 
 class JournalTagAPI(handlers.JsonRequestHandler):
@@ -837,9 +855,10 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         Sync from pocket since last sync
         '''
         from services import pocket
-        TS_KEY = 'pocket_last_timestamp'
+        TS_KEY = 'pocket_last_timestamp'  # Seconds
         access_token = self.user.get_integration_prop('pocket_access_token')
-        last_timestamp = self.user.get_integration_prop(TS_KEY, 0)
+        init_sync_since = tools.unixtime(datetime.now() - timedelta(days=7), ms=False)
+        last_timestamp = self.user.get_integration_prop(TS_KEY, init_sync_since)
         readables = []
         if access_token:
             self.success, readables, latest_timestamp = pocket.sync(self.user, access_token, last_timestamp)
@@ -913,19 +932,17 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         '''
         from services import flow_evernote
         ot = self.request.get('oauth_token')
-        ot_secret = self.request.get('oauth_token_secret')
         verifier = self.request.get('oauth_verifier')
         self.log_request_params()
-        access_token, en_user = flow_evernote.get_access_token(self.user, ot, ot_secret, verifier)
-        logging.debug([access_token, en_user])
-        if access_token:
+        access_token, en_user_id = flow_evernote.get_access_token(self.user, ot, verifier)
+        if access_token and en_user_id:
             self.user.set_integration_prop('evernote_access_token', access_token)
-            if en_user:
-                self.user.evernote_id = str(en_user.id)
+            self.user.evernote_id = str(en_user_id)
             self.user.put()
             self.update_session_user(self.user)
-            # self.session['pocket_code'] = code
             self.success = True
+        else:
+            self.message = "Failed to complete connection with Evernote"
         self.set_response(data={
             'user': self.user.json()
             }, debug=True)
@@ -952,24 +969,33 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         '''
         from services import flow_evernote
         from models import Quote
-        config_notebook_ids = self.user.get_integration_prop('evernote_notebook_ids').split(',') # Comma sep
+        ENABLED_REASONS = ['create']
         note_guid = self.request.get('guid')
         evernote_id = self.request.get('userId')
         notebook_guid = self.request.get('notebookGuid')
+        reason = self.request.get('reason')
         data = {}
-        user = User.query().filter(User.evernote_id == evernote_id)
-        if user and (not config_notebook_ids or notebook_guid in config_notebook_ids):
-            title, content = flow_evernote.get_note(note_guid)
-            if title and content:
-                # TODO: Link and Tags
-                q = Quote.Create(user, source=title, content=content)
-                q.put()
-                self.success = True
+        if reason in ENABLED_REASONS:
+            user = User.query().filter(User.evernote_id == evernote_id).get()
+            if user:
+                config_notebook_ids = user.get_integration_prop('evernote_notebook_ids').split(',') # Comma sep
+                if not config_notebook_ids or notebook_guid in config_notebook_ids:
+                    title, content, url = flow_evernote.get_note(user, note_guid)
+                    if title and content:
+                        # TODO: Tags (come in as guids)
+                        q = Quote.Create(user, source=title, content=content)
+                        q.Update(link=url)
+                        q.put()
+                        self.success = True
+                    else:
+                        self.message = "Failed to parse note"
+                else:
+                    logging.warning("Note from ignored notebook or user not found")
             else:
-                self.message = "Failed ot parse note"
+                logging.warning("User not found")
         else:
-            logging.warning("Note from ignored notebook or user not found")
-        self.set_response(data=data)
+            logging.debug("Ignoring, reason: %s not enabled" % reason)
+        self.set_response(data=data, debug=True)
 
 
 class AgentAPI(handlers.JsonRequestHandler):

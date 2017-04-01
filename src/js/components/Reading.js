@@ -2,6 +2,7 @@ var React = require('react');
 import {Link} from 'react-router';
 var UserStore = require('stores/UserStore');
 var ReadableLI = require('components/list_items/ReadableLI');
+var QuoteLI = require('components/list_items/QuoteLI');
 import {Tabs, Tab, RadioButton, RadioButtonGroup, Paper, RaisedButton, TextField,
     ListItem, DropDownMenu, MenuItem, FlatButton, Dialog} from 'material-ui';
 var util = require('utils/util');
@@ -94,12 +95,7 @@ export default class Reading extends React.Component {
     }
 
     render_quote(q) {
-        let subs = [q.source];
-        if (q.location) subs.push(q.location);
-        if (q.iso_date) subs.push(q.iso_date);
-        let sec = subs.join(' | ');
-        return <ListItem primaryText={util.truncate(q.content, 120)}
-                secondaryText={sec} />
+        return <QuoteLI key={q.id} quote={q} />
     }
 
     readable_update(r) {
@@ -189,6 +185,8 @@ export default class Reading extends React.Component {
                             listStyle="mui" listProp="readables"
                             per_page={20}
                             renderItem={this.render_readable.bind(this)}
+                            fts_url="/api/readable/search"
+                            fts_prop="readables"
                             paging_enabled={true}
                             autofetch={true}/>
 
@@ -215,9 +213,12 @@ export default class Reading extends React.Component {
                     </Tab>
 
                     <Tab label="Quotes & Excerpts" onActive={this.maybe_refresh_quotes.bind(this)}>
-                        <FetchedList ref="quotes" url="/api/quote"
+                        <FetchedList ref="quotes"
+                            url="/api/quote"
                             listStyle="mui" listProp="quotes"
                             per_page={20}
+                            fts_url="/api/quote/search"
+                            fts_prop="quotes"
                             renderItem={this.render_quote.bind(this)}
                             paging_enabled={true}
                             autofetch={false}/>

@@ -9,6 +9,7 @@ from datetime import datetime
 from evernote.api.client import EvernoteClient
 from evernote.edam.error.ttypes import EDAMSystemException
 import re
+import tools
 from google.appengine.api import memcache
 import imp
 try:
@@ -49,7 +50,7 @@ def get_request_token(user, callback):
     return authorize_url
 
 
-def get_access_token(user, oauth_token, oauth_token_secret, oauth_verifier):
+def get_access_token(user, oauth_token, oauth_verifier):
     '''
     Get request token
     '''
@@ -58,53 +59,48 @@ def get_access_token(user, oauth_token, oauth_token_secret, oauth_verifier):
         consumer_secret=secrets.EVERNOTE_CONSUMER_SECRET,
         sandbox=SANDBOX
     )
-    access_token = en_user = None
+    access_token = en_user_id = None
     oauth_token_secret = memcache.get(SECRET_MCK % user.key.id())
     if oauth_token_secret:
-        access_token = client.get_access_token(
+        access_token_dict = client.get_access_token_dict(
             oauth_token,
             oauth_token_secret,
             oauth_verifier
         )
-        if access_token:
-            en_user = get_evernote_user(access_token)
+        en_user_id = access_token_dict.get('edam_userId')
+        access_token = access_token_dict.get('oauth_token')
     else:
         logging.warning("oauth_token_secret unavailable")
-    return (access_token, en_user)
+    return (access_token, en_user_id)
 
 
-def get_evernote_user(access_token):
-    client = EvernoteClient(token=access_token,
-                            consumer_key=secrets.EVERNOTE_CONSUMER_KEY,
-                            consumer_secret=secrets.EVERNOTE_CONSUMER_SECRET)
-    userStore = client.get_user_store()
-    en_user = None
-    try:
-        en_user = userStore.getUser(access_token)
-    except EDAMSystemException, e:
-        logging.error(str(e))
-    return en_user
+def extract_clipping_content(raw):
+    m = re.search(r'<en-note>(.*)<\/en-note>', raw)
+    if m:
+        content = m.groups()[0]
+        if content:
+            return tools.remove_html_tags(content)
 
 
 def get_note(user, note_id):
-    title = content = None
+    title = url = content = None
     access_token = user_access_token(user)
     if access_token:
-        client = EvernoteClient(token=access_token)
+        client = EvernoteClient(token=access_token, sandbox=SANDBOX)
         noteStore = client.get_note_store()
         note = noteStore.getNote(access_token, note_id, True, False, False, False)
         if note:
             logging.debug(note)
-            m = re.search(r'<en-note>(.*)<\/en-note>', note.content)
-            if m:
-                content = m.groups()[0]
-                title = note.title
+            content = extract_clipping_content(note.content)
+            title = note.title
+            attrs = note.attributes
+            if attrs:
+                url = attrs.sourceURL
+        else:
+            logging.debug("Note not found")
     else:
         logging.warning("Access token not available")
-    return (title, content)
+    return (title, content, url)
 
 if __name__ == "__main__":
-    from settings.secrets import EVERNOTE_DEV_TOKEN
-    client = EvernoteClient(token=EVERNOTE_DEV_TOKEN)
-    noteStore = client.get_note_store()
-    print noteStore.getNote("x")
+    pass

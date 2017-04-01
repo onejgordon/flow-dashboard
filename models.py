@@ -1,7 +1,7 @@
 
 from datetime import datetime, timedelta, time
 from google.appengine.ext import ndb
-from google.appengine.api import mail
+from google.appengine.api import mail, search
 from constants import EVENT, USER, TASK, READABLE, JOURNALTAG, REPORT
 import tools
 import json
@@ -40,6 +40,77 @@ class UserAccessible(ndb.Model):
 
     def accessible(self, user):
         return self.key.parent() == user.key
+
+
+class UserSearchable(UserAccessible):
+    '''
+    Parent class for items that can be searched via FTS
+    '''
+
+    def get_doc_id(self):
+        '''Can override'''
+        return str(self.key.id())
+
+    def get_index(self):
+        return User.get_search_index(self.key.parent(), self._get_kind())
+
+    def generate_sd(self):
+        '''Override'''
+        return None
+
+    def doc_from_fields(self, text_fields=None, atom_fields=None, repeated_attom_fields=None):
+        fields = []
+        if text_fields:
+            for tf in text_fields:
+                fields.append(search.TextField(name=tf, value=getattr(self, tf)))
+        if atom_fields:
+            for af in atom_fields:
+                fields.append(search.AtomField(name=af, value=getattr(self, af)))
+        if repeated_attom_fields:
+            for raf in repeated_attom_fields:
+                values = getattr(self, raf)
+                if values:
+                    for val in values:
+                        fields.append(search.AtomField(name=raf, value=val))
+        sd = search.Document(doc_id=self.get_doc_id(), fields=fields, language='en')
+        return sd
+
+    def update_sd(self, delete=False, index_put=True):
+        index = self.get_index()
+        try:
+            doc_id = self.get_doc_id()
+            if doc_id:
+                if delete:
+                    index.delete([doc_id])
+                else:
+                    sd = self.generate_sd()
+                    if sd and index_put:
+                        index.put(sd)
+            return (sd, index)
+        except search.Error, e:
+            logging.debug(
+                "Search Index Error when updating search doc: %s" % e)
+            return (None, None)
+
+    @classmethod
+    def Search(cls, user, term, limit=20):
+        kind = cls._get_kind()
+        index = User.get_search_index(user.key, kind)
+        message = None
+        success = False
+        items = []
+        try:
+            query_options = search.QueryOptions(limit=limit)
+            query = search.Query(query_string=term, options=query_options)
+            search_results = index.search(query)
+        except Exception, e:
+            logging.debug("Error in search api: %s" % e)
+            message = str(e)
+        else:
+            keys = [ndb.Key(kind, sd.doc_id, parent=user.key) for sd in search_results.results if sd]
+            items = ndb.get_multi(keys)
+            success = True
+        return (success, message, items)
 
 
 class User(ndb.Model):
@@ -145,6 +216,10 @@ class User(ndb.Model):
             if isinstance(id, basestring) and id.isdigit():
                 id = int(id)
             return cls.get_by_id(id, parent=self.key)
+
+    @classmethod
+    def get_search_index(cls, user_key, kind):
+        return search.Index(name="FTS_UID:%s_%s" % (user_key.id(), kind))
 
     def admin(self):
         return self.level == USER.ADMIN
@@ -841,8 +916,7 @@ class TrackingDay(UserAccessible):
         self.data = json.dumps(data)
 
 
-
-class Readable(UserAccessible):
+class Readable(UserSearchable):
     """
     Readable things (books / articles)
 
@@ -855,7 +929,7 @@ class Readable(UserAccessible):
     title = ndb.TextProperty()  # Can have multiple goals for period
     author = ndb.TextProperty()
     image_url = ndb.TextProperty()
-    url = ndb.TextProperty()
+    url = ndb.TextProperty()  # Original source URL
     favorite = ndb.BooleanProperty(default=False)
     type = ndb.IntegerProperty(default=READABLE.ARTICLE)
     excerpt = ndb.TextProperty()
@@ -978,6 +1052,12 @@ class Readable(UserAccessible):
             self.author = params.get('author')
         if 'word_count' in params:
             self.word_count = params.get('word_count')
+        self.update_sd() # doc put
+
+    def generate_sd(self):
+        return self.doc_from_fields(text_fields=['title', 'notes', 'author'],
+                                    repeated_attom_fields=['tags'],
+                                    atom_fields=['url'])
 
     def print_type(self):
         return READABLE.LABELS.get(self.type)
@@ -987,7 +1067,7 @@ class Readable(UserAccessible):
             return "https://getpocket.com/a/read/%s" % self.source_id
 
 
-class Quote(UserAccessible):
+class Quote(UserSearchable):
     """
     Quotes
 
@@ -1044,6 +1124,12 @@ class Quote(UserAccessible):
             tags = params.get('tags', [])
             if tags:
                 self.tags = tags
+        self.update_sd()  # doc put
+
+    def generate_sd(self):
+        return self.doc_from_fields(text_fields=['source', 'content'],
+                                    repeated_attom_fields=['tags'],
+                                    atom_fields=['link'])
 
 
 class Report(UserAccessible):
