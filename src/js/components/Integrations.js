@@ -249,7 +249,7 @@ export default class Integrations extends React.Component {
                         <p className="lead">Flow will receive new notes/quotes/excerpts added to specified notebooks on Evernote.</p>
 
                         <FlatButton label={ evernote_connected ? "Connected" : "Connect" } onClick={this.start_evernote_authentication.bind(this)} disabled={evernote_connected}/>
-                        <div hidden={evernote_connected}>
+                        <div hidden={!evernote_connected}>
                             <FlatButton label="Disconnect" onClick={this.disconnect_evernote.bind(this)} /><br/>
 
                             <b>Evernote User ID:</b> <span>{ user.evernote_id || "--" }</span><br/>

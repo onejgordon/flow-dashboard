@@ -45,10 +45,6 @@ def clone_entity(e, **extra_args):
     return klass(**props)
 
 
-def str_to_tuple(s):
-    return tuple(float(x) for x in s[1:-1].split(','))
-
-
 def make_function_signature(func_name, *args, **kwargs):
     alpha_kwargs = sorted(kwargs.items(), key=lambda x : x[0])
     return "-".join([func_name, str(args), str(alpha_kwargs)])
@@ -138,9 +134,6 @@ def unixtime(dt=None, ms=True):
     else:
         return int(unix)/1000.
 
-def unix_to_dt(ts):
-    return datetime.fromtimestamp(float(ts))
-
 
 def sdatetime(date, fmt="%Y-%m-%d %H:%M %Z", tz=None):
     if date:
@@ -154,17 +147,8 @@ def sdatetime(date, fmt="%Y-%m-%d %H:%M %Z", tz=None):
         return "N/A"
 
 
-
 def iso_date(date):
     return datetime.strftime(date, "%Y-%m-%d") if date else None
-
-
-def sdate(date):
-    return datetime.strftime(date, "%m/%d/%Y")
-
-
-def stime(date):
-    return datetime.strftime(date, "[ %H:%M ]")
 
 
 def total_seconds(td):
@@ -177,8 +161,6 @@ def get_first_day(dt, d_years=0, d_months=0):
     a, m = divmod(m-1, 12)
     return date(y+a, m+1, 1)
 
-def get_last_day(dt):
-    return get_first_day(dt, 0, 1) + timedelta(-1)
 
 def dt_from_ts(ms):
     if ms == 0:
@@ -268,15 +250,19 @@ def minutes_in(dt=None):
         dt = datetime.now()
     return 60*dt.hour + dt.minute
 
+
 def removeNonAscii(s): return "".join(filter(lambda x: ord(x)<128, s))
+
 
 def total_minutes(td):
     "Convert timedelta to # of total minutes"
     return int(60*24*td.days + td.seconds/60)
 
+
 def strip_symbols(s, repl=''):
     s = re.sub(r'[^\w ]', repl, s)
     return s
+
 
 # Some mobile browsers which look like desktop browsers.
 RE_MOBILE = re.compile(r"(iphone|ipod|blackberry|android|palm|windows\s+ce)", re.I)
@@ -397,6 +383,7 @@ def getSHA(pw, salt=None):
     sha.update(salt)
     pw_sha = sha.hexdigest()
     return [salt, pw_sha]
+
 
 def validJson(raw, default=None):
     '''

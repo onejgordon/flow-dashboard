@@ -10,7 +10,7 @@ import handlers
 import tools
 import logging
 import random
-from google.appengine.api import urlfetch
+from google.appengine.api import urlfetch, search
 import json
 import urllib
 import imp
@@ -445,6 +445,15 @@ class ReadableAPI(handlers.JsonRequestHandler):
             }, success=True)
 
     @authorized.role('user')
+    def search(self, d):
+        term = self.request.get('term')
+        self.success, self.message, readables = Readable.Search(self.user, term)
+        data = {
+            'readables': [r.json() for r in readables if r]
+        }
+        self.set_response(data)
+
+    @authorized.role('user')
     def delete(self, d):
         id = self.request.get('id')
         r = self.user.get(Readable, id=id)
@@ -488,7 +497,7 @@ class QuoteAPI(handlers.JsonRequestHandler):
             quote = Quote.Create(self.user, **params)
             self.message = "Quote saved!" if quote else "Couldn't create quote"
             self.success = quote is not None
-        quote.Update(tags=params.get('tags'))
+        quote.Update(**params)
         quote.put()
         self.set_response({
             'quote': quote.json() if quote else None
@@ -522,6 +531,15 @@ class QuoteAPI(handlers.JsonRequestHandler):
         self.set_response({
             'quotes': [q.json() for q in quotes]
             }, success=True)
+
+    @authorized.role('user')
+    def search(self, d):
+        term = self.request.get('term')
+        self.success, self.message, quotes = Quote.Search(self.user, term)
+        data = {
+            'quotes': [q.json() for q in quotes]
+        }
+        self.set_response(data)
 
 
 class JournalTagAPI(handlers.JsonRequestHandler):
@@ -932,7 +950,6 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
                 self.user.evernote_id = str(en_user.id)
             self.user.put()
             self.update_session_user(self.user)
-            # self.session['pocket_code'] = code
             self.success = True
         self.set_response(data={
             'user': self.user.json()
@@ -977,7 +994,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
                 self.message = "Failed ot parse note"
         else:
             logging.warning("Note from ignored notebook or user not found")
-        self.set_response(data=data)
+        self.set_response(data=data, debug=True)
 
 
 class AgentAPI(handlers.JsonRequestHandler):
