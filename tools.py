@@ -16,6 +16,12 @@ def GenPasswd(length=8, chars=string.letters.upper()):
     return ''.join([random.choice(chars) for i in range(length)])
 
 
+def remove_html_tags(raw_html):
+    cleanr = re.compile('<.*?>')
+    cleantext = re.sub(cleanr, '', raw_html)
+    return cleantext
+
+
 def pluralize(item_name, count=1, suffix='s'):
     if count == 1:
         return item_name
