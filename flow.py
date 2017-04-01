@@ -110,7 +110,7 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/integrations/evernote/authenticate', handler=api.IntegrationsAPI, handler_method="evernote_authenticate", methods=["POST"]),
         webapp2.Route('/api/integrations/evernote/authorize', handler=api.IntegrationsAPI, handler_method="evernote_authorize", methods=["POST"]),
         webapp2.Route('/api/integrations/evernote/disconnect', handler=api.IntegrationsAPI, handler_method="evernote_disconnect", methods=["POST"]),
-        webapp2.Route('/api/integrations/evernote/webhook', handler=api.IntegrationsAPI, handler_method="evernote_webhook", methods=["POST"]),
+        webapp2.Route('/api/integrations/evernote/webhook', handler=api.IntegrationsAPI, handler_method="evernote_webhook", methods=["GET"]),
 
         # Agent
         webapp2.Route('/api/agent/apiai/request', handler=api.AgentAPI, handler_method="apiai_request", methods=["POST"]),
