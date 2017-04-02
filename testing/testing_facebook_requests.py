@@ -56,7 +56,7 @@ class FacebookTestCase(BaseTestCase):
                 ], 'object': 'page'}
             ))
         res_body = fa.send_response()
-        self.assertTrue("You can set and review monthly and annual goals. Try saying 'view goals'" in res_body.get('message', {}).get('text'))
+        self.assertTrue("You can review your monthly and annual goals. Try saying 'view goals'" in res_body.get('message', {}).get('text'))
 
 
     def test_account_linking_request(self):

@@ -148,7 +148,8 @@ class USER():
 
 class GOAL():
 
-    HELP = "You can set and review monthly and annual goals. Try saying 'view goals'"
+    HELP = "You can review your monthly and annual goals. Try saying 'view goals'"
+    SET_INFO = "Sorry, we're still in beta! Please visit www.flowdash.co to create monthly, annual, and long-term goals."
 
 
 class REPORT():

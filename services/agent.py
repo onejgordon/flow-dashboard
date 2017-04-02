@@ -272,6 +272,9 @@ class ConversationAgent(object):
         else:
             return ("Please visit flowdash.co to set up journal questions", True)
 
+    def _goals_set(self):
+        return "Sorry we're still in beta! " + GOAL.SET_INFO
+
     def _goals_request(self):
         [annual, monthly, longterm] = Goal.Current(self.user)
         speech = None
@@ -289,7 +292,7 @@ class ConversationAgent(object):
             else:
                 speech = "No goals yet"
         else:
-            speech = "You haven't set up any goals yet"
+            speech = "You haven't set up any goals yet. " + GOAL.SET_INFO
         return speech
 
     def _tasks_request(self):
@@ -424,6 +427,8 @@ class ConversationAgent(object):
                 speech = self._status_request()
             elif action == 'input.goals_request':
                 speech = self._goals_request()
+            elif action == 'input.goals_set':
+                speech = self._goals_set()
             elif action == 'input.habit_or_task_report':
                 speech = self._habit_or_task_report(parameters.get('habit_or_task'))
             elif action == 'input.habit_commit':
@@ -438,23 +443,24 @@ class ConversationAgent(object):
                 speech = self._habit_status()
             elif action == 'input.journal':
                 speech, end_convo = self._journal(parameters.get('message'))
-            elif action == 'input.help_goals':
-                speech = '. '.join([self._comply_banter(), GOAL.HELP])
-                data = self._quick_replies([("Learn about Tasks", "input.help_tasks")])
-            elif action == 'input.help_tasks':
-                speech = '. '.join([self._comply_banter(), TASK.HELP])
-                data = self._quick_replies([("Learn about Habits", "input.help_habits")])
             elif action == 'input.help_habits':
                 speech = '. '.join([self._comply_banter(), HABIT.HELP])
                 data = self._quick_replies([("Learn about Journals", "input.help_journals")])
             elif action == 'input.help_journals':
                 speech = '. '.join([self._comply_banter(), JOURNAL.HELP])
+                data = self._quick_replies([("Learn about Tasks", "input.help_tasks")])
+            elif action == 'input.help_tasks':
+                speech = '. '.join([self._comply_banter(), TASK.HELP])
+                data = self._quick_replies([("Learn about Goals", "input.help_goals")])
+            elif action == 'input.help_goals':
+                speech = '. '.join([self._comply_banter(), GOAL.HELP])
+                data = self._quick_replies([("Learn about Habits", "input.help_habits")])
             elif action == 'GET_STARTED':
                 speech = "Welcome to Flow! " + HELP_TEXT
-                data = self._quick_replies([("Learn about Goals", "input.help_goals")])
+                data = self._quick_replies([("Learn about Habits", "input.help_habits")])
             elif action == 'input.help':
                 speech = HELP_TEXT
-                data = self._quick_replies([("Learn about Goals", "input.help_goals")])
+                data = self._quick_replies([("Learn about Habits", "input.help_habits")])
                 end_convo = False
         else:
             speech = "To get started, please link your account with Flow"
@@ -496,6 +502,7 @@ class ConversationAgent(object):
         else:
             LOOKUP = [
                 (r'(?:what are my|remind me my|tell me my|monthly|current|my|view) goals', 'input.goals_request'),
+                (r'(?:setup|create|add) goals', 'input.goals_set'),
                 (r'(?:how am i doing|my status|tell me about my day)', 'input.status_request'),
                 (r'(?:how do|tell me about|more info|learn about|help on|help with|what are) (?:tasks)', 'input.help_tasks'),
                 (r'(?:how do|tell me about|more info|learn about|help on|help with|what are) (?:habits)', 'input.help_habits'),
