@@ -730,6 +730,61 @@ class MiniJournal(UserAccessible):
         return data.get(prop)
 
 
+class Snapshot(UserAccessible):
+    """
+    Key - ID
+    Randomly collect data points throughout day/week (frequency customizable)
+    Metrics:
+        - Activity
+        - Location (generic, e.g. home/office/restaurant)
+        - People (who with)
+    Passive metrics:
+        - GPS location, if available
+
+    """
+    date = ndb.DateProperty()  # Date for entry
+    dt_created = ndb.DateTimeProperty(auto_now_add=True)
+    mins = ndb.IntegerProperty()  # Minutes into day (0 - 1439)
+    activity = ndb.StringProperty()  # JSON (keys are data names, values are responses) (UTC)
+    where = ndb.StringProperty()
+    people = ndb.StringProperty(repeated=True)
+    metrics = ndb.TextProperty()  # JSON
+    location = ndb.GeoPtProperty()
+
+    def json(self):
+        res = {
+            'id': self.key.id(),
+            'iso_date': tools.iso_date(self.date),
+            'metrics': tools.getJson(self.metrics),
+            'people': self.people,
+            'where': self.where,
+            'activity': self.activity,
+            'mins': self.mins
+        }
+        if self.location:
+            res.update({
+                'lat': self.location.lat,
+                'lon': self.location.lon
+            })
+        return res
+
+    @staticmethod
+    def Create(user, activity=None, where=None, people=None, metrics=None, location=None):
+        date = datetime.now()
+        mins = tools.minutes_in(date)
+        return Snapshot(dt_created=date, mins=mins, where=where, people=people if people else [],
+                        activity=activity, metrics=json.dumps(metrics) if metrics else None,
+                        parent=user.key)
+
+    @staticmethod
+    def Recent(user, limit=500):
+        return Snapshot.query().order(-Snapshot.dt_created).fetch(limit=limit)
+
+    def get_data_value(self, prop):
+        metrics = tools.getJson(self.metrics, {})
+        return metrics.get(prop)
+
+
 class Event(UserAccessible):
     """
     Key - ID

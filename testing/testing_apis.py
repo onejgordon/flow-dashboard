@@ -5,7 +5,7 @@ from datetime import datetime
 from base_test_case import BaseTestCase
 from models import Goal
 from flow import app as tst_app
-from models import Habit, Task, Project, Event, Readable, Quote
+from models import Habit, Task, Project, Event, Readable, Quote, Snapshot
 
 
 class APITestCase(BaseTestCase):
@@ -189,4 +189,19 @@ class APITestCase(BaseTestCase):
         response = self.get_json("/api/quote/search", {'term': "think"}, headers=self.api_headers)
         quotes = response.get('quotes')
         self.assertEqual(len(quotes), 1)
+
+    def test_snapshot_calls(self):
+        # Create
+        snap = Snapshot.Create(self.u, activity="Eating", where="Restaurant", people=["Elizabeth"],
+                               metrics={'stress': 2})
+        snap.put()
+
+        self.assertEqual(snap.get_data_value('stress'), 2)
+        self.assertEqual(snap.activity, "Eating")
+
+        # List
+        response = self.get_json("/api/snapshot", {}, headers=self.api_headers)
+        snap = response.get('snapshots')[0]
+        print response
+        self.assertEqual(snap.get('activity'), "Eating")
 
