@@ -9,7 +9,7 @@ import tasks
 try:
     imp.find_module('secrets', ['settings'])
 except ImportError:
-    import secrets_template as secrets
+    from settings import secrets_template as secrets
 else:
     from settings import secrets
 
@@ -124,6 +124,7 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/cron/readables/sync', handler=tasks.SyncReadables),
         webapp2.Route('/cron/pull/github', handler=tasks.SyncGithub),
         webapp2.Route('/cron/pull/google_fit', handler=tasks.SyncFromGoogleFit),
+        webapp2.Route('/cron/push/bigquery', handler=tasks.PushToBigQuery),
         webapp2.Route('/cron/reports/delete_old', handler=tasks.DeleteOldReports),
         webapp2.Route('/_ah/warmup', handler=tasks.WarmupHandler),
 

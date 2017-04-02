@@ -17,7 +17,7 @@ import imp
 try:
     imp.find_module('secrets', ['settings'])
 except ImportError:
-    import secrets_template as secrets
+    from settings import secrets_template as secrets
 else:
     from settings import secrets
 
@@ -136,7 +136,7 @@ class HabitAPI(handlers.JsonRequestHandler):
         habitdays = HabitDay.Range(self.user, habits, start_date)
         self.set_response({
             'habits': [habit.json() for habit in habits],
-            'habitdays': tools.lookupDict([hd for hd in habitdays if hd],
+            'habitdays': tools.lookupDict(habitdays,
                     keyprop="key_id",
                     valueTransform=lambda hd: hd.json())
         })
@@ -152,7 +152,7 @@ class HabitAPI(handlers.JsonRequestHandler):
         habitdays = HabitDay.Range(self.user, habits, tools.fromISODate(start), until_date=tools.fromISODate(end))
         self.set_response({
             'habits': [habit.json() for habit in habits],
-            'habitdays': tools.lookupDict([hd for hd in habitdays if hd],
+            'habitdays': tools.lookupDict(habitdays,
                     keyprop="key_id",
                     valueTransform=lambda hd: hd.json())
         }, success=True)
@@ -706,6 +706,12 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
             uri = service.get_auth_uri()
             data['uri'] = uri
             self.success = True
+        elif service_name == 'bigquery':
+            from services.flow_bigquery import BigQueryClient
+            service = BigQueryClient(self.user)
+            uri = service.get_auth_uri()
+            data['uri'] = uri
+            self.success = True
         else:
             self.message = "Unknown service: %s" % service_name
         self.set_response(data)
@@ -720,7 +726,7 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         scope = self.request.get('scope')
         # state_scopes = self.request.get('state')
         if code:
-            from secrets import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+            from settings.secrets import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
             from constants import SECURE_BASE
             base = 'http://localhost:8080' if tools.on_dev_server() else SECURE_BASE
             credentials = client.credentials_from_code(
@@ -752,6 +758,8 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
                     success = True
                     email = json_response.get("email", None)
                     name = json_response.get("name", None)
+                else:
+                    logging.error("Client ID mismatch")
         return (success, email, name)
 
     def fbook_auth(self):
@@ -793,22 +801,12 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         date_start = self.request.get('date_start')
         date_end = self.request.get('date_end')
         dt_start, dt_end = tools.fromISODate(date_start), tools.fromISODate(date_end)
-        journal_keys = []
         iso_dates = []
         habits = []
         today = datetime.today()
-        if dt_start < dt_end:
-            date_cursor = dt_start
-            while date_cursor < dt_end:
-                date_cursor += timedelta(days=1)
-                iso_date = tools.iso_date(date_cursor)
-                journal_keys.append(ndb.Key('MiniJournal', iso_date, parent=self.user.key))
-                iso_dates.append(iso_date)
         habitdays = []
-        journals = []
         goals = []
-        if journal_keys:
-            journals = ndb.get_multi(journal_keys)
+        journals, iso_dates = MiniJournal.Fetch(self.user, dt_start, dt_end)
         if with_habits:
             habits = Habit.Active(self.user)
             habitdays = HabitDay.Range(self.user, habits, dt_start, dt_end)
@@ -825,7 +823,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
             'goals': [g.json() for g in goals],
             'tasks': [t.json() for t in tasks],
             'tracking_days': [p.json() for p in tracking_days],
-            'habitdays': tools.lookupDict([hd for hd in habitdays if hd],
+            'habitdays': tools.lookupDict(habitdays,
                     keyprop="key_id",
                     valueTransform=lambda hd: hd.json())
 

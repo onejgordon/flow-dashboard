@@ -1,6 +1,7 @@
 # Install with pip install -t lib -r requirements.txt (into lib/)
 beautifulsoup4
-GoogleAppEngineCloudStorageClient==1.9.22.1
 evernote==1.25.2
-oauth2client
+oauth2client==3.0.0
+# google-cloud-bigquery==0.21.0
 google_api_python_client==1.5.1
+GoogleAppEngineCloudStorageClient==1.9.22.1

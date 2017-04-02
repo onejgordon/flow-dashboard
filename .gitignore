@@ -9,10 +9,11 @@ lib/*
 dist/*
 secrets.py
 src/js/constants/client_secrets.js
+client_secret.json
+settings/*.json
 env/*
 bin/*
 include/*
-settings/*.json
 .Python
 client_secret.json
 .coverage

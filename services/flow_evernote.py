@@ -54,7 +54,6 @@ def get_access_token(user, oauth_token, oauth_verifier):
     '''
     Get request token
     '''
-
     client = EvernoteClient(
         consumer_key=secrets.EVERNOTE_CONSUMER_KEY,
         consumer_secret=secrets.EVERNOTE_CONSUMER_SECRET,

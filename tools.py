@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, date
 import hashlib
 import pytz
 import urllib
+from collections import defaultdict
 from constants import *
 import json
 from google.appengine.ext import deferred
@@ -105,6 +106,13 @@ def variable_replacement(text, repl_dict, parens="[]"):
             if key in text:
                 text = text.replace(key, str(val) if val else '')
     return text
+
+
+def partition(seq, key):
+    d = defaultdict(list)
+    for x in seq:
+        d[key(x)].append(x)
+    return d
 
 
 def lookupDict(item_list, keyprop="key_string", valueTransform=None):
@@ -441,14 +449,14 @@ def normalize_list_to_ascii(l):
     return [normalize_to_ascii(v) for v in l]
 
 
-def safe_number(str_or_num):
+def safe_number(str_or_num, default=None):
     try:
         if isinstance(str_or_num, basestring) and ',' in str_or_num:
             str_or_num = str_or_num.replace(',','')
         return float(str_or_num)
     except Exception, e:
         logging.error("Failed to convert '%s' to number - %s" % (str_or_num, e))
-        return None
+        return default
 
 
 def capitalize(s):
