@@ -91,8 +91,8 @@ class SyncFromGoogleFit(handlers.BaseRequestHandler):
 class PushToBigQuery(handlers.BaseRequestHandler):
     def get(self):
         from services.flow_bigquery import BigQueryClient
-        days_ago = self.request.get_range('days_ago', default_value=8)
-        days_ago_end = self.request.get_range('days_ago_end', default_value=1)
+        days_ago = self.request.get_range('days_ago', default=8)
+        days_ago_end = self.request.get_range('days_ago_end', default=1)
         users = User.SyncActive('bigquery')
         res = {}
         date = (datetime.today() - timedelta(days=1)).date()

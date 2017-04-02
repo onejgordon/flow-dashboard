@@ -84,7 +84,7 @@ class AgentTestCase(BaseTestCase):
     def test_agent_no_user(self):
         self.ca.user = None
         speech, data, end_convo = self.ca.respond_to_action('input.status_request')
-        self.assertEqual("To get started, please link your account with Flow", speech)
+        self.assertEqual("To get started with Flow, please link your account with Flow", speech)
 
     def test_parsing(self):
         volley = [

@@ -30,7 +30,7 @@ AGENT_FBOOK_MESSENGER = 2
 
 CONVO_EXPIRE_MINS = 5
 
-HELP_TEXT = "With the Flow agent, you can track top tasks each day, habits to build, and monthly and annual goals. You can also submit daily journals to track anything you want."
+HELP_TEXT = "With the Flow agent, you can track top tasks each day, habits to build, and monthly and annual goals. You can also submit daily journals to track anything you want. I'm still in beta, so for full functionality, please visit http://flowdash.co"
 
 
 class ConversationState(object):
@@ -273,7 +273,7 @@ class ConversationAgent(object):
             return ("Please visit flowdash.co to set up journal questions", True)
 
     def _goals_set(self):
-        return "Sorry we're still in beta! " + GOAL.SET_INFO
+        return GOAL.SET_INFO
 
     def _goals_request(self):
         [annual, monthly, longterm] = Goal.Current(self.user)
@@ -463,7 +463,7 @@ class ConversationAgent(object):
                 data = self._quick_replies([("Learn about Habits", "input.help_habits")])
                 end_convo = False
         else:
-            speech = "To get started, please link your account with Flow"
+            speech = "To get started with Flow, please link your account with Flow"
             if self.type == AGENT_FBOOK_MESSENGER:
                 data = {
                     "attachment": {
@@ -502,7 +502,7 @@ class ConversationAgent(object):
         else:
             LOOKUP = [
                 (r'(?:what are my|remind me my|tell me my|monthly|current|my|view) goals', 'input.goals_request'),
-                (r'(?:setup|create|add) goals', 'input.goals_set'),
+                (r'(?:set ?up|create|add|set my|set) goals', 'input.goals_set'),
                 (r'(?:how am i doing|my status|tell me about my day)', 'input.status_request'),
                 (r'(?:how do|tell me about|more info|learn about|help on|help with|what are) (?:tasks)', 'input.help_tasks'),
                 (r'(?:how do|tell me about|more info|learn about|help on|help with|what are) (?:habits)', 'input.help_habits'),
