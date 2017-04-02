@@ -212,14 +212,18 @@ export default class Integrations extends React.Component {
                         <Tab label="BigQuery" style={this.tab_style('bigquery')}>
                             <FlatButton label="Authenticate with BigQuery" onClick={this.authenticate_google_service.bind(this, 'bigquery')} />
                             <p className="lead">
-                                Flow can push daily panel data to a table in BigQuery for additional analysis.
-                                Data is currently aggregated and pushed in a weekly cron.
+                                Flow can push daily panel data in a clean format to BigQuery for additional analysis.
+                                Data is currently aggregated and pushed weekly.<br/>
+                                To set up BigQuery integration:
                             </p>
 
-                            <p className="lead">
-                                Note that habit and journal changes may require a data table schema update, or in some cases,
-                                creation of a new table.
-                            </p>
+                            <ol className="lead">
+                                <li>Create a GCP project for access to BigQuery</li>
+                                <li>Enable the BigQuery APIs if not enabled (should be default for new projects)</li>
+                                <li>Visit <a href="https://bigquery.cloud.google.com/">BigQuery</a> and create a dataset</li>
+                                <li>Update integration settings below with your dataset name, and a table name of your choice</li>
+                                <li>For more information, see the <a href="https://cloud.google.com/bigquery/quickstart-web-ui">quickstart</a>.</li>
+                            </ol>
 
                             <b>Dataset name:</b> { bigquery_dataset_name }<br/>
                             <b>Table name:</b> { bigquery_table_name }<br/>

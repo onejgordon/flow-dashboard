@@ -466,7 +466,7 @@ class Habit(UserAccessible):
         }
 
     def slug_name(self):
-        return tools.strip_symbols(self.name).lower().strip()
+        return tools.strip_symbols(self.name.replace(' ','')).lower().strip()
 
     @staticmethod
     def All(user):

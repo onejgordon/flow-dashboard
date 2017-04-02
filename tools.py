@@ -449,14 +449,14 @@ def normalize_list_to_ascii(l):
     return [normalize_to_ascii(v) for v in l]
 
 
-def safe_number(str_or_num):
+def safe_number(str_or_num, default=None):
     try:
         if isinstance(str_or_num, basestring) and ',' in str_or_num:
             str_or_num = str_or_num.replace(',','')
         return float(str_or_num)
     except Exception, e:
         logging.error("Failed to convert '%s' to number - %s" % (str_or_num, e))
-        return None
+        return default
 
 
 def capitalize(s):

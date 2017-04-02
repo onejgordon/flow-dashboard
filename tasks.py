@@ -91,6 +91,8 @@ class SyncFromGoogleFit(handlers.BaseRequestHandler):
 class PushToBigQuery(handlers.BaseRequestHandler):
     def get(self):
         from services.flow_bigquery import BigQueryClient
+        days_ago = self.request.get_range('days_ago', default_value=8)
+        days_ago_end = self.request.get_range('days_ago_end', default_value=1)
         users = User.SyncActive('bigquery')
         res = {}
         date = (datetime.today() - timedelta(days=1)).date()
@@ -99,7 +101,7 @@ class PushToBigQuery(handlers.BaseRequestHandler):
                 bool(user.get_integration_prop('bigquery_table_name'))
             if enabled:
                 logging.debug("Running PushToBigQuery cron for %s on %s..." % (user, date))
-                bq_client = BigQueryClient(user)
+                bq_client = BigQueryClient(user, days_ago=days_ago, days_ago_end=days_ago_end)
                 if bq_client:
                     bq_client.run()
             else:
