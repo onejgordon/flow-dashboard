@@ -4,12 +4,19 @@
 # Generate via os.urandom(48)
 COOKIE_KEY = ''
 
+# GCP project info
 GOOGLE_PROJECT_NAME = ""
 GOOGLE_PROJECT_ID = 0
-GOOGLE_CLIENT_ID = ""
 
-# Google API Keys
-G_BROWSER_APP_KEY = ""
+# Create an oauth 2.0 web client ID from GCP console
+GOOGLE_CLIENT_ID = ""
+GOOGLE_CLIENT_SECRET = ""
+
+# Create a new API key from GCP console
+G_MAPS_API_KEY = ""
+
+# AES Cypher Key (generate with os.urandom(16))
+AES_CYPHER_KEY = '16 byte key ....'
 
 # Good Reads
 GR_API_KEY = ""
@@ -25,9 +32,6 @@ EVERNOTE_DEV_TOKEN = ""
 
 FB_ACCESS_TOKEN = ""
 FB_VERIFY_TOKEN = ""
-
-# AES Cypher Key
-AES_CYPHER_KEY = '16 byte key ....'
 
 API_AI_AUTH_KEY = ""
 API_AI_FB_CALLBACK = ""
