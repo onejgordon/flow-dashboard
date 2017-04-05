@@ -677,14 +677,14 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         redir_url = user = None
         if client_id == 'google':
             # Part of Google Home / API.AI auth flow
-            if redirect_uri == "https://oauth-redirect.googleusercontent.com/r/%s" % secrets.GOOGLE_PROJECT_NAME:
+            if redirect_uri == "https://oauth-redirect.googleusercontent.com/r/%s" % secrets.GOOGLE_PROJECT_ID:
                 if not user:
                     ok, _email, name = self.validate_google_id_token(id_token)
                     if ok:
                         user = User.GetByEmail(_email, create_if_missing=True, name=name)
                 if user:
                     access_token = user.aes_access_token(client_id='google')
-                    redir_url = 'https://oauth-redirect.googleusercontent.com/r/%s#' % secrets.GOOGLE_PROJECT_NAME
+                    redir_url = 'https://oauth-redirect.googleusercontent.com/r/%s#' % secrets.GOOGLE_PROJECT_ID
                     redir_url += urllib.urlencode({
                         'access_token': access_token,
                         'token_type': 'bearer',

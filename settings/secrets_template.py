@@ -5,15 +5,21 @@
 COOKIE_KEY = ''
 
 # GCP project info
-GOOGLE_PROJECT_NAME = ""
-GOOGLE_PROJECT_ID = 0
+GOOGLE_PROJECT_ID = "flow-app-xxxx"
+GOOGLE_PROJECT_NO = 0
 
 # Create an oauth 2.0 web client ID from GCP console
-GOOGLE_CLIENT_ID = ""
-GOOGLE_CLIENT_SECRET = ""
+# Configure our client ID with, authorized javascript origins:
+# - https://[your-project-id].appspot.com
+# - https://test-dot-[your-project-id].appspot.com (optional, to enable testing on a subversion)
+# And authorised redirect URIs:
+# - https://[your-project-id].appspot.com/api/auth/google/oauth2callback
+# - http://localhost:8080/api/auth/google/oauth2callback
+GOOGLE_CLIENT_ID = "######.XXXXXXXXXXXX.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET = "XXXXXXXXX"
 
 # Create a new API key from GCP console
-G_MAPS_API_KEY = ""
+G_MAPS_API_KEY = "XXXXXXXX"
 
 # AES Cypher Key (generate with os.urandom(16))
 AES_CYPHER_KEY = '16 byte key ....'
