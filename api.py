@@ -623,6 +623,29 @@ class JournalAPI(handlers.JsonRequestHandler):
         return datetime.combine((now + timedelta(hours=24+8)).date(), time(0,0))
 
 
+class TrackingAPI(handlers.JsonRequestHandler):
+
+    @authorized.role('user')
+    def update(self, d):
+        '''
+        Update a single TrackingDay() object with properties
+        defined via JSON key(str) -> value(str)
+        '''
+        date = None
+        _date = self.request.get('date')
+        if _date:
+            date = tools.fromISODate(_date)
+        data_json = tools.getJson(self.request.get('data'))  # JSON
+        td = TrackingDay.Create(self.user, date)  # Get or create
+        if data_json:
+            td.set_properties(data_json)
+            td.put()
+        self.success = True
+        self.set_response({
+            'tracking_day': td.json() if td else None
+        })
+
+
 class UserAPI(handlers.JsonRequestHandler):
     @authorized.role('admin')
     def list(self, d):
@@ -1103,6 +1126,18 @@ class AgentAPI(handlers.JsonRequestHandler):
         fa.send_response()
         self.success = True
         self.json_out({})
+
+    @authorized.role('user')
+    def flowapp_request(self, d):
+        from services.agent import ConversationAgent, AGENT_FLOW_APP
+        ca = ConversationAgent(type=AGENT_FLOW_APP, user=self.user)
+        message = self.request.get('message')
+        action, params = ca.parse_message(message)
+        speech, data, end_convo = ca.respond_to_action(action, parameters=params)
+        data = {
+            'reply': speech
+        }
+        self.set_response(data, success=True, debug=True)
 
 
 class ReportAPI(handlers.JsonRequestHandler):
