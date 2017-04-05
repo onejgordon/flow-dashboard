@@ -11,7 +11,7 @@ import imp
 try:
     imp.find_module('secrets', ['settings'])
 except ImportError:
-    import secrets_template as secrets
+    from settings import secrets_template as secrets
 else:
     from settings import secrets
 

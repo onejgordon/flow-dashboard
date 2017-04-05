@@ -23,19 +23,6 @@ To deploy a new instance of Flow, use the following instructions.
 Download the Cloud SDK from Google.
 `https://cloud.google.com/appengine/downloads`
 
-### Fork the repo
-
-Branch or fork this repository into a project directory.
-
-Ensure you have npm and gulp installed.
-
-```
-npm install -g gulp
-npm install
-```
-
-In a terminal, visit the project's directory, and run `gulp`. This compiles source files and watches src directories for changes.
-
 ### Setup a new Google Cloud project
 
 Visit the Google developer's console: <https://console.developers.google.com/>
@@ -50,6 +37,17 @@ gcloud config set account [my email]
 
 ```
 
+### Fork the repo
+
+Branch or fork this repository into a project directory.
+
+Ensure you have npm and gulp installed.
+
+```
+npm install -g gulp
+npm install
+```
+
 ### Update code configuration
 
 Update the APP_OWNER variable in constants.py. Owner should match the Google account you logged into the console with. This will enable the application to send emails.
@@ -58,11 +56,20 @@ Create secrets.py, client_secrets.js from the templates.
 
 ### Run the dev server locally
 
-Make sure dev_appserver.py is in your path, and run `./server.sh` to start the dev server locally, and gulp to build JS etc.
+To avoid conflicts sometimes seen with gcloud and google.cloud python libs it is often helpful to run the dev server in a virtualenv.
+
+* `virtualenv env`
+* `source env/bin/activate`
+* `pip install -t lib -r requirements.txt`
+* `pip install -r local.requirements.txt`
+* `gcloud components update`
+* `./scripts/server.sh`
+
+Make sure dev_appserver.py is in your path, and run `./scripts/server.sh` to start the dev server locally, and `gulp` in another terminal to build JS etc.
 
 ### Deploy
 
-`./deploy.sh 0-1` to deploy a new version 0-1 and set is as default
+`./scripts/deploy.sh 0-1` to deploy a new version 0-1 and set is as default
 
 Visit `https://[project-id].appspot.com` to see the app live.
 
@@ -98,10 +105,11 @@ Visit `https://[project-id].appspot.com` to see the app live.
 ### Data source integrations
 
 * Public Github commits
-* Google Fit (track any activity durations by keyword)
-* Evernote (pull excerpts from specified notebooks)
+* Google Fit - track any activity durations by keyword
+* Evernote - pull excerpts from specified notebooks
 * Pocket - Sync stored articles & add notes
 * Goodreads - Sync currently reading shelf
+* Track any abstract data via REST API
 
 ### Setup (for separate instance)
 
@@ -109,7 +117,7 @@ All integrations work out of the box on flowdash.co, but if you're spinning up y
 
 #### Pocket
 
-Create an app at https://getpocket.com/developer/ and update secrets.POCKET_CONSUMER_KEY
+Create an app at https://getpocket.com/developer/ and update settings.secrets.POCKET_CONSUMER_KEY
 
 #### Evernote
 
@@ -133,9 +141,17 @@ The messenger bot lives at https://www.facebook.com/FlowDashboard/
 
 To create a new messenger bot for your own instance of Flow, see the Facebook quickstart: https://developers.facebook.com/docs/messenger-platform/guides/quick-start
 
+#### BigQuery
+
+(Beta / admin only currently) Push daily panel data to BigQuery for additional analysis, e.g. run regressions
+with TensorFlow, etc.
+
 ## Planned Features
 
-* Track happiness / activities throughout day (push), ala https://www.trackyourhappiness.org/
-* Desktop notifs
-* Push panel data to compute engine for ML / prediction / regression
-* Mobile app via react-native?
+* Track metrics & activities throughout day via mobile reminders ala https://www.trackyourhappiness.org/
+	* Mobile app via react-native
+* Desktop notifications
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](.github/CONTRIBUTING.md)

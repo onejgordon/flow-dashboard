@@ -9,25 +9,36 @@ from datetime import datetime, timedelta
 import tools
 from constants import SECURE_BASE
 from settings.secrets import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+from oauth2client.client import GoogleCredentials
 
 
 class GoogleServiceFetcher(object):
 
-    def __init__(self, user, api='fitness', version='v3', scopes=None):
+    def __init__(self, user, api='fitness', version='v3',
+                 scopes=None, credential_type='user'):
         self.user = user
         self.service = None
         self.api = api
         self.version = version
         self.credentials = None
-        self.get_credentials_object()
         self.http_auth = None
+        self.credential_type = credential_type
+        if credential_type == 'user':
+            self.get_user_credentials_object()
+        else:
+            self.get_application_credentials_object()
         self.scopes = scopes if scopes else []
 
     def build_service(self):
-        logging.debug("Building service for %s (%s)" % (self.api, self.version))
-        if not self.http_auth:
-            self.get_http_auth()
-        self.service = discovery.build(self.api, self.version, http=self.http_auth)
+        logging.debug("Building %s service for %s (%s)" % (self.credential_type, self.api, self.version))
+        kwargs = {}
+        if self.credential_type == 'user':
+            if not self.http_auth:
+                self.get_http_auth()
+            kwargs['http'] = self.http_auth
+        else:
+            kwargs['credentials'] = self.credentials
+        self.service = discovery.build(self.api, self.version, **kwargs)
 
     def set_google_credentials(self, credentials_object):
         logging.debug(credentials_object.to_json())
@@ -49,7 +60,7 @@ class GoogleServiceFetcher(object):
         # flow.params['access_type'] = 'offline'
         return flow
 
-    def get_credentials_object(self):
+    def get_user_credentials_object(self):
         if not self.credentials:
             cr_json = self.get_google_credentials()
             if cr_json:
@@ -68,13 +79,17 @@ class GoogleServiceFetcher(object):
                 self.credentials = cr
                 return cr
 
+    def get_application_credentials_object(self):
+        if not self.credentials:
+            self.credentials = GoogleCredentials.get_application_default()
+
     def get_auth_uri(self, state=None):
         flow = self.get_auth_flow(scope=' '.join(self.scopes))
         auth_uri = flow.step1_get_authorize_url(state=state)
         return auth_uri
 
     def get_http_auth(self):
-        self.get_credentials_object()
+        self.get_user_credentials_object()
         self.http_auth = self.credentials.authorize(httplib2.Http())
 
     def check_available_scopes(self):

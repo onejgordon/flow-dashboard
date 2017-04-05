@@ -14,7 +14,7 @@ from common.decorators import auto_cache
 try:
     imp.find_module('secrets', ['settings'])
 except ImportError:
-    import secrets_template as secrets
+    from settings import secrets_template as secrets
 else:
     from settings import secrets
 
@@ -143,6 +143,7 @@ class User(ndb.Model):
             'id': self.key.id(),
             'name': self.name,
             'email': self.email,
+            'level': self.level,
             'integrations': tools.getJson(self.integrations),
             'settings': tools.getJson(self.settings, {}),
             'timezone': self.timezone,
@@ -464,13 +465,16 @@ class Habit(UserAccessible):
             'icon': self.icon
         }
 
+    def slug_name(self):
+        return tools.strip_symbols(self.name.replace(' ','')).lower().strip()
+
     @staticmethod
     def All(user):
         return Habit.query(ancestor=user.key).fetch(limit=20)
 
     @staticmethod
     def Active(user):
-        return Habit.query(ancestor=user.key).filter(Habit.archived == False).fetch(limit=5)
+        return Habit.query(ancestor=user.key).filter(Habit.archived == False).fetch(limit=8)
 
     @staticmethod
     def Create(user):
@@ -533,7 +537,7 @@ class HabitDay(UserAccessible):
                 ids.append(ndb.Key('HabitDay', HabitDay.ID(h, cursor), parent=user.key))
             cursor += timedelta(days=1)
         if ids:
-            return ndb.get_multi(ids)
+            return [hd for hd in ndb.get_multi(ids) if hd]
         return []
 
     @staticmethod
@@ -672,6 +676,19 @@ class MiniJournal(UserAccessible):
             date = MiniJournal.CurrentSubmissionDate()
         id = tools.iso_date(date)
         return MiniJournal(id=id, date=date, parent=user.key)
+
+    @staticmethod
+    def Fetch(user, start, end):
+        journal_keys = []
+        iso_dates = []
+        if start < end:
+            date_cursor = start
+            while date_cursor < end:
+                date_cursor += timedelta(days=1)
+                iso_date = tools.iso_date(date_cursor)
+                journal_keys.append(ndb.Key('MiniJournal', iso_date, parent=user.key))
+                iso_dates.append(iso_date)
+        return ([j for j in ndb.get_multi(journal_keys) if j], iso_dates)
 
     @staticmethod
     def Get(user, date=None):
@@ -943,7 +960,7 @@ class Readable(UserSearchable):
 
     @staticmethod
     def Fetch(user, favorites=False, with_notes=False, unread=False, read=False,
-              limit=30, since=None, offset=0, keys_only=False):
+              limit=30, since=None, until=None, offset=0, keys_only=False):
         q = Readable.query(ancestor=user.key)
         ordering_prop = Readable.dt_added if not read else Readable.dt_read
         if with_notes:
@@ -957,6 +974,8 @@ class Readable(UserSearchable):
         q = q.order(-ordering_prop)
         if since:
             q = q.filter(ordering_prop >= tools.fromISODate(since))
+        if until:
+            q = q.filter(ordering_prop <= tools.fromISODate(until))
         return q.fetch(limit=limit, offset=offset, keys_only=keys_only)
 
     @staticmethod
