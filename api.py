@@ -1104,6 +1104,18 @@ class AgentAPI(handlers.JsonRequestHandler):
         self.success = True
         self.json_out({})
 
+    @authorized.role('user')
+    def flowapp_request(self, d):
+        from services.agent import ConversationAgent, AGENT_FLOW_APP
+        ca = ConversationAgent(type=AGENT_FLOW_APP, user=self.user)
+        message = self.request.get('message')
+        action, params = ca.parse_message(message)
+        speech, data, end_convo = ca.respond_to_action(action, parameters=params)
+        data = {
+            'reply': speech
+        }
+        self.set_response(data, success=True, debug=True)
+
 
 class ReportAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
