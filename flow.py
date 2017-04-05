@@ -75,6 +75,7 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/journal', handler=api.JournalAPI, handler_method="list", methods=["GET"]),
         webapp2.Route('/api/snapshot', handler=api.SnapshotAPI, handler_method="submit", methods=["POST"]),
         webapp2.Route('/api/snapshot', handler=api.SnapshotAPI, handler_method="list", methods=["GET"]),
+        webapp2.Route('/api/tracking', handler=api.TrackingAPI, handler_method="update", methods=["POST"]),
         webapp2.Route('/api/task', handler=api.TaskAPI, handler_method="list", methods=["GET"]),
         webapp2.Route('/api/task', handler=api.TaskAPI, handler_method="update", methods=["POST"]),
         webapp2.Route('/api/readable', handler=api.ReadableAPI, handler_method="list", methods=["GET"]),
@@ -117,6 +118,7 @@ app = webapp2.WSGIApplication(
         # Agent
         webapp2.Route('/api/agent/apiai/request', handler=api.AgentAPI, handler_method="apiai_request", methods=["POST"]),
         webapp2.Route('/api/agent/fbook/request', handler=api.AgentAPI, handler_method="fbook_request"),
+        webapp2.Route('/api/agent/flowapp/request', handler=api.AgentAPI, handler_method="flowapp_request"),
         webapp2.Route('/api/agent/spoof', handler=api.AgentAPI, handler_method="spoof", methods=["POST"]),
 
         # Reports

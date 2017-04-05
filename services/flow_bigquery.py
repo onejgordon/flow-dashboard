@@ -178,9 +178,9 @@ class BigQueryClient(GoogleServiceFetcher):
         return rows
 
     def get_table(self):
-        from settings.secrets import GOOGLE_PROJECT_ID
+        from settings.secrets import GOOGLE_PROJECT_NO
         try:
-            response = self.service.tables().get(projectId=GOOGLE_PROJECT_ID,
+            response = self.service.tables().get(projectId=GOOGLE_PROJECT_NO,
                                                    datasetId=self.dataset_name,
                                                    tableId=self.table_name,
                                                 ).execute()
@@ -190,10 +190,10 @@ class BigQueryClient(GoogleServiceFetcher):
 
     def create_table(self):
         # TODO
-        from settings.secrets import GOOGLE_PROJECT_ID
+        from settings.secrets import GOOGLE_PROJECT_NO
         body = {
             "tableReference": {
-                "projectId": GOOGLE_PROJECT_ID,
+                "projectId": GOOGLE_PROJECT_NO,
                 "tableId": self.table_name,
                 "datasetId": self.dataset_name
             },
@@ -201,13 +201,13 @@ class BigQueryClient(GoogleServiceFetcher):
                 "fields": self._bq_schema()
             }
         }
-        response = self.service.tables().insert(projectId=GOOGLE_PROJECT_ID,
+        response = self.service.tables().insert(projectId=GOOGLE_PROJECT_NO,
                                                   datasetId=self.dataset_name,
                                                   body=body).execute()
         logging.debug(response)
 
     def push_data(self, rows):
-        from settings.secrets import GOOGLE_PROJECT_ID
+        from settings.secrets import GOOGLE_PROJECT_NO
         logging.debug("Inserting %d rows into table '%s'" % (len(rows), self.table_name))
         # errors = self.table.insert_data(rows, row_ids=row_ids,
         #                        ignore_unknown_values=True,
@@ -218,7 +218,7 @@ class BigQueryClient(GoogleServiceFetcher):
             "ignoreUnknownValues": True,
             "rows": [{"insertId": r.pop("id"), "json": r} for r in rows]
         }
-        response = self.service.tabledata().insertAll(projectId=GOOGLE_PROJECT_ID,
+        response = self.service.tabledata().insertAll(projectId=GOOGLE_PROJECT_NO,
                                                       datasetId=self.dataset_name,
                                                       tableId=self.table_name,
                                                       body=body).execute()
