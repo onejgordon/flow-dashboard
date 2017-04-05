@@ -623,6 +623,29 @@ class JournalAPI(handlers.JsonRequestHandler):
         return datetime.combine((now + timedelta(hours=24+8)).date(), time(0,0))
 
 
+class TrackingAPI(handlers.JsonRequestHandler):
+
+    @authorized.role('user')
+    def update(self, d):
+        '''
+        Update a single TrackingDay() object with properties
+        defined via JSON key(str) -> value(str)
+        '''
+        date = None
+        _date = self.request.get('date')
+        if _date:
+            date = tools.fromISODate(_date)
+        data_json = tools.getJson(self.request.get('data'))  # JSON
+        td = TrackingDay.Create(self.user, date)  # Get or create
+        if data_json:
+            td.set_properties(data_json)
+            td.put()
+        self.success = True
+        self.set_response({
+            'tracking_day': td.json() if td else None
+        })
+
+
 class UserAPI(handlers.JsonRequestHandler):
     @authorized.role('admin')
     def list(self, d):

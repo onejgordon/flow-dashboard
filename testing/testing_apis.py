@@ -7,6 +7,7 @@ from models import Goal
 from flow import app as tst_app
 from models import Habit, Task, Project, Event, Readable, Quote
 from services.agent import ConversationAgent
+import json
 
 
 class APITestCase(BaseTestCase):
@@ -190,6 +191,15 @@ class APITestCase(BaseTestCase):
         response = self.get_json("/api/quote/search", {'term': "think"}, headers=self.api_headers)
         quotes = response.get('quotes')
         self.assertEqual(len(quotes), 1)
+
+    def test_tracking_calls(self):
+        # Post an update to the tracking object for Jan 1, 2017
+        DATE = "2017-01-01"
+        response = self.post_json("/api/tracking", {'date': DATE, 'data': json.dumps({'foo': 'bar'})}, headers=self.api_headers)
+        td = response.get('tracking_day')
+        self.assertIsNotNone(td)
+        self.assertEqual(td.get('iso_date'), DATE)
+        self.assertEqual(td.get('data', {}).get('foo'), 'bar')
 
     def test_flowapp_agent_api(self):
         response = self.post_json("/api/agent/flowapp/request", {'message': "hi"}, headers=self.api_headers)
