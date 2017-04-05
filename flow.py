@@ -115,6 +115,7 @@ app = webapp2.WSGIApplication(
         # Agent
         webapp2.Route('/api/agent/apiai/request', handler=api.AgentAPI, handler_method="apiai_request", methods=["POST"]),
         webapp2.Route('/api/agent/fbook/request', handler=api.AgentAPI, handler_method="fbook_request"),
+        webapp2.Route('/api/agent/flowapp/request', handler=api.AgentAPI, handler_method="flowapp_request"),
         webapp2.Route('/api/agent/spoof', handler=api.AgentAPI, handler_method="spoof", methods=["POST"]),
 
         # Reports
