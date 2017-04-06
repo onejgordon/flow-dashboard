@@ -1,8 +1,10 @@
 var React = require('react');
+import {Link} from 'react-router';
 var AppConstants = require('constants/AppConstants');
 var api = require('utils/api');
 import GoogleLogin from 'react-google-login';
 var client_secrets = require('constants/client_secrets');
+import {RaisedButton} from 'material-ui';
 var toastr = require('toastr');
 
 export default class Auth extends React.Component {
@@ -67,6 +69,8 @@ export default class Auth extends React.Component {
                 <div className="text-center">
 
                     <h2 style={{marginTop: "140px", marginBottom: "60px"}}>To connect to {provider.name}, sign in to {SITENAME}</h2>
+
+                    <Link to="/app/about"><RaisedButton label="Learn More about Flow" /></Link>
 
                     <GoogleLogin
                         clientId={client_secrets.G_OAUTH_CLIENT_ID}

@@ -40,8 +40,11 @@ def role(role=None):
                                 if _user_id.isdigit():
                                     # Interpret as User ID
                                     user = User.get_by_id(int(_user_id))
-                                    if not user.checkPass(_pass):
-                                        user = None
+                                elif '@' in _user_id:
+                                    # Interpret as user amil
+                                    user = User.GetByEmail(_user_id)
+                                if user and not user.checkPass(_pass):
+                                    user = None
             if not role:
                 allow = True
             elif role == "user":

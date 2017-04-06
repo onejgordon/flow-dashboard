@@ -5,7 +5,7 @@ from datetime import datetime
 from base_test_case import BaseTestCase
 from models import Goal
 from flow import app as tst_app
-from models import Habit, Task, Project, Event, Readable, Quote
+from models import Habit, Task, Project, Event, Readable, Quote, Snapshot
 from services.agent import ConversationAgent
 import json
 
@@ -192,6 +192,21 @@ class APITestCase(BaseTestCase):
         quotes = response.get('quotes')
         self.assertEqual(len(quotes), 1)
 
+    def test_snapshot_calls(self):
+        # Create
+        snap = Snapshot.Create(self.u, activity="Eating", where="Restaurant", people=["Elizabeth"],
+                               metrics={'stress': 2})
+        snap.put()
+
+        self.assertEqual(snap.get_data_value('stress'), 2)
+        self.assertEqual(snap.activity, "Eating")
+
+        # List
+        response = self.get_json("/api/snapshot", {}, headers=self.api_headers)
+        snap = response.get('snapshots')[0]
+        print response
+        self.assertEqual(snap.get('activity'), "Eating")
+
     def test_tracking_calls(self):
         # Post an update to the tracking object for Jan 1, 2017
         DATE = "2017-01-01"
@@ -205,5 +220,4 @@ class APITestCase(BaseTestCase):
         response = self.post_json("/api/agent/flowapp/request", {'message': "hi"}, headers=self.api_headers)
         reply = response.get('reply')
         self.assertTrue(reply in ConversationAgent.HELLO_BANTER)
-
 

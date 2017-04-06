@@ -502,3 +502,16 @@ def sign_gcs_url(gcs_filename, expires_after_seconds=6):
         resource=gcs_filename,
         querystring=urllib.urlencode(query_params))
     return str(result)
+
+
+def parseTimeString(raw):
+    """
+    Takes time string like "14:25"
+    """
+    try:
+        iso_match = re.match(r'^(\d{1,2}:\d{2})', raw)
+        if iso_match:
+            dt = datetime.strptime(iso_match.group(0), "%H:%M")
+            return dt.time()
+    except Exception, e:
+        return None

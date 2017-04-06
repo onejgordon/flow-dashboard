@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Usage: ./deploy.sh 0-1
+# Usage: ./deploy.sh 0-1 [app.yaml]
 
 
 INDEX_YAML="index.yaml"
