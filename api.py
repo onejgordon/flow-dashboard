@@ -646,10 +646,9 @@ class SnapshotAPI(handlers.JsonRequestHandler):
         snap = Snapshot.Create(self.user, **params)
         snap.put()
         self.success = True
-
         self.set_response({
             'snapshot': snap.json() if snap else None
-        })
+        }, message="Snapshot submitted!", debug=True)
 
 
 class TrackingAPI(handlers.JsonRequestHandler):
