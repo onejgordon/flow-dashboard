@@ -744,7 +744,6 @@ class Snapshot(UserAccessible):
     """
     date = ndb.DateProperty(auto_now_add=True)  # Date for entry
     dt_created = ndb.DateTimeProperty(auto_now_add=True)
-    mins = ndb.IntegerProperty()  # Minutes into day (0 - 1439)
     activity = ndb.StringProperty()
     where = ndb.StringProperty()
     people = ndb.StringProperty(repeated=True)
@@ -758,8 +757,7 @@ class Snapshot(UserAccessible):
             'metrics': tools.getJson(self.metrics),
             'people': self.people,
             'where': self.where,
-            'activity': self.activity,
-            'mins': self.mins
+            'activity': self.activity
         }
         if self.location:
             res.update({
@@ -771,12 +769,11 @@ class Snapshot(UserAccessible):
     @staticmethod
     def Create(user, activity=None, where=None, people=None, metrics=None, lat=None, lon=None):
         date = datetime.now()
-        mins = tools.minutes_in(date)
         location = None
         if lat and lon:
             gp = ndb.GeoPt("%s, %s" % (lat, lon))
             location = gp
-        return Snapshot(dt_created=date, mins=mins, where=where, people=people if people else [],
+        return Snapshot(dt_created=date, where=where, people=people if people else [],
                         activity=activity, metrics=json.dumps(metrics) if metrics else None,
                         location=location, parent=user.key)
 
