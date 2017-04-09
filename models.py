@@ -745,7 +745,7 @@ class Snapshot(UserAccessible):
     date = ndb.DateProperty(auto_now_add=True)  # Date for entry
     dt_created = ndb.DateTimeProperty(auto_now_add=True)
     activity = ndb.StringProperty()
-    where = ndb.StringProperty()
+    place = ndb.StringProperty()
     people = ndb.StringProperty(repeated=True)
     metrics = ndb.TextProperty()  # JSON
     location = ndb.GeoPtProperty()
@@ -753,10 +753,11 @@ class Snapshot(UserAccessible):
     def json(self):
         res = {
             'id': self.key.id(),
+            'ts': tools.unixtime(self.dt_created),
             'iso_date': tools.iso_date(self.date),
             'metrics': tools.getJson(self.metrics),
             'people': self.people,
-            'where': self.where,
+            'place': self.place,
             'activity': self.activity
         }
         if self.location:
@@ -767,13 +768,14 @@ class Snapshot(UserAccessible):
         return res
 
     @staticmethod
-    def Create(user, activity=None, where=None, people=None, metrics=None, lat=None, lon=None):
-        date = datetime.now()
+    def Create(user, activity=None, place=None, people=None, metrics=None, lat=None, lon=None, date=None):
+        if not date:
+            date = datetime.now()
         location = None
         if lat and lon:
             gp = ndb.GeoPt("%s, %s" % (lat, lon))
             location = gp
-        return Snapshot(dt_created=date, where=where, people=people if people else [],
+        return Snapshot(dt_created=date, place=place, people=people if people else [],
                         activity=activity, metrics=json.dumps(metrics) if metrics else None,
                         location=location, parent=user.key)
 

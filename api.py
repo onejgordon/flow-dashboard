@@ -639,7 +639,7 @@ class SnapshotAPI(handlers.JsonRequestHandler):
         Submit a snapshot. Assume snapshot is now
         '''
         params = tools.gets(self,
-            strings=['lat', 'lon', 'activity', 'where'],
+            strings=['lat', 'lon', 'activity', 'place'],
             json=['metrics'],
             lists=['people']
         )

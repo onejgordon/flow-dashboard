@@ -19,6 +19,7 @@ var AnalysisGoals = require('components/analysis/AnalysisGoals');
 var AnalysisJournals = require('components/analysis/AnalysisJournals');
 var AnalysisTasks = require('components/analysis/AnalysisTasks');
 var AnalysisHabits = require('components/analysis/AnalysisHabits');
+var AnalysisSnapshot = require('components/analysis/AnalysisSnapshot');
 var AnalysisMisc = require('components/analysis/AnalysisMisc');
 
 var NotFound = require('components/NotFound');
@@ -50,6 +51,7 @@ module.exports = (
         <Route path="journals" component={AnalysisJournals} />
         <Route path="tasks" component={AnalysisTasks} />
         <Route path="habits" component={AnalysisHabits} />
+        <Route path="snapshots" component={AnalysisSnapshot} />
         <Route path="misc" component={AnalysisMisc} />
       </Route>
     </Route>
