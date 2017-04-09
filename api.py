@@ -1,7 +1,7 @@
 
 from datetime import datetime, timedelta, time
 from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
-    Readable, TrackingDay, Event, JournalTag, Report, Quote
+    Readable, TrackingDay, Event, JournalTag, Report, Quote, Snapshot
 from constants import READABLE
 from google.appengine.ext import ndb
 from oauth2client import client
@@ -621,6 +621,34 @@ class JournalAPI(handlers.JsonRequestHandler):
     def _get_task_due_date(self):
         now = datetime.now()
         return datetime.combine((now + timedelta(hours=24+8)).date(), time(0,0))
+
+
+class SnapshotAPI(handlers.JsonRequestHandler):
+
+    @authorized.role('user')
+    def list(self, d):
+        limit = self.request.get_range('limit', default=500)
+        snapshots = Snapshot.Recent(self.user, limit=limit)
+        self.set_response({
+            'snapshots': [s.json() for s in snapshots if s]
+            }, success=True, debug=True)
+
+    @authorized.role('user')
+    def submit(self, d):
+        '''
+        Submit a snapshot. Assume snapshot is now
+        '''
+        params = tools.gets(self,
+            strings=['lat', 'lon', 'activity', 'where'],
+            json=['metrics'],
+            lists=['people']
+        )
+        snap = Snapshot.Create(self.user, **params)
+        snap.put()
+        self.success = True
+        self.set_response({
+            'snapshot': snap.json() if snap else None
+        }, message="Snapshot submitted!", debug=True)
 
 
 class TrackingAPI(handlers.JsonRequestHandler):

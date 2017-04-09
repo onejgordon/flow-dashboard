@@ -134,3 +134,14 @@ class UtilTestCase(BaseTestCase):
             target = v[1]
             actual = tools.fromISODate(v[0])
             self.assertEqual(actual, target)
+
+    def testMinutesIn(self):
+        volley = [
+            ("00:01", 1),
+            ("8:35", 515),
+        ]
+
+        for v in volley:
+            time_str, expected_mins = v
+            time = tools.parseTimeString(time_str)
+            self.assertEqual(expected_mins, tools.minutes_in(time))
