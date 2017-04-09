@@ -223,8 +223,8 @@ class HabitReportWorker(GCSReportWorker):
         super(HabitReportWorker, self).__init__(rkey, start_att="dt_created")
         title_kwargs = {}
 
-        start = specs.get("start", 0)
-        end = specs.get("end", 0)
+        start = self.specs.get("start", 0)
+        end = self.specs.get("end", 0)
         self.report.generate_title("Habit Report", ts_start=start, ts_end=end, **title_kwargs)
         self.prefetch_props = ['habit']
         self.headers = ["Created", "Updated", "Date", "Habit", "Done", "Committed"]
