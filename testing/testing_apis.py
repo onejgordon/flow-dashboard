@@ -67,16 +67,16 @@ class APITestCase(BaseTestCase):
         h = Habit.get_by_id(h.get('id'), parent=self.u.key)
         self.assertIsNone(h)  # Confirm deletion
 
-    def test_goal_calls(self):
+    def test_zgoal_calls(self):
         response = self.get_json("/api/goal", {}, headers=self.api_headers)
         goal = response.get('goals')[0]
         self.assertEqual(goal.get('text')[0], "Get it done")
 
         # Update
-        response = self.post_json("/api/goal", {'id': goal.get('id'), 'text1': 'New goal 1', 'text2': 'New goal 2'}, headers=self.api_headers)
+        response = self.post_json("/api/goal", {'id': goal.get('id'), 'text1': 'New goal 1', 'text2': u'New goal 2 with unicode. ありがとう'}, headers=self.api_headers)
         goal = response.get('goal')
         self.assertEqual(goal.get('text')[0], 'New goal 1')
-        self.assertEqual(goal.get('text')[1], 'New goal 2')
+        self.assertEqual(goal.get('text')[1], u'New goal 2 with unicode. ありがとう')
 
     def test_task_calls(self):
         response = self.get_json("/api/task", {}, headers=self.api_headers)

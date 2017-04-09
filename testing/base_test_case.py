@@ -118,6 +118,13 @@ class BaseTestCase(unittest.TestCase):
             probability=probability)
         self.testbed.init_datastore_v3_stub(consistency_policy=ds_policy)
 
+    def init_standard_stubs(self):
+        self.init_datastore_stub()
+        self.init_memcache_stub()
+        self.init_taskqueue_stub()
+        self.init_mail_stub()
+        self.register_search_api_stub()
+
     def init_app_basics(self, n_users=1):
         from models import User
 
@@ -274,6 +281,10 @@ class BaseTestCase(unittest.TestCase):
         """Performs PUT request to your application"""
         return self.app.put(*args, **kwargs)
 
+    def utf8_encode(self, v):
+        res = unicode(v).encode('utf-8')
+        return res
+
     def url_encode(self, data):
         """Encode data in URL friendly way"""
         if isinstance(data, dict):
@@ -281,12 +292,10 @@ class BaseTestCase(unittest.TestCase):
             for k, v in data.copy().items():
                 if isinstance(v, (list, tuple)):
                     for item in v:
-                        items.append('%s=%s' % (k, item))
+                        items.append('%s=%s' % (k, self.utf8_encode(item)))
                 else:
-                    items.append('%s=%s' % (k, v))
-
+                    items.append('%s=%s' % (k, self.utf8_encode(v)))
             data = '&'.join(items)
-
         return data
 
     def get_cookie(self, cookie_name):

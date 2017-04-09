@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf8 -*-
 
 from datetime import datetime, timedelta, time
 from google.appengine.ext import ndb
@@ -907,7 +909,9 @@ class Goal(UserAccessible):
         return g
 
     @staticmethod
-    def CreateMonthly(user, date):
+    def CreateMonthly(user, date=None):
+        if not date:
+            date = datetime.now()
         id = datetime.strftime(date, "%Y-%m")
         return Goal.Create(user, id)
 

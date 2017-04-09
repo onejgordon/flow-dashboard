@@ -80,7 +80,7 @@ export default class GoalViewer extends React.Component {
 
   show_longterm() {
     if (this.state.longterm) this.show_goal_dialog(this.state.longterm);
-    else this.setState({set_goal_form: 'longterm'});
+    else this.setState({set_goal_form: 'longterm', form: {}});
   }
 
   show_goal_dialog(g) {
