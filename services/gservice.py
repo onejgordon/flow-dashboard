@@ -90,7 +90,8 @@ class GoogleServiceFetcher(object):
 
     def get_http_auth(self):
         self.get_user_credentials_object()
-        self.http_auth = self.credentials.authorize(httplib2.Http())
+        if self.credentials:
+            self.http_auth = self.credentials.authorize(httplib2.Http())
 
     def check_available_scopes(self):
         scopes = self.credentials.retrieve_scopes(httplib2.Http())

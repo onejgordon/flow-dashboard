@@ -294,7 +294,7 @@ class GoalAPI(handlers.JsonRequestHandler):
                 params['text'] = text
             goal.Update(**params)
             goal.put()
-            self.message = "Assessment saved" if 'assessment' in params else "Goal saved"
+            self.message = "Goal saved"
             self.success = True
         else:
             self.message = "Couldn't create goal"
