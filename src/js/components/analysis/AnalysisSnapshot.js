@@ -116,12 +116,16 @@ export default class AnalysisSnapshot extends React.Component {
         let data = this.get_data();
         if (data == null) return <div></div>
         let displayFormats = {
-            'minute_of_day': {time: 'h:mm'},
-            'hour_of_week': {hour: 'll'}
+            'minute_of_day': {hour: 'kk:mm'},
+            'hour_of_week': {day: 'ddd'}
         }[form.x_axis];
         let unit = {
-            'minute_of_day': 'minute',
-            'hour_of_week': 'hour',
+            'minute_of_day': 'hour',
+            'hour_of_week': 'day',
+        }[form.x_axis];
+        let tooltipFormat = {
+            'minute_of_day': 'kk:mm',
+            'hour_of_week': 'ddd kk:mm',
         }[form.x_axis];
         let opts = {
             scales: {
@@ -129,6 +133,7 @@ export default class AnalysisSnapshot extends React.Component {
                     type: 'time',
                     time: {
                         displayFormats: displayFormats,
+                        tooltipFormat: tooltipFormat,
                         unit: unit
                     },
                     position: 'bottom'
