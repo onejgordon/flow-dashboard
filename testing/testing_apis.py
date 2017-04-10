@@ -194,7 +194,7 @@ class APITestCase(BaseTestCase):
 
     def test_snapshot_calls(self):
         # Create
-        snap = Snapshot.Create(self.u, activity="Eating", where="Restaurant", people=["Elizabeth"],
+        snap = Snapshot.Create(self.u, activity="Eating", place="Restaurant", people=["Elizabeth"],
                                metrics={'stress': 2})
         snap.put()
 
