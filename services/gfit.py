@@ -128,7 +128,6 @@ class FitClient(GoogleServiceFetcher):
       "101": "Zumba"
     }
 
-
     def __init__(self, user):
         super(FitClient, self).__init__(user,
                                         api='fitness',
@@ -136,17 +135,18 @@ class FitClient(GoogleServiceFetcher):
                                         scopes=["https://www.googleapis.com/auth/fitness.activity.read"])
 
     def get_sessions(self, since=None, until=None):
-        self.build_service()
-        kwargs = {
-            'userId': 'me'
-        }
-        if since:
-            kwargs['startTime'] = since.isoformat() + '.00Z'
-        if until:
-            kwargs['endTime'] = until.isoformat() + '.00Z'
-        results = self.service.users().sessions().list(**kwargs).execute()
-        sessions = results.get('session')
-        return sessions
+        success = self.build_service()
+        if success:
+            kwargs = {
+                'userId': 'me'
+            }
+            if since:
+                kwargs['startTime'] = since.isoformat() + '.00Z'
+            if until:
+                kwargs['endTime'] = until.isoformat() + '.00Z'
+            results = self.service.users().sessions().list(**kwargs).execute()
+            sessions = results.get('session')
+            return sessions
 
     def aggregate_activity_durations(self, date):
         '''
@@ -157,30 +157,31 @@ class FitClient(GoogleServiceFetcher):
         gfit_activities = self.user.get_integration_prop("gfit_activities", "").split(',')
         sessions = self.get_sessions(since=start, until=end)
         var_durations = {}  # activity -> duration in seconds
-        for s in sessions:
-            logging.debug(s)
-            start = int(s.get('startTimeMillis'))
-            end = int(s.get('endTimeMillis', 0))
-            activityType = s.get('activityType')
-            ms_duration = end - start
-            name = s.get('name', '')
-            description = s.get('description', '')
-            match_pieces = [name, description]
-            if activityType:
-                parsed_type = FitClient.ACTIVITY_TYPE.get(str(activityType))
-                if parsed_type:
-                    match_pieces.append(parsed_type)
-            match_str = ' '.join(match_pieces).lower()
-            logging.debug("compare %s to %s" % (gfit_activities, match_str))
-            activity_match = None
-            for activity in gfit_activities:
-                activity = activity.lower().strip()
-                match = activity in match_str
-                if match:
-                    activity_match = activity
-                    break
-            if activity_match:
-                if activity_match not in var_durations:
-                    var_durations[activity_match] = 0
-                var_durations[activity_match] += int(ms_duration / 1000)
+        if sessions:
+            for s in sessions:
+                logging.debug(s)
+                start = int(s.get('startTimeMillis'))
+                end = int(s.get('endTimeMillis', 0))
+                activityType = s.get('activityType')
+                ms_duration = end - start
+                name = s.get('name', '')
+                description = s.get('description', '')
+                match_pieces = [name, description]
+                if activityType:
+                    parsed_type = FitClient.ACTIVITY_TYPE.get(str(activityType))
+                    if parsed_type:
+                        match_pieces.append(parsed_type)
+                match_str = ' '.join(match_pieces).lower()
+                logging.debug("compare %s to %s" % (gfit_activities, match_str))
+                activity_match = None
+                for activity in gfit_activities:
+                    activity = activity.lower().strip()
+                    match = activity in match_str
+                    if match:
+                        activity_match = activity
+                        break
+                if activity_match:
+                    if activity_match not in var_durations:
+                        var_durations[activity_match] = 0
+                    var_durations[activity_match] += int(ms_duration / 1000)
         return var_durations

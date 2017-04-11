@@ -30,15 +30,21 @@ class GoogleServiceFetcher(object):
         self.scopes = scopes if scopes else []
 
     def build_service(self):
+        ok = False
         logging.debug("Building %s service for %s (%s)" % (self.credential_type, self.api, self.version))
         kwargs = {}
         if self.credential_type == 'user':
             if not self.http_auth:
                 self.get_http_auth()
             kwargs['http'] = self.http_auth
+            ok = bool(self.http_auth)
         else:
             kwargs['credentials'] = self.credentials
+            ok = bool(self.credentials)
         self.service = discovery.build(self.api, self.version, **kwargs)
+        if not ok:
+            logging.warning("Failed to build service for %s (%s) - Credential failure?" % (self.api, self.version))
+        return ok
 
     def set_google_credentials(self, credentials_object):
         logging.debug(credentials_object.to_json())
