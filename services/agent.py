@@ -31,7 +31,7 @@ AGENT_FLOW_APP = 3
 
 CONVO_EXPIRE_MINS = 5
 
-HELP_TEXT = "With the Flow agent, you can track top tasks each day, habits to build, and monthly and annual goals. You can also submit daily journals to track anything you want. I'm still in beta, so for full functionality, please visit http://flowdash.co"
+HELP_TEXT = "With the Flow agent, you can track top tasks each day, habits to build, and monthly and annual goals. You can also submit daily journals to track anything you want. I'm still in beta, so please visit http://flowdash.co to get set up and see everything you can do."
 
 
 class ConversationState(object):
@@ -98,6 +98,7 @@ class ConversationAgent(object):
         "No problem",
         "Of course",
         "Absolutely",
+        "OK"
     ]
 
     HELLO_BANTER = [
@@ -189,87 +190,82 @@ class ConversationAgent(object):
         MODES = ['questions', 'tasks', 'end']
         settings = tools.getJson(self.user.settings, {})
         questions = settings.get('journals', {}).get('questions', [])
-        local_time = self.user.local_time()
+        # local_time = self.user.local_time()
         end_convo = False
-        hr = local_time.hour
-        in_journal_window = hr >= JOURNAL.START_HOUR or hr < JOURNAL.END_HOUR or tools.on_dev_server()
+        # hr = local_time.hour
+        # in_journal_window = hr >= JOURNAL.START_HOUR or hr < JOURNAL.END_HOUR or tools.on_dev_server()
         if questions:
-            if in_journal_window:
-                jrnl = MiniJournal.Get(self.user)
-                if jrnl:
-                    return (JOURNAL.ALREADY_SUBMITTED_REPLY, True)
-                else:
-                    if not self.cs:
-                        self.cs = self._create_conversation_state()
-                        self.cs.set_state('mode', 'questions')
-                    mode = self.cs.state.get('mode')
-                    mode_finished = False
-                    save_response = True
-                    # Receive user message
-                    if mode == 'tasks':
-                        is_done = message in DONE_MESSAGES
-                        mode_finished = is_done
-                        save_response = not is_done
-                    elif mode == 'questions':
-                        last_q_index = self.cs.state.get('last_q_index', -1)
-                        last_question = last_q_index == len(questions) - 1
-                        mode_finished = last_question
-                        save_response = True
-                    if save_response:
-                        successful_add = self.cs.add_message_from_user(message)
-                        if not successful_add:
-                            reply = JOURNAL.INVALID_REPLY if mode == 'questions' else JOURNAL.INVALID_TASK
-                            return (reply, False)
-                    mode_index = MODES.index(mode)
-                    if mode_finished:
-                        mode = MODES[mode_index+1]
-                        self.cs.set_state('mode', mode)
-                    reply = None
-                    # Generate next reply
-                    if mode == 'questions':
-                        next_q_index = last_q_index + 1
-                        q = questions[next_q_index]
-                        reply = q.get('text')
-                        name = q.get('name')
-                        response_type = q.get('response_type')
-                        pattern = JOURNAL.PATTERNS.get(response_type)
-                        store_number = response_type in JOURNAL.NUMERIC_RESPONSES
-                        self.cs.expect_reply(pattern, name, store_number=store_number)  # Store as name
-                        self.cs.set_state('last_q_index', next_q_index)
-                    elif mode == 'tasks':
-                        # Ask to add tasks
-                        tasks = self.cs.response_data.get('tasks', [])
-                        additional = len(tasks) > 0
-                        reply = JOURNAL.TOP_TASK_PROMPT_ADDTL if additional else JOURNAL.TOP_TASK_PROMPT
-                        self.cs.expect_reply(JOURNAL.PTN_TEXT_RESPONSE, 'tasks', store_array=True)  # Store as name
-                    elif mode == 'end':
-                        # Finish and submit
-                        task_names = []
-                        if 'tasks' in self.cs.response_data:
-                            task_names = self.cs.response_data.pop('tasks')
-                        jrnl = MiniJournal.Create(self.user)
-                        jrnl.Update(data=self.cs.response_data)
-                        jrnl.parse_tags()
-                        jrnl.put()
-                        tasks = []
-                        if task_names:
-                            for tn in task_names:
-                                task = Task.Create(self.user, tn)
-                                tasks.append(task)
-                        ndb.put_multi(tasks)
-                        reply = "Report submitted!"
-                        end_convo = True
-                    if reply:
-                        self.cs.set_message_to_user(reply)
-                    if end_convo:
-                        self._expire_conversation()
-                    else:
-                        self._set_conversation_state()
-                    return (reply, end_convo)
+            jrnl = MiniJournal.Get(self.user)
+            if jrnl:
+                return (JOURNAL.ALREADY_SUBMITTED_REPLY, True)
             else:
-                text = "You have %d journal questions setup: %s" % (len(questions), ' and '.join([q.get('text') for q in questions]))
-                text += ". You can submit your report after %s:00" % JOURNAL.START_HOUR
-                return (text, True)
+                if not self.cs:
+                    self.cs = self._create_conversation_state()
+                    self.cs.set_state('mode', 'questions')
+                mode = self.cs.state.get('mode')
+                mode_finished = False
+                save_response = True
+                # Receive user message
+                if mode == 'tasks':
+                    is_done = message in DONE_MESSAGES
+                    mode_finished = is_done
+                    save_response = not is_done
+                elif mode == 'questions':
+                    last_q_index = self.cs.state.get('last_q_index', -1)
+                    last_question = last_q_index == len(questions) - 1
+                    mode_finished = last_question
+                    save_response = True
+                if save_response:
+                    successful_add = self.cs.add_message_from_user(message)
+                    if not successful_add:
+                        reply = JOURNAL.INVALID_REPLY if mode == 'questions' else JOURNAL.INVALID_TASK
+                        return (reply, False)
+                mode_index = MODES.index(mode)
+                if mode_finished:
+                    mode = MODES[mode_index+1]
+                    self.cs.set_state('mode', mode)
+                reply = None
+                # Generate next reply
+                if mode == 'questions':
+                    next_q_index = last_q_index + 1
+                    q = questions[next_q_index]
+                    reply = q.get('text')
+                    name = q.get('name')
+                    response_type = q.get('response_type')
+                    pattern = JOURNAL.PATTERNS.get(response_type)
+                    store_number = response_type in JOURNAL.NUMERIC_RESPONSES
+                    self.cs.expect_reply(pattern, name, store_number=store_number)  # Store as name
+                    self.cs.set_state('last_q_index', next_q_index)
+                elif mode == 'tasks':
+                    # Ask to add tasks
+                    tasks = self.cs.response_data.get('tasks', [])
+                    additional = len(tasks) > 0
+                    reply = JOURNAL.TOP_TASK_PROMPT_ADDTL if additional else JOURNAL.TOP_TASK_PROMPT
+                    self.cs.expect_reply(JOURNAL.PTN_TEXT_RESPONSE, 'tasks', store_array=True)  # Store as name
+                elif mode == 'end':
+                    # Finish and submit
+                    task_names = []
+                    if 'tasks' in self.cs.response_data:
+                        task_names = self.cs.response_data.pop('tasks')
+                    jrnl = MiniJournal.Create(self.user)
+                    jrnl.Update(data=self.cs.response_data)
+                    jrnl.parse_tags()
+                    jrnl.put()
+                    tasks = []
+                    if task_names:
+                        for tn in task_names:
+                            task = Task.Create(self.user, tn)
+                            tasks.append(task)
+                    ndb.put_multi(tasks)
+                    reply = "Report submitted!"
+                    end_convo = True
+                if reply:
+                    self.cs.set_message_to_user(reply)
+                if end_convo:
+                    self._expire_conversation()
+                else:
+                    self._set_conversation_state()
+                return (reply, end_convo)
         else:
             return ("Please visit flowdash.co to set up journal questions", True)
 
@@ -518,8 +514,8 @@ class ConversationAgent(object):
                 (r'(?:my tasks|my to ?do list|view tasks|tasks today|today\'?s tasks)', 'input.task_view'),
                 (r'(?:daily report|daily journal)', 'input.journal'),
                 (r'(?:what up|what\'s up|how are you|how\'s it going|what\'s new|you\'re well\?)', 'input.hello_question'),
-                (r'(?:hi|hello|yo|i see you|hey flow)', 'input.hello'),
                 (r'(?:help me|show commands|how does this work|what can i do|what can I say)', 'input.help'),
+                (r'(?:^hi$|^hello$|^yo$|i see you|^hey flow$)', 'input.hello'),
                 (r'^(help|\?\?\?$)', 'input.help'),
                 (r'^disconnect$', 'input.disconnect')
             ]
