@@ -146,12 +146,6 @@ To create a new messenger bot for your own instance of Flow, see the Facebook qu
 (Beta / admin only currently) Push daily panel data to BigQuery for additional analysis, e.g. run regressions
 with TensorFlow, etc.
 
-## Planned Features
-
-* Track metrics & activities throughout day via mobile reminders ala https://www.trackyourhappiness.org/
-	* Mobile app via react-native
-* Desktop notifications
-
 ## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](.github/CONTRIBUTING.md)

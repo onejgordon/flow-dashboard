@@ -201,7 +201,7 @@ class HabitAPI(handlers.JsonRequestHandler):
         '''
         id = self.request.get_range('id')
         params = tools.gets(self,
-                            strings=['name', 'color', 'icon'],
+                            strings=['name', 'description', 'color', 'icon'],
                             booleans=['archived'],
                             integers=['tgt_weekly'],
                             supportTextBooleans=True

@@ -451,6 +451,7 @@ class Habit(UserAccessible):
     """
     dt_created = ndb.DateTimeProperty(auto_now_add=True)
     name = ndb.TextProperty()
+    description = ndb.TextProperty()
     color = ndb.TextProperty()
     tgt_weekly = ndb.IntegerProperty(indexed=False)
     archived = ndb.BooleanProperty(default=False)
@@ -461,6 +462,7 @@ class Habit(UserAccessible):
             'id': self.key.id(),
             'ts_created': tools.unixtime(self.dt_created),
             'name': self.name,
+            'description': self.description,
             'color': self.color,
             'archived': self.archived,
             'tgt_weekly': self.tgt_weekly,
@@ -485,6 +487,8 @@ class Habit(UserAccessible):
     def Update(self, **params):
         if 'name' in params:
             self.name = params.get('name').title()
+        if 'description' in params:
+            self.description = params.get('description').title()
         if 'color' in params:
             self.color = params.get('color')
         if 'icon' in params:

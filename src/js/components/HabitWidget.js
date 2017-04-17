@@ -204,7 +204,7 @@ export default class HabitWidget extends React.Component {
     return (
       <tr key={h.id}>
         <td className="text-center">
-          <a href="javascript:void(0)" onClick={this.show_analysis.bind(this, h)}><span className="show_hover"><FontIcon className="material-icons" style={{fontSize: 17, lineHeight: '17px'}}>show_chart</FontIcon></span> <b style={st}>{ h.name }</b></a>
+          <a href="javascript:void(0)" onClick={this.show_analysis.bind(this, h)}><span className="show_hover"><FontIcon className="material-icons" style={{fontSize: 17, lineHeight: '17px'}}>show_chart</FontIcon></span> <b style={st} title={h.description || null}>{ h.name }</b></a>
         </td>
         {res}
         { _commitment }

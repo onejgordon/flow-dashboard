@@ -510,7 +510,7 @@ class ConversationAgent(object):
                 (r'(?:add habit|new habit|create habit)[:-]? [HABIT_PATTERN]', 'input.habit_add'),
                 (r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)', 'input.habit_commit'),
                 (r'(?:my habits|view habits|habit progress|habits today)', 'input.habit_status'),
-                (r'(?:add task|set task|new task) [TASK_PATTERN]', 'input.task_add'),
+                (r'(?:add task|set task|new task|remind me to) [TASK_PATTERN]', 'input.task_add'),
                 (r'(?:my tasks|my to ?do list|view tasks|tasks today|today\'?s tasks)', 'input.task_view'),
                 (r'(?:daily report|daily journal)', 'input.journal'),
                 (r'(?:what up|what\'s up|how are you|how\'s it going|what\'s new|you\'re well\?)', 'input.hello_question'),

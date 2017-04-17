@@ -110,10 +110,6 @@ class AgentTestCase(BaseTestCase):
             ('i finished meditate', 'input.habit_or_task_report', {'habit_or_task': 'meditate'}),
             ('set run as complete', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
 
-            # Task reports
-            ('mark go to the pool as done', 'input.habit_or_task_report', {'habit_or_task': 'go to the pool'}),
-            ('i completed feed the cat', 'input.habit_or_task_report', {'habit_or_task': 'feed the cat'}),
-
             # Habit commitments
             ('i will run tonight', 'input.habit_commit', {'habit': 'run'}),
             ('commit to make dinner tonight', 'input.habit_commit', {'habit': 'make dinner'}),
@@ -129,10 +125,15 @@ class AgentTestCase(BaseTestCase):
 
             # Add task
             ('add task finish report', 'input.task_add', {'task_name': 'finish report'}),
+            ('remind me to clean the closet', 'input.task_add', {'task_name': 'clean the closet'}),
 
             # View tasks
             ('my tasks', 'input.task_view', None),
             ('tasks today', 'input.task_view', None),
+
+            # Task reports
+            ('mark go to the pool as done', 'input.habit_or_task_report', {'habit_or_task': 'go to the pool'}),
+            ('i completed feed the cat', 'input.habit_or_task_report', {'habit_or_task': 'feed the cat'}),
 
             # Help
             ('what can i do', 'input.help', None),

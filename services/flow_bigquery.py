@@ -73,7 +73,8 @@ class BigQueryClient(GoogleServiceFetcher):
             self._field("habits_done", "INT64"),
             self._field("habits_cmt", "INT64"),
             self._field("habits_cmt_undone", "INT64", description="Habits committed but not completed"),
-            self._field("items_read", "INT64")
+            self._field("items_read", "INT64"),
+            self._field("fav_items_read", "INT64")
         ]
         self._maybe_get_habits()
         self._maybe_get_journal_questions()
@@ -139,8 +140,11 @@ class BigQueryClient(GoogleServiceFetcher):
                     tasks_done += 1
                 else:
                     tasks_undone += 1
+            habits_checklist = self.habits.keys()  # list of habit IDs
             for hd in habitdays:
-                h = self.habits.get(hd.habit.id())
+                hid = hd.habit.id()
+                h = self.habits.get(hid)
+                habits_checklist.remove(hid)
                 if h:
                     row[self._habit_col(h)] = 'true' if hd.done else 'false'
                 if hd.done:
@@ -149,7 +153,14 @@ class BigQueryClient(GoogleServiceFetcher):
                     habits_cmt += 1
                     if not hd.done:
                         habits_cmt_undone += 1
+            if habits_checklist:
+                # Missing habit-days, need to create columns anyway
+                for hid in habits_checklist:
+                    h = self.habits.get(hid)
+                    if h:
+                        row[self._habit_col(h)] = 'false'
             items_read = len(readables)
+            fav_items_read = len([r in readables if r.favorite])
             row.update({
                 "id": iso_date,
                 "date": iso_date,
@@ -158,7 +169,8 @@ class BigQueryClient(GoogleServiceFetcher):
                 "habits_done": habits_done,
                 "habits_cmt": habits_cmt,
                 "habits_cmt_undone": habits_cmt_undone,
-                "items_read": items_read
+                "items_read": items_read,
+                "fav_items_read": fav_items_read
             })
             for q in self.journal_questions:
                 name = q.get('name')
