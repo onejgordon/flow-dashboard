@@ -67,7 +67,7 @@ class APITestCase(BaseTestCase):
         h = Habit.get_by_id(h.get('id'), parent=self.u.key)
         self.assertIsNone(h)  # Confirm deletion
 
-    def test_zgoal_calls(self):
+    def test_goal_calls(self):
         response = self.get_json("/api/goal", {}, headers=self.api_headers)
         goal = response.get('goals')[0]
         self.assertEqual(goal.get('text')[0], "Get it done")
@@ -90,25 +90,26 @@ class APITestCase(BaseTestCase):
 
     def test_project_calls(self):
         p = Project.Create(self.u)
-        p.Update(urls=['http://www.x.com','http://www.y.com'],
+        p.Update(urls=['http://www.x.com', 'http://www.y.com'],
                  title="New Project",
                  subhead="Details")
         p.put()
 
         # List
         response = self.get_json("/api/project", {}, headers=self.api_headers)
-        h = response.get('projects')[0]
-        self.assertEqual(h.get('title'), "New Project")
+        prj = response.get('projects')[0]
+        self.assertEqual(prj.get('title'), "New Project")
 
         # Update
-        response = self.post_json("/api/project", {'id': h.get('id'), 'title': 'New Name'}, headers=self.api_headers)
-        h = response.get('project')
-        self.assertEqual(h.get('title'), 'New Name')
+        response = self.post_json("/api/project", {'id': prj.get('id'), 'title': 'New Name', 'due': '2018-01-01'}, headers=self.api_headers)
+        prj = response.get('project')
+        self.assertEqual(prj.get('title'), 'New Name')
+        self.assertEqual(prj.get('due'), '2018-01-01')
 
         # Delete
-        response = self.post_json("/api/project/delete", {'id': h.get('id')}, headers=self.api_headers)
-        h = self.u.get(Project, id=h.get('id'))
-        self.assertIsNone(h)  # Confirm deletion
+        response = self.post_json("/api/project/delete", {'id': prj.get('id')}, headers=self.api_headers)
+        prj = self.u.get(Project, id=prj.get('id'))
+        self.assertIsNone(prj)  # Confirm deletion
 
     def test_event_calls(self):
         date_start = datetime.today()

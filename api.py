@@ -48,6 +48,7 @@ class ProjectAPI(handlers.JsonRequestHandler):
             strings=['title', 'subhead', 'url1', 'url2'],
             booleans=['starred', 'archived'],
             integers=['progress'],
+            dates=['due'],
             supportTextBooleans=True
         )
         if id:
@@ -80,6 +81,7 @@ class ProjectAPI(handlers.JsonRequestHandler):
             prj.key.delete()
             self.success = True
         self.set_response()
+
 
 class TaskAPI(handlers.JsonRequestHandler):
 

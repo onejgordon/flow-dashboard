@@ -116,7 +116,8 @@ export default class ProjectLI extends React.Component {
         );
       })
     } else title = <a href={project.urls[0]} target="_blank">{ project.title || project.urls[0] || "Unnamed Project" }</a>
-    let subheads = [<span key="dt" className="label label-default" style={{marginRight: "5px"}}><DateTime ms={project.ts_created}/></span>];
+    let subheads = [<span key="dt" className="label label-default" style={{marginRight: "5px"}}><DateTime prefix="Created" ms={project.ts_created}/></span>];
+    if (project.due != null) subheads.push(<span key="due" className="label label-default" style={{marginRight: "5px"}}><DateTime prefix="Due" ms={new Date(project.due).getTime()}/></span>);
     if (project.subhead) subheads.push(project.subhead)
     subhead = <h3 style={this.SUBHEAD}>{ subheads }</h3>
     let st = {padding: "10px", marginBottom: "10px"};

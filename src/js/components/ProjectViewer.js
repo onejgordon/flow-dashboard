@@ -1,11 +1,12 @@
 var React = require('react');
-import { FontIcon, Dialog, RaisedButton, FlatButton, TextField, Chip } from 'material-ui';
+import { DatePicker, Dialog, RaisedButton, FlatButton, TextField } from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 import {clone} from 'lodash';
 import {findIndexById} from 'utils/store-utils';
 var ProjectLI = require('components/list_items/ProjectLI');
 var api = require('utils/api');
 var ProjectAnalysis = require('components/ProjectAnalysis');
+var util = require('utils/util');
 
 @changeHandler
 export default class ProjectViewer extends React.Component {
@@ -56,6 +57,7 @@ export default class ProjectViewer extends React.Component {
   create_project() {
     let {form} = this.state;
     let params = clone(form);
+    if (params.due) params.due = util.printDateObj(params.due);
     api.post("/api/project", params, (res) => {
       if (res.project) this.setState({projects: this.state.projects.concat(res.project), project_dialog_open: false, form: {}});
     })
@@ -82,6 +84,7 @@ export default class ProjectViewer extends React.Component {
         <TextField name="title" placeholder="Project title" value={form.title} onChange={this.changeHandler.bind(this, 'form', 'title')} fullWidth />
         <TextField name="subhead" placeholder="Project subhead" value={form.subhead} onChange={this.changeHandler.bind(this, 'form', 'subhead')} fullWidth />
         <TextField name="url1" placeholder="Project URL" value={form.url1} onChange={this.changeHandler.bind(this, 'form', 'url1')} fullWidth />
+        <DatePicker autoOk={true} floatingLabelText="Due" formatDate={util.printDateObj} value={form.due} onChange={this.changeHandlerNilVal.bind(this, 'form', 'due')} textFieldStyle={{fullWidth: true}} />
 
       </Dialog>
       )

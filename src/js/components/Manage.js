@@ -178,6 +178,7 @@ export default class Manage extends React.Component {
                     { name: 'id', label: "ID", editable: false, fixed: true },
                     { name: 'title', label: "Title", editable: true },
                     { name: 'subhead', label: "Subhead", editable: true },
+                    { name: 'due', label: "Date Due (YYYY-MM-DD)", editable: true },
                     { name: 'url1', label: "URL 1", editable: true, showInList: false },
                     { name: 'url2', label: "URL 2", editable: true, showInList: false }
                 ],

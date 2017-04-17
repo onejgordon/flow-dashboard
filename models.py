@@ -291,6 +291,7 @@ class Project(UserAccessible):
     dt_created = ndb.DateTimeProperty(auto_now_add=True)
     dt_completed = ndb.DateTimeProperty()
     dt_archived = ndb.DateTimeProperty()
+    dt_due = ndb.DateTimeProperty()
     urls = ndb.TextProperty(repeated=True)
     title = ndb.TextProperty()
     subhead = ndb.TextProperty()
@@ -305,6 +306,7 @@ class Project(UserAccessible):
             'ts_created': tools.unixtime(self.dt_created),
             'ts_completed': tools.unixtime(self.dt_completed),
             'ts_archived': tools.unixtime(self.dt_archived),
+            'due': tools.iso_date(self.dt_due),
             'title': self.title,
             'subhead': self.subhead,
             'progress': self.progress,
@@ -342,6 +344,8 @@ class Project(UserAccessible):
                 self.dt_archived = datetime.now()
         if 'progress' in params:
             self.set_progress(params.get('progress'))
+        if 'due' in params:
+            self.dt_due = params.get('due')
 
     def set_progress(self, progress):
         if not self.progress_ts:

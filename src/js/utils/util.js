@@ -199,12 +199,14 @@ var util = {
         let secs_since = Math.round((now - ms)/1000);
         let handled = false;
         let full_date = util.printDate(ms);
+        let past = secs_since > 0;
+        let diff_label = past ? "ago" : "from now";
         for (let i=0; i<LEVELS.length; i++) {
             let level = LEVELS[i];
-            let units_since = secs_since / level.seconds;
-            if (units_since < level.cutoff) {
+            let units_diff = Math.abs(secs_since / level.seconds);
+            if (units_diff < level.cutoff) {
                 if (level.recent) recent = true;
-                text = parseInt(units_since) + " " + level.label + "(s) ago";
+                text = parseInt(units_diff) + " " + level.label + "(s) " + diff_label;
                 handled = true;
                 break;
             }
