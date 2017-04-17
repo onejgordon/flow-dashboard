@@ -160,7 +160,7 @@ class BigQueryClient(GoogleServiceFetcher):
                     if h:
                         row[self._habit_col(h)] = 'false'
             items_read = len(readables)
-            fav_items_read = len([r in readables if r.favorite])
+            fav_items_read = len([r for r in readables if r.favorite])
             row.update({
                 "id": iso_date,
                 "date": iso_date,
