@@ -73,6 +73,10 @@ export default class ProjectLI extends React.Component {
     this.props.onShowAnalysis();
   }
 
+  handle_edit_click(p) {
+    if (this.props.onEdit) this.props.onEdit(p);
+  }
+
   render_progress() {
     let {with_progress, project} = this.props;
     if (!with_progress || project.progress == -1) return null;
@@ -117,7 +121,13 @@ export default class ProjectLI extends React.Component {
       })
     } else title = <a href={project.urls[0]} target="_blank">{ project.title || project.urls[0] || "Unnamed Project" }</a>
     let subheads = [<span key="dt" className="label label-default" style={{marginRight: "5px"}}><DateTime prefix="Created" ms={project.ts_created}/></span>];
-    if (project.due != null) subheads.push(<span key="due" className="label label-default" style={{marginRight: "5px"}}><DateTime prefix="Due" ms={new Date(project.due).getTime()}/></span>);
+    if (project.due != null) {
+      let due_date = new Date(project.due);
+      let ms = due_date.getTime();
+      let days_until = util.dayDiff(due_date, new Date());
+      let color = days_until < 5 ? '#FC4C4C' : 'gray';
+      subheads.push(<span key="due" className="label label-default" style={{marginRight: "5px"}}><DateTime color={color} prefix="Due" ms={ms}/></span>);
+    }
     if (project.subhead) subheads.push(project.subhead)
     subhead = <h3 style={this.SUBHEAD}>{ subheads }</h3>
     let st = {padding: "10px", marginBottom: "10px"};
@@ -128,9 +138,10 @@ export default class ProjectLI extends React.Component {
           <div className="col-sm-12">
             <div className="pull-right">
               <IconMenu iconButtonElement={<IconButton><FontIcon className="material-icons">more_vert</FontIcon></IconButton>}>
-                <MenuItem primaryText="Toggle progress tracking" onClick={this.toggle_progress.bind(this)} />
-                <MenuItem primaryText="Archive project" onClick={this.archive.bind(this)} />
-                <MenuItem primaryText="Chart Progress" onClick={this.show_analysis.bind(this)} />
+                <MenuItem primaryText="Edit" leftIcon={<FontIcon className="material-icons">mode_edit</FontIcon>} onClick={this.handle_edit_click.bind(this, project)} />
+                <MenuItem primaryText="Toggle progress tracking" leftIcon={<FontIcon className="material-icons">view_week</FontIcon>} onClick={this.toggle_progress.bind(this)} />
+                <MenuItem primaryText="Archive project" leftIcon={<FontIcon className="material-icons">archive</FontIcon>} onClick={this.archive.bind(this)} />
+                <MenuItem primaryText="Chart Progress" leftIcon={<FontIcon className="material-icons">show_chart</FontIcon>} onClick={this.show_analysis.bind(this)} />
               </IconMenu>
             </div>
             <h2 style={this.H}>

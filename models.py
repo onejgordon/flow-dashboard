@@ -313,7 +313,7 @@ class Project(UserAccessible):
             'progress_ts': self.progress_ts,
             'archived': self.archived,
             'starred': self.starred,
-            'urls': self.urls
+            'urls': [url for url in self.urls if url]
         }
 
     @staticmethod
