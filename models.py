@@ -1159,12 +1159,14 @@ class Readable(UserSearchable):
 
     @staticmethod
     def Slug(author, title):
-        if title and author:
-            return "%s (%s)" % (tools.strip_symbols(title).upper(),
-                                tools.parse_last_name(tools.strip_symbols(author)).upper())
+        if title:
+            slug = tools.strip_symbols(title).upper()
+            if author:
+                slug += " (%s)" % tools.parse_last_name(tools.strip_symbols(author)).upper()
+            return slug
 
     def generate_slug(self):
-        if self.author and self.title:
+        if self.title:
             self.slug = Readable.Slug(self.author, self.title)
             return self.slug
 
@@ -1204,6 +1206,7 @@ class Quote(UserSearchable):
             'link': self.link,
             'content': self.content,
             'location': self.location,
+            'readable': self.readable.id() if self.readable else None,
             'iso_date': tools.iso_date(self.dt_added) if self.dt_added else None,
             'tags': self.tags
         }
@@ -1254,13 +1257,15 @@ class Quote(UserSearchable):
     def source_slug(self):
         pattern = r"(?P<title>.*) \((?P<author>.*)\)"
         match = re.search(pattern, self.source, flags=re.M)
+        author = None
         if match:
             mdict = match.groupdict()
-            if 'title' in mdict and 'author' in mdict:
-                title = mdict.get('title')
-                author = tools.parse_last_name(mdict.get('author'))
-                slug = Readable.Slug(author, title)
-                return slug
+            title = mdict.get('title')
+            author = tools.parse_last_name(mdict.get('author'))
+        else:
+            title = self.source
+        if title:
+            return Readable.Slug(author, title)
 
     def lookup_readable(self, user):
         if self.source:

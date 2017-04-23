@@ -35,10 +35,12 @@ export default class QuoteLI extends React.Component {
     let {quote} = this.props;
     let {expanded} = this.state;
     let icon = expanded ? 'expand_less' : 'expand_more';
-    let subs = [quote.source];
-    if (quote.location) subs.push(quote.location);
-    if (quote.iso_date) subs.push(quote.iso_date);
-    let sec = subs.join(' | ');
+    let linked_readable = quote.readable != null;
+    let src = quote.source;
+    if (linked_readable) src = <span style={{color: '#2C8FFF'}}>{ src }</span>
+    let subs = [src];
+    if (quote.location) subs.push(<span> &middot; {quote.location}</span>);
+    if (quote.iso_date) subs.push(<span> &middot; {quote.iso_date}</span>);
     let text = expanded ? <span style={{fontSize: "1.3em", lineHeight: "1.3em"}}>{quote.content}</span> : util.truncate(quote.content, 120);
     let menu = (
       <IconMenu iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
@@ -49,7 +51,7 @@ export default class QuoteLI extends React.Component {
     return (
       <ListItem primaryText={text}
                 rightIconButton={menu}
-                secondaryText={sec}
+                secondaryText={subs}
                 onTouchTap={this.toggle_expanded.bind(this)} />
     );
   }

@@ -1,7 +1,8 @@
 var React = require('react');
-import {Dialog, FontIcon, Paper, TextField,
-  RaisedButton, FlatButton} from 'material-ui';
+var Router = require('react-router');
+import {Dialog, TextField, FlatButton, RaisedButton} from 'material-ui';
 var api = require('utils/api');
+var Link = Router.Link;
 var QuoteLI = require('components/list_items/QuoteLI');
 var FetchedList = require('components/common/FetchedList');
 import {changeHandler} from 'utils/component-utils';
@@ -38,7 +39,7 @@ export default class ReadingDetail extends React.Component {
           notes: r.notes,
           tags: r.tags.join(', ')
         }
-        this.setState({form});
+        this.setState({form: form, editing: false});
       }
     }
   }
@@ -73,6 +74,10 @@ export default class ReadingDetail extends React.Component {
     return r.source_url || r.url;
   }
 
+  dismiss() {
+    if (this.props.onDismiss) this.props.onDismiss();
+  }
+
   render() {
     let {readable} = this.props;
     let {form, editing} = this.state;
@@ -83,9 +88,9 @@ export default class ReadingDetail extends React.Component {
       title = readable.title;
       if (readable.author) title += ` (${readable.author})`;
       actions = [
-        <FlatButton label="Goto Source" onClick={this.goto_url.bind(this, this.get_link_url.bind(this))} />,
-        <FlatButton label="Save" onClick={this.save.bind(this)} disabled={!editing} />,
+        <RaisedButton primary={true} label="Save" onClick={this.save.bind(this)} disabled={!editing} />,
         <FlatButton label="Edit" onClick={this.setState.bind(this, {editing: true})} disabled={editing} />,
+        <FlatButton label="Close" onClick={this.dismiss.bind(this)} disabled={editing} />,
       ]
       let params = {
         readable_id: readable.id
@@ -93,12 +98,12 @@ export default class ReadingDetail extends React.Component {
       content = (
         <div style={{padding: '10px'}}>
           <div>
-            <b>Read:</b> { readable.date_read || '--' }<br/>
-            <b>URL:</b> { readable.url || '--' }<br/>
-            <b>Source URL:</b> { readable.source_url || '--' }<br/>
+            <b>Read:</b> { readable.date_read || 'Not Read' }<br/>
+            <b>URL:</b> <Link target="_blank" to={readable.url}>{ readable.url || '--' }</Link><br/>
+            <b>Source URL:</b> <Link target="_blank" to={readable.source_url}>{ readable.source_url || '--' }</Link><br/>
           </div>
 
-          <TextField floatingLabelText="Tags" value={form.tags}
+          <TextField floatingLabelText="Tags" value={form.tags || ''}
                      onChange={this.changeHandler.bind(this, 'form', 'tags')}
                      disabled={!editing} />
 
@@ -126,7 +131,7 @@ export default class ReadingDetail extends React.Component {
     }
     return (
       <Dialog open={open} title={title}
-              onRequestClose={this.props.onDismiss.bind(this)}
+              onRequestClose={this.dismiss.bind(this)}
               autoScrollBodyContent={true}
               actions={actions}>{content}</Dialog>
     );
