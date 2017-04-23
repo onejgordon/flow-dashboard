@@ -63,6 +63,13 @@ export default class ReadableLI extends React.Component {
     return r.source_url || r.url;
   }
 
+  handle_item_click(r) {
+    if (this.props.onItemClick != null) this.props.onItemClick(r);
+    else {
+      this.goto_url.bind(this, this.get_link_url(readable))
+    }
+  }
+
   render() {
     let {readable} = this.props;
     let {notes_visible, form} = this.state;
@@ -101,7 +108,7 @@ export default class ReadableLI extends React.Component {
           className="readable"
           primaryText={ readable.title }
           secondaryText={ subhead }
-          onTouchTap={this.goto_url.bind(this, this.get_link_url(readable))}
+          onTouchTap={this.handle_item_click.bind(this, readable)}
           rightIconButton={menu}
           leftAvatar={avatar} />
 

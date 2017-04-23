@@ -1011,6 +1011,7 @@ class Readable(UserSearchable):
     dt_read = ndb.DateTimeProperty()
     title = ndb.TextProperty()  # Can have multiple goals for period
     author = ndb.TextProperty()
+    slug = ndb.StringProperty()  # Uppercase TITLE (AUTHOR LAST NAME), symbols removed
     image_url = ndb.TextProperty()
     url = ndb.TextProperty()  # Original source URL
     favorite = ndb.BooleanProperty(default=False)
@@ -1028,6 +1029,7 @@ class Readable(UserSearchable):
             'id': self.key.id(),
             'title': self.title,
             'author': self.author,
+            'slug': self.slug,
             'favorite': self.favorite,
             'image_url': self.image_url,
             'url': self.url,  # Original url
@@ -1099,8 +1101,15 @@ class Readable(UserSearchable):
                                        tags=tags, dt_read=dt_read,
                                        image_url=image_url, author=author,
                                        word_count=word_count)
+            if not r.slug:
+                r.generate_slug()
             r.has_notes = bool(r.notes)
             return r
+
+    @staticmethod
+    @auto_cache()
+    def GetBySlug(user, slug):
+        return Readable.query(ancestor=user.key).filter(Readable.slug == slug).get()
 
     def Update(self, **params):
         if 'read' in params:
@@ -1135,7 +1144,22 @@ class Readable(UserSearchable):
             self.author = params.get('author')
         if 'word_count' in params:
             self.word_count = params.get('word_count')
-        self.update_sd() # doc put
+        if not self.slug:
+            self.generate_slug()
+        self.update_sd()  # doc put
+
+    def author_last_name(self):
+        if self.author:
+            last_first = ',' in self.author
+            if last_first:
+                return self.author.split(',')[0]
+            else:
+                return self.author.split(' ')[-1]
+
+    def generate_slug(self):
+        if self.title and self.author:
+            self.slug = "%s (%s)" % (tools.strip_symbols(self.title).upper(),
+                                     tools.strip_symbols(self.author_last_name()).upper())
 
     def generate_sd(self):
         return self.doc_from_fields(text_fields=['title', 'notes', 'author'],

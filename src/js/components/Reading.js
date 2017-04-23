@@ -1,6 +1,7 @@
 var React = require('react');
 import {Link} from 'react-router';
 var UserStore = require('stores/UserStore');
+var ReadingDetail = require('components/ReadingDetail');
 var ReadableLI = require('components/list_items/ReadableLI');
 var QuoteLI = require('components/list_items/QuoteLI');
 import {Tabs, Tab, RadioButton, RadioButtonGroup, Paper, RaisedButton, TextField,
@@ -25,6 +26,7 @@ export default class Reading extends React.Component {
                 quotes: '',
                 readings: ''
             },
+            reading_detail: null,
             samples: {},
             random_showing: null,
             random_type_showing: null
@@ -94,6 +96,10 @@ export default class Reading extends React.Component {
         } else toastr.error("Malformed or empty? Must be JSON array");
     }
 
+    set_readable_detail(r) {
+        this.setState({reading_detail: r});
+    }
+
     render_quote(q) {
         return <QuoteLI key={q.id} quote={q} />
     }
@@ -108,6 +114,7 @@ export default class Reading extends React.Component {
 
     render_readable(r) {
         return <ReadableLI key={r.id} readable={r}
+                  onItemClick={this.set_readable_detail.bind(this)}
                   onUpdate={this.readable_update.bind(this)}
                   onDelete={this.readable_delete.bind(this)} />
     }
@@ -151,7 +158,7 @@ export default class Reading extends React.Component {
     }
 
     render() {
-        let {form} = this.state;
+        let {form, reading_detail} = this.state;
         let readable_params = {};
         if (form.reading_filter) readable_params[form.reading_filter] = 1;
         return (
@@ -169,6 +176,8 @@ export default class Reading extends React.Component {
                     <FlatButton label="Random Quote" onClick={this.get_random.bind(this, 'quote')} />
                     <FlatButton label="Random Reading Notes" onClick={this.get_random.bind(this, 'readable')} />
                 </div>
+
+                <ReadingDetail readable={reading_detail} onDismiss={this.setState.bind(this, {reading_detail: null})} />
 
                 <Tabs>
                     <Tab label="Reading">
