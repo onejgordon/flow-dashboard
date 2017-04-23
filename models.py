@@ -1223,8 +1223,12 @@ class Quote(UserSearchable):
             return q
 
     @staticmethod
-    def Fetch(user, limit=50, offset=0, keys_only=False):
-        return Quote.query(ancestor=user.key).order(-Quote.dt_added).fetch(limit=limit, offset=offset, keys_only=keys_only)
+    def Fetch(user, readable_id=None, limit=50, offset=0, keys_only=False):
+        query = Quote.query(ancestor=user.key).order(-Quote.dt_added)
+        if readable_id:
+            key = ndb.Key('User', user.key.id(), 'Readable', readable_id)
+            query = query.filter(Quote.readable == key)
+        return query.fetch(limit=limit, offset=offset, keys_only=keys_only)
 
     def Update(self, **params):
         if 'source' in params:

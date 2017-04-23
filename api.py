@@ -479,7 +479,8 @@ class QuoteAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def list(self, d):
         page, max, offset = tools.paging_params(self.request)
-        quotes = Quote.Fetch(self.user, limit=max, offset=offset)
+        readable_id = self.request.get('readable_id')
+        quotes = Quote.Fetch(self.user, readable_id=readable_id, limit=max, offset=offset)
         self.set_response({
             'quotes': [q.json() for q in quotes]
         }, success=True)

@@ -43,6 +43,15 @@ class ReadableTestCase(BaseTestCase):
         self.assertIsNotNone(r)
         self.assertEqual(r.source_id, R_SOURCE_ID)
 
+        # Create another quote with no readable to link to
+        q = Quote.Create(self.u, "xxx", "content...")
+        q.put()
 
+        self.assertIsNone(q.readable)
+
+        # Fetch quotes for readable
+        quotes = Quote.Fetch(self.u, readable_id=r.key.id())
+        self.assertEqual(len(quotes), 1)
+        self.assertEqual(quotes[0].source, source)
 
 
