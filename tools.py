@@ -515,3 +515,15 @@ def parseTimeString(raw):
             return dt.time()
     except Exception, e:
         return None
+
+
+def parse_last_name(name):
+    '''
+    Parse last name from name in either "Adam J Smith" or "Smith, Adam" format
+    '''
+    if name:
+        last_first = ',' in name
+        if last_first:
+            return name.split(',')[0]
+        else:
+            return name.split(' ')[-1]

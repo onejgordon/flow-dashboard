@@ -100,6 +100,11 @@ export default class Reading extends React.Component {
         this.setState({reading_detail: r});
     }
 
+    handle_readable_update(r) {
+        this.refs.readables.update_item_by_key(r, 'id');
+        this.setState({reading_detail: null})
+    }
+
     render_quote(q) {
         return <QuoteLI key={q.id} quote={q} />
     }
@@ -177,7 +182,9 @@ export default class Reading extends React.Component {
                     <FlatButton label="Random Reading Notes" onClick={this.get_random.bind(this, 'readable')} />
                 </div>
 
-                <ReadingDetail readable={reading_detail} onDismiss={this.setState.bind(this, {reading_detail: null})} />
+                <ReadingDetail readable={reading_detail}
+                    onUpdate={this.handle_readable_update.bind(this)}
+                    onDismiss={this.setState.bind(this, {reading_detail: null})} />
 
                 <Tabs>
                     <Tab label="Reading">

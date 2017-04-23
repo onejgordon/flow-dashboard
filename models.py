@@ -1024,6 +1024,9 @@ class Readable(UserSearchable):
     read = ndb.BooleanProperty(default=False)
     word_count = ndb.IntegerProperty()
 
+    def __str__(self):
+        return "%s (%s)" % (self.title, self.author)
+
     def json(self):
         return {
             'id': self.key.id(),
@@ -1039,6 +1042,7 @@ class Readable(UserSearchable):
             'notes': self.notes,
             'has_notes': self.has_notes,
             'read': self.read,
+            'tags': self.tags,
             'word_count': self.word_count,
             'date_read': tools.iso_date(self.dt_read) if self.dt_read else None
         }
@@ -1107,6 +1111,11 @@ class Readable(UserSearchable):
             return r
 
     @staticmethod
+    def GetByTitleAuthor(user, author, title):
+        slug = Readable.Slug(author, title)
+        return Readable.GetBySlug(user, slug)
+
+    @staticmethod
     @auto_cache()
     def GetBySlug(user, slug):
         return Readable.query(ancestor=user.key).filter(Readable.slug == slug).get()
@@ -1148,18 +1157,16 @@ class Readable(UserSearchable):
             self.generate_slug()
         self.update_sd()  # doc put
 
-    def author_last_name(self):
-        if self.author:
-            last_first = ',' in self.author
-            if last_first:
-                return self.author.split(',')[0]
-            else:
-                return self.author.split(' ')[-1]
+    @staticmethod
+    def Slug(author, title):
+        if title and author:
+            return "%s (%s)" % (tools.strip_symbols(title).upper(),
+                                tools.parse_last_name(tools.strip_symbols(author)).upper())
 
     def generate_slug(self):
-        if self.title and self.author:
-            self.slug = "%s (%s)" % (tools.strip_symbols(self.title).upper(),
-                                     tools.strip_symbols(self.author_last_name()).upper())
+        if self.author and self.title:
+            self.slug = Readable.Slug(self.author, self.title)
+            return self.slug
 
     def generate_sd(self):
         return self.doc_from_fields(text_fields=['title', 'notes', 'author'],
@@ -1209,9 +1216,11 @@ class Quote(UserSearchable):
             id = m.hexdigest()
             if not dt_added:
                 dt_added = datetime.now()
-            return Quote(id=id, source=source, content=content,
+            q = Quote(id=id, source=source, content=content,
                          location=location,
                          dt_added=dt_added, parent=user.key)
+            q.lookup_readable(user)
+            return q
 
     @staticmethod
     def Fetch(user, limit=50, offset=0, keys_only=False):
@@ -1237,6 +1246,26 @@ class Quote(UserSearchable):
         return self.doc_from_fields(text_fields=['source', 'content'],
                                     repeated_attom_fields=['tags'],
                                     atom_fields=['link'])
+
+    def source_slug(self):
+        pattern = r"(?P<title>.*) \((?P<author>.*)\)"
+        match = re.search(pattern, self.source, flags=re.M)
+        if match:
+            mdict = match.groupdict()
+            if 'title' in mdict and 'author' in mdict:
+                title = mdict.get('title')
+                author = tools.parse_last_name(mdict.get('author'))
+                slug = Readable.Slug(author, title)
+                return slug
+
+    def lookup_readable(self, user):
+        if self.source:
+            slug = self.source_slug()
+            if slug:
+                r = Readable.GetBySlug(user, slug)
+                if r:
+                    self.readable = r.key
+                    return r
 
 
 class Report(UserAccessible):

@@ -393,7 +393,8 @@ class ReadableAPI(handlers.JsonRequestHandler):
         params = tools.gets(self,
             integers=['type'],
             strings=['notes', 'title', 'url', 'author', 'source'],
-            booleans=['read', 'favorite'])
+            booleans=['read', 'favorite'],
+            lists=['tags'])
         if id:
             r = self.user.get(Readable, id=id)
         else:
@@ -543,6 +544,27 @@ class QuoteAPI(handlers.JsonRequestHandler):
         }
         self.set_response(data)
 
+    @authorized.role('user')
+    def action(self, d):
+        action = self.request.get('action')
+        id = self.request.get('id')
+        quote = self.user.get(Quote, id=id)
+        if quote:
+            if action == 'link_readable':
+                readable = quote.lookup_readable(self.user)
+                if readable:
+                    quote.put()
+                    self.success = True
+                    self.message = "Linked %s" % readable
+                else:
+                    self.message = "Couldn't match readable to quote source - %s" % quote.source
+            else:
+                self.message = "Action not supported"
+        else:
+            self.message = "Quote not found"
+        self.set_response({
+            'quote': quote.json() if quote else None
+        })
 
 class JournalTagAPI(handlers.JsonRequestHandler):
 
