@@ -102,6 +102,7 @@ export default class Manage extends React.Component {
                 'attributes': [
                     { name: 'id', label: "ID", editable: false, fixed: true },
                     { name: 'name', label: "Name", editable: true },
+                    { name: 'description', label: "Description", editable: true },
                     { name: 'color', label: "Color (Hex)", editable: true, showInList: false },
                     { name: 'icon', label: "Icon (From https://material.io/icons/)", editable: true, showInList: false },
                     { name: 'tgt_weekly', label: "Weekly Target", editable: true, showInList: false },

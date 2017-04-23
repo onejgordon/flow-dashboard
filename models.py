@@ -1011,6 +1011,7 @@ class Readable(UserSearchable):
     dt_read = ndb.DateTimeProperty()
     title = ndb.TextProperty()  # Can have multiple goals for period
     author = ndb.TextProperty()
+    slug = ndb.StringProperty()  # Uppercase TITLE (AUTHOR LAST NAME), symbols removed
     image_url = ndb.TextProperty()
     url = ndb.TextProperty()  # Original source URL
     favorite = ndb.BooleanProperty(default=False)
@@ -1023,11 +1024,15 @@ class Readable(UserSearchable):
     read = ndb.BooleanProperty(default=False)
     word_count = ndb.IntegerProperty()
 
+    def __str__(self):
+        return "%s (%s)" % (self.title, self.author)
+
     def json(self):
         return {
             'id': self.key.id(),
             'title': self.title,
             'author': self.author,
+            'slug': self.slug,
             'favorite': self.favorite,
             'image_url': self.image_url,
             'url': self.url,  # Original url
@@ -1037,6 +1042,7 @@ class Readable(UserSearchable):
             'notes': self.notes,
             'has_notes': self.has_notes,
             'read': self.read,
+            'tags': self.tags,
             'word_count': self.word_count,
             'date_read': tools.iso_date(self.dt_read) if self.dt_read else None
         }
@@ -1099,8 +1105,20 @@ class Readable(UserSearchable):
                                        tags=tags, dt_read=dt_read,
                                        image_url=image_url, author=author,
                                        word_count=word_count)
+            if not r.slug:
+                r.generate_slug()
             r.has_notes = bool(r.notes)
             return r
+
+    @staticmethod
+    def GetByTitleAuthor(user, author, title):
+        slug = Readable.Slug(author, title)
+        return Readable.GetBySlug(user, slug)
+
+    @staticmethod
+    @auto_cache()
+    def GetBySlug(user, slug):
+        return Readable.query(ancestor=user.key).filter(Readable.slug == slug).get()
 
     def Update(self, **params):
         if 'read' in params:
@@ -1135,7 +1153,22 @@ class Readable(UserSearchable):
             self.author = params.get('author')
         if 'word_count' in params:
             self.word_count = params.get('word_count')
-        self.update_sd() # doc put
+        if not self.slug:
+            self.generate_slug()
+        self.update_sd()  # doc put
+
+    @staticmethod
+    def Slug(author, title):
+        if title:
+            slug = tools.strip_symbols(title).upper()
+            if author:
+                slug += " (%s)" % tools.parse_last_name(tools.strip_symbols(author)).upper()
+            return slug
+
+    def generate_slug(self):
+        if self.title:
+            self.slug = Readable.Slug(self.author, self.title)
+            return self.slug
 
     def generate_sd(self):
         return self.doc_from_fields(text_fields=['title', 'notes', 'author'],
@@ -1173,6 +1206,7 @@ class Quote(UserSearchable):
             'link': self.link,
             'content': self.content,
             'location': self.location,
+            'readable': self.readable.id() if self.readable else None,
             'iso_date': tools.iso_date(self.dt_added) if self.dt_added else None,
             'tags': self.tags
         }
@@ -1185,13 +1219,19 @@ class Quote(UserSearchable):
             id = m.hexdigest()
             if not dt_added:
                 dt_added = datetime.now()
-            return Quote(id=id, source=source, content=content,
+            q = Quote(id=id, source=source, content=content,
                          location=location,
                          dt_added=dt_added, parent=user.key)
+            q.lookup_readable(user)
+            return q
 
     @staticmethod
-    def Fetch(user, limit=50, offset=0, keys_only=False):
-        return Quote.query(ancestor=user.key).order(-Quote.dt_added).fetch(limit=limit, offset=offset, keys_only=keys_only)
+    def Fetch(user, readable_id=None, limit=50, offset=0, keys_only=False):
+        query = Quote.query(ancestor=user.key).order(-Quote.dt_added)
+        if readable_id:
+            key = ndb.Key('User', user.key.id(), 'Readable', readable_id)
+            query = query.filter(Quote.readable == key)
+        return query.fetch(limit=limit, offset=offset, keys_only=keys_only)
 
     def Update(self, **params):
         if 'source' in params:
@@ -1213,6 +1253,28 @@ class Quote(UserSearchable):
         return self.doc_from_fields(text_fields=['source', 'content'],
                                     repeated_attom_fields=['tags'],
                                     atom_fields=['link'])
+
+    def source_slug(self):
+        pattern = r"(?P<title>.*) \((?P<author>.*)\)"
+        match = re.search(pattern, self.source, flags=re.M)
+        author = None
+        if match:
+            mdict = match.groupdict()
+            title = mdict.get('title')
+            author = tools.parse_last_name(mdict.get('author'))
+        else:
+            title = self.source
+        if title:
+            return Readable.Slug(author, title)
+
+    def lookup_readable(self, user):
+        if self.source:
+            slug = self.source_slug()
+            if slug:
+                r = Readable.GetBySlug(user, slug)
+                if r:
+                    self.readable = r.key
+                    return r
 
 
 class Report(UserAccessible):
