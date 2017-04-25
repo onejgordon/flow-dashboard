@@ -69,11 +69,8 @@ export default class GoalViewer extends React.Component {
 
   fetch_current() {
     api.get("/api/goal/current", {}, (res) => {
-      let today = new Date();
       console.log(res);
       let st = {annual: res.annual, monthly: res.monthly, longterm: res.longterm};
-      if (!res.annual) st.set_goal_form = today.getFullYear();
-      else if (!res.monthly) st.set_goal_form = util.printDate(today.getTime(), this.GOAL_M_FORMAT);
       this.setState(st);
     });
   }
@@ -83,12 +80,16 @@ export default class GoalViewer extends React.Component {
     else this.setState({set_goal_form: 'longterm', form: {}});
   }
 
-  show_goal_dialog(g) {
+  show_goal_dialog(g, type) {
       let today = new Date();
-      let form = util.spread_array(g, 'text', 'text', 4);
+      let form = {};
+      if (g) {
+        form = util.spread_array(g, 'text', 'text', 4);
+      }
+      let id = type == 'annual' ? today.getFullYear() : util.printDate(today.getTime(), this.GOAL_M_FORMAT);
       let st = {
         form: form,
-        set_goal_form: g.id
+        set_goal_form: id
       };
       this.setState(st);
   }
@@ -108,35 +109,45 @@ export default class GoalViewer extends React.Component {
     } else return null;
   }
 
-  render_goal(g) {
-    if (!g) return null;
+  render_goal(g, type) {
     let {assessment_form} = this.state;
+    let goal_list, create_prompt;
     let today = new Date();
     let date_printed = "";
-    let date = new Date(g.iso_date);
+    let date = new Date();
     let value = 0;
     let total = 100;
-    if (g.annual) {
-      date_printed = g.id;
+    if (type == 'annual') {
+      date_printed = date.getFullYear();
       value = util.dayOfYear(today);
       total = 365;
     } else {
-      date_printed = util.printDate(date.getTime(), "MMM YYYY");
+      date_printed = util.printDate(date.getTime(), "MMMM YYYY");
       value = today.getDate();
       total = util.daysInMonth(date.getMonth()+1, date.getFullYear());
     }
-    let show_assessment = this.in_assessment_window() && !g.annual && !g.assessment;
+    let show_assessment = g && this.in_assessment_window() && !g.annual && !g.assessment;
     let assess_label = this.ASSESS_LABELS[(assessment_form.assessment-1)];
-    return (
-      <div className="goal col-sm-6" key={g.id}>
-        <a href="javascript:void(0)" className="goalDate" onClick={this.show_goal_dialog.bind(this, g)}>{ date_printed }</a>
-        <ProgressLine value={value} total={total} />
-
+    if (g) {
+      goal_list = (
         <ul className="goalList">
           { g.text.map((txt, j) => {
             return <li key={j}>{txt}</li>
           }) }
         </ul>
+      );
+    } else {
+      create_prompt = (
+        <div className="empty"><a href="javascript:void(0)" onClick={this.show_goal_dialog.bind(this, g, type)}>Set goals</a> for { date_printed }</div>
+        );
+    }
+    return (
+      <div className="goal col-sm-6" key={type}>
+        <a href="javascript:void(0)" className="goalDate" onClick={this.show_goal_dialog.bind(this, g, type)}>{ date_printed }</a>
+        <ProgressLine value={value} total={total} />
+
+        { goal_list }
+        { create_prompt }
 
         <div hidden={!show_assessment}>
           <p className="lead">The month is almost over - how&apos;d you do?</p>
@@ -149,15 +160,13 @@ export default class GoalViewer extends React.Component {
   }
 
   render() {
-    let _goals;
     let {annual, monthly, set_goal_form} = this.state;
     let goal_label;
     if (set_goal_form) goal_label = util.capitalize(set_goal_form.toString());
-    if (annual || monthly) _goals = (
+    let _goals = (
       <div className="row">
-      { [monthly, annual].map((g, i) => {
-        return this.render_goal(g);
-      }) }
+        { this.render_goal(monthly, 'monthly') }
+        { this.render_goal(annual, 'annual') }
       </div>
     )
     let actions = [

@@ -23,7 +23,8 @@ export default class HabitWidget extends React.Component {
           habit_week_start: this.get_habit_week_start(),
           new_dialog_open: false,
           habit_analysis: null,
-          form: {}
+          form: {},
+          creating: false
       };
 
   }
@@ -35,11 +36,15 @@ export default class HabitWidget extends React.Component {
   create_habit() {
     let {form} = this.state;
     let params = clone(form);
-    api.post("/api/habit", params, (res) => {
-      if (res.habit) this.setState({
-        habits: this.state.habits.concat(res.habit),
-        form: {},
-        new_dialog_open: false});
+    this.setState({creating: true}, () => {
+      api.post("/api/habit", params, (res) => {
+        if (res.habit) this.setState({
+          habits: this.state.habits.concat(res.habit),
+          form: {},
+          new_dialog_open: false,
+          creating: false
+        });
+      });
     });
   }
 
@@ -222,10 +227,10 @@ export default class HabitWidget extends React.Component {
   }
 
   render() {
-    let {habits, new_dialog_open, form, habit_analysis} = this.state;
+    let {habits, new_dialog_open, form, habit_analysis, creating} = this.state;
     let no_habits = habits.length == 0;
     let _table;
-    let actions = [<RaisedButton primary={true} label="Create Habit" onClick={this.create_habit.bind(this)} />]
+    let actions = [<RaisedButton primary={true} label="Create Habit" onClick={this.create_habit.bind(this)} disabled={creating} />]
     if (!no_habits) _table = (
         <table width="100%" style={{backgroundColor: "rgba(0,0,0,0)"}}>
           <thead>
@@ -260,7 +265,6 @@ export default class HabitWidget extends React.Component {
             <TextField placeholder="Weekly Target (#)" value={form.tgt_weekly} onChange={this.changeHandler.bind(this, 'form', 'tgt_weekly')} fullWidth />
             <label>Choose Color</label>
             <SwatchesPicker width={600} height={150} display={true} color={form.color || "#2D6CFA"} onChangeComplete={this.select_habit_color.bind(this)} />
-
 
         </Dialog>
 

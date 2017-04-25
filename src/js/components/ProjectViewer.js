@@ -26,7 +26,8 @@ export default class ProjectViewer extends React.Component {
           projects: [],
           all_showing: false,
           project_dialog_open: false,
-          project_analysis: null
+          project_analysis: null,
+          working: false
       };
   }
 
@@ -84,15 +85,17 @@ export default class ProjectViewer extends React.Component {
     let {form} = this.state;
     let params = clone(form);
     if (params.due) params.due = util.printDateObj(params.due);
-    api.post("/api/project", params, (res) => {
-      if (res.project) {
-        let projects = this.state.projects;
-        let idx = findIndexById(projects, res.project.id, 'id');
-        if (idx > -1) projects[idx] = res.project;
-        else projects.push(res.project);
-        this.setState({projects: projects, project_dialog_open: false, form: {}});
-      }
-    })
+    this.setState({updating: true}, () => {
+      api.post("/api/project", params, (res) => {
+        if (res.project) {
+          let projects = this.state.projects;
+          let idx = findIndexById(projects, res.project.id, 'id');
+          if (idx > -1) projects[idx] = res.project;
+          else projects.push(res.project);
+          this.setState({projects: projects, project_dialog_open: false, form: {}, updating: false});
+        }
+      })
+    });
   }
 
   render_projects() {
@@ -117,9 +120,9 @@ export default class ProjectViewer extends React.Component {
   }
 
   render_dialog() {
-    let {project_dialog_open, form} = this.state;
+    let {project_dialog_open, form, updating} = this.state;
     let editing = form.id != null;
-    let actions = [<RaisedButton primary={true} label={editing ? "Update" : "Create"} onClick={this.update_project.bind(this)} />]
+    let actions = [<RaisedButton primary={true} label={editing ? "Update" : "Create"} onClick={this.update_project.bind(this)} disabled={updating} />]
     let due_date = form.due != null ? new Date(form.due) : null;
     return (
       <Dialog

@@ -6,7 +6,7 @@ var UserStore = require('stores/UserStore');
 var UserActions = require('actions/UserActions');
 var SimpleAdmin = require('components/common/SimpleAdmin');
 var ReactJsonEditor = require('components/common/ReactJsonEditor');
-import {RaisedButton, TextField,
+import {RaisedButton, TextField, DatePicker,
     Paper} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 import {get, set, clone} from 'lodash';
@@ -23,7 +23,7 @@ export default class Manage extends React.Component {
         let settings = {};
         if (user) {
             form.timezone = user.timezone;
-            form.birthday = user.birthday;
+            form.birthday = user.birthday ? new Date(user.birthday) : null;
             settings = user.settings;
         }
         this.state = {
@@ -63,6 +63,7 @@ export default class Manage extends React.Component {
     save_user_settings() {
         let params = clone(this.state.form);
         params.settings = JSON.stringify(this.state.settings);
+        if (params.birthday) params.birthday = util.printDateObj(params.birthday);
         api.post("/api/user/me", params, (res) => {
             if (res.user) UserActions.storeUser(res.user);
         });
@@ -110,6 +111,7 @@ export default class Manage extends React.Component {
                 ],
                 'fetch_params': {},
                 'unique_key': 'id',
+                'disableDelete': true,
                 'max': 50,
                 getListFromJSON: function(data) { return data.habits; },
                 getObjectFromJSON: function(data) { return data.habit; }
@@ -241,7 +243,7 @@ export default class Manage extends React.Component {
                     <h2>{ user.email }</h2>
 
                     <TextField name="timezone" floatingLabelText="Timezone" value={form.timezone} onChange={this.changeHandler.bind(this, 'form', 'timezone')} /><br/>
-                    <TextField name="birthday" floatingLabelText="Birthday (YYYY-MM-DD)" value={form.birthday} onChange={this.changeHandler.bind(this, 'form', 'birthday')} /><br/>
+                    <DatePicker autoOk={true} floatingLabelText="Birthday" formatDate={util.printDateObj} value={form.birthday} onChange={this.changeHandlerNilVal.bind(this, 'form', 'birthday')} />
                     <TextField name="password" floatingLabelText="Update Password" value={form.password} onChange={this.changeHandler.bind(this, 'form', 'password')} /><br/>
 
                     <h3>Daily Journal Questions</h3>
