@@ -106,7 +106,7 @@ class TaskAPI(handlers.JsonRequestHandler):
         logging.debug(params)
         if id:
             task = self.user.get(Task, id=id)
-        else:
+        elif 'title' in params:
             task = Task.Create(self.user, None)
         if task:
             self.message = task.Update(**params)

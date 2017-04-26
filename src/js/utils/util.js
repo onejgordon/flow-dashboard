@@ -236,6 +236,7 @@ var util = {
     },
 
     printPercent: function(dec) {
+        if (dec == Infinity || isNaN(dec)) return "N/A";
         return parseInt(dec*100) + "%";
     },
 

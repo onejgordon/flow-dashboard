@@ -131,6 +131,7 @@ export default class HabitAnalysis extends React.Component {
       <Dialog
           open={!!habit}
           title={habit ? `Habit: ${habit.name}` : ""}
+          autoScrollBodyContent={true}
           onRequestClose={this.dismiss.bind(this)}
           actions={actions}>
 
