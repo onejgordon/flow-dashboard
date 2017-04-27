@@ -59,6 +59,7 @@ class Site extends React.Component {
       restartOnRequestAfter: 10 // ms
     });
     toastr.options.positionClass = "toast-bottom-left";
+    toastr.options.preventDuplicates = true;
   }
 
   componentDidMount() {

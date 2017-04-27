@@ -103,7 +103,7 @@ class TaskAPI(handlers.JsonRequestHandler):
             booleans=['archived', 'wip'],
             integers=['status']
         )
-        logging.debug(params)
+        task = None
         if id:
             task = self.user.get(Task, id=id)
         elif 'title' in params:
