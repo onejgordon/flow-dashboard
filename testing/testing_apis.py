@@ -5,6 +5,7 @@ from datetime import datetime
 from base_test_case import BaseTestCase
 from models import Goal
 from flow import app as tst_app
+from constants import USER
 from models import Habit, Task, Project, Event, Readable, Quote, Snapshot
 from services.agent import ConversationAgent
 import json
@@ -33,6 +34,20 @@ class APITestCase(BaseTestCase):
         g = Goal.CreateMonthly(u, date=datetime.today().date())
         g.Update(text=["Get it done", "Also get exercise"])
         g.put()
+
+    def test_user_calls(self):
+        # Update self
+        DOB = '1985-10-21'
+        TZ = 'Africa/Nairobi'
+        response = self.post_json("/api/user/me", {
+            'timezone': TZ,
+            'birthday': DOB
+            }, headers=self.api_headers)
+        u = response.get('user')
+        self.assertIsNotNone(u)
+        self.assertEqual(u.get('birthday'), DOB)
+        self.assertEqual(u.get('timezone'), TZ)
+
 
     def test_habit_calls(self):
         # List
@@ -192,6 +207,28 @@ class APITestCase(BaseTestCase):
         response = self.get_json("/api/quote/search", {'term': "think"}, headers=self.api_headers)
         quotes = response.get('quotes')
         self.assertEqual(len(quotes), 1)
+
+    def test_journal_calls(self):
+        # Create
+        params = {
+            'data': json.dumps({
+                'metric1': 10
+            })
+        }
+        response = self.post_json("/api/journal", params, headers=self.api_headers)
+        jrnl = response.get('journal')
+        self.assertIsNotNone(jrnl)
+
+        # Today
+        response = self.get_json("/api/journal/today", {}, headers=self.api_headers)
+        today_jrnl = response.get('journal')
+        self.assertEqual(today_jrnl.get('id'), jrnl.get('id'))
+
+        # List
+        response = self.get_json("/api/journal", {}, headers=self.api_headers)
+        listed_jrnls = response.get('journals')
+        self.assertEqual(len(listed_jrnls), 1)
+        self.assertEqual(listed_jrnls[0].get('id'), jrnl.get('id'))
 
     def test_snapshot_calls(self):
         # Create

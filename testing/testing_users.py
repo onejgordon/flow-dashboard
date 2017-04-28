@@ -6,6 +6,7 @@ from base_test_case import BaseTestCase
 from models import Project, User
 from flow import app as tst_app
 from datetime import timedelta
+import json
 
 
 class UsersTestCase(BaseTestCase):
@@ -27,4 +28,20 @@ class UsersTestCase(BaseTestCase):
 
         utc_now = datetime.now()
         self.assertEqual(u.local_time().hour, (utc_now + timedelta(hours=3)).hour)
+
+    def test_levels(self):
+        u = self.users[0]
+        self.assertFalse(u.admin())
+
+    def test_password(self):
+        u = self.users[0]
+        pw = u.setPass()
+        self.assertEqual(len(pw), 6)
+        self.assertTrue(u.checkPass(pw))
+
+    def test_integration_props(self):
+        u = self.users[0]
+        u.set_integration_prop('key', 'value')
+        integrations_dict = json.loads(u.integrations)
+        self.assertEqual(integrations_dict.get('key'), 'value')
 

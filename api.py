@@ -708,7 +708,6 @@ class UserAPI(handlers.JsonRequestHandler):
                             strings=['timezone', 'birthday', 'password'],
                             lists=['sync_services'],
                             json=['settings'])
-        logging.debug(params)
         self.user.Update(**params)
         self.user.put()
         self.update_session_user(self.user)
