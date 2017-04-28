@@ -1,8 +1,5 @@
 var alt = require('config/alt');
 var api = require('utils/api');
-import {clone} from 'lodash';
-var api = require('utils/api');
-import {post} from 'utils/action-utils';
 
 class UserActions {
 
