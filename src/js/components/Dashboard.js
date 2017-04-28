@@ -6,6 +6,7 @@ var ReadWidget = require('components/ReadWidget');
 var MiniJournalWidget = require('components/MiniJournalWidget');
 var TaskWidget = require('components/TaskWidget');
 var FlashCard = require('components/FlashCard');
+var AppConstants = require('constants/AppConstants');
 import {findItemById} from 'utils/store-utils';
 var util = require('utils/util');
 import {get} from 'lodash';
@@ -85,9 +86,13 @@ export default class Dashboard extends React.Component {
         let {user} = this.props;
         let journal_qs = [];
         let journal_location = false;
+        let journal_window_start = AppConstants.JOURNAL_START_HOUR;
+        let journal_window_end = AppConstants.JOURNAL_END_HOUR;
         if (user) {
             journal_qs = get(user, 'settings.journals.questions', []);
             journal_location = get(user, 'settings.journals.preferences.location_capture', false);
+            journal_window_start = parseInt(get(user, 'settings.journals.preferences.journal_start_hour', AppConstants.JOURNAL_START_HOUR));
+            journal_window_end = parseInt(get(user, 'settings.journals.preferences.journal_end_hour', AppConstants.JOURNAL_END_HOUR));
         }
         let _more_options = this.flashcards().map((fc) => {
             return <MenuItem key={fc.id} leftIcon={<FontIcon className="material-icons">{fc.icon}</FontIcon>} onClick={this.show_more.bind(this, fc.id)}>{fc.card_title}</MenuItem>
@@ -110,10 +115,14 @@ export default class Dashboard extends React.Component {
                     <div className="col-sm-6">
                         <ReadWidget />
                     </div>
+                    <div className="col-sm-6">
+                        <MiniJournalWidget
+                           questions={journal_qs}
+                           window_start_hr={journal_window_start}
+                           window_end_hr={journal_window_end}
+                           include_location={journal_location} />
+                    </div>
                 </div>
-
-                <MiniJournalWidget questions={journal_qs} include_location={journal_location} />
-
 
                 <div className="text-center" style={{marginTop: "20px"}} hidden={this.no_more_menu()}>
                     <IconMenu iconButtonElement={<IconButton iconClassName="material-icons">games</IconButton>}>

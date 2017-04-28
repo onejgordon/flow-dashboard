@@ -1,12 +1,13 @@
 var React = require('react');
 import {Link} from 'react-router';
+var AppConstants = require('constants/AppConstants');
 var util = require('utils/util');
 var api = require('utils/api');
 var UserStore = require('stores/UserStore');
 var UserActions = require('actions/UserActions');
 var SimpleAdmin = require('components/common/SimpleAdmin');
 var ReactJsonEditor = require('components/common/ReactJsonEditor');
-import {RaisedButton, TextField, DatePicker,
+import {RaisedButton, TextField, DatePicker, FontIcon,
     Paper} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 import {get, set, clone} from 'lodash';
@@ -236,7 +237,13 @@ export default class Manage extends React.Component {
                 { name: 'mult', title: 'Multiplier (e.g. 0.1)', hint: "Multiplier to scale this variable for easier comparability", type: 'number' },
             ];
             let journal_pref_atts = [
-                { name: 'location_capture', title: 'Capture Lat/Lon Upon Submission', type: 'checkbox', default_value: false },
+                { name: 'location_capture', title: 'Capture lat/lon upon submission', type: 'checkbox', default_value: false },
+                { name: 'journal_start_hour', title: 'Hour after which to collect daily journal', type: 'number', default_value: AppConstants.JOURNAL_START_HOUR },
+                { name: 'journal_end_hour', title: 'Hour to stop collecting daily journal', type: 'number', default_value: AppConstants.JOURNAL_END_HOUR },
+            ];
+            let task_pref_atts = [
+                { name: 'same_day_hour', title: 'Hour after which to set new tasks for tomorrow', type: 'number', default_value: 16 },
+                { name: 'due_hour', title: 'Hour at which to set tasks due', type: 'number', default_value: 22 },
             ];
             _more = (
                 <Paper style={{padding: "10px", marginTop: "10px"}}>
@@ -248,24 +255,42 @@ export default class Manage extends React.Component {
 
                     <h3>Daily Journal Questions</h3>
 
-                    <p className="lead">
-                        Configure the questions that you answer in each daily journal.
-                        Responses, if 'chart enabled', can be analyzed on the Analysis page.
-                    </p>
+                    <div className="row">
+                        <div className="col-md-6">
+                            <p className="lead">
+                                Basic journal preferences.
+                            </p>
+                            <ReactJsonEditor
+                                array={false} data={get(settings, ['journals', 'preferences'], {})}
+                                attributes={journal_pref_atts}
+                                onChange={this.handle_settings_change.bind(this, ['journals', 'preferences'])}
+                                editButtonLabel="Edit Journal Preferences"
+                                />
+                        </div>
+                        <div className="col-md-6">
+
+                            <p className="lead">
+                                Configure the questions that you answer in each daily journal.
+                                Responses, if 'chart enabled', can be analyzed on the Analysis page.
+                            </p>
+
+                            <ReactJsonEditor title="Daily Journal Questions"
+                                array={true} data={get(settings, ['journals', 'questions'], [])}
+                                attributes={question_atts}
+                                onChange={this.handle_settings_change.bind(this, ['journals', 'questions'])}
+                                addButtonLabel="Add Question"
+                                primaryProp="text" secondaryProp="name" />
+                        </div>
+                    </div>
+
+                    <h3>Configure Tasks</h3>
 
                     <ReactJsonEditor
-                        array={false} data={get(settings, ['journals', 'preferences'], {})}
-                        attributes={journal_pref_atts}
-                        onChange={this.handle_settings_change.bind(this, ['journals', 'preferences'])}
-                        editButtonLabel="Edit Preferences"
+                        array={false} data={get(settings, ['tasks', 'preferences'], {})}
+                        attributes={task_pref_atts}
+                        onChange={this.handle_settings_change.bind(this, ['tasks', 'preferences'])}
+                        editButtonLabel="Edit Task Preferences"
                         />
-
-                    <ReactJsonEditor title="Daily Journal Questions"
-                        array={true} data={get(settings, ['journals', 'questions'], [])}
-                        attributes={question_atts}
-                        onChange={this.handle_settings_change.bind(this, ['journals', 'questions'])}
-                        addButtonLabel="Add Question"
-                        primaryProp="text" secondaryProp="name" />
 
                     <h3>Configure Tracking Chart (Custom Variables)</h3>
 
@@ -283,7 +308,7 @@ export default class Manage extends React.Component {
                     <h3>Configure Flashcards</h3>
 
                     <p className="lead">
-                        Flashcards appear on the main dashboard in the more menu.
+                        Flashcards appear on the main dashboard in the <FontIcon className="material-icons">games</FontIcon> more menu.
                         Currently, you can configure flashcards to show randomly chosen rows from a Google Spreadsheet.
                     </p>
 
@@ -297,7 +322,7 @@ export default class Manage extends React.Component {
                     <h3>Configure Static Links</h3>
 
                     <p className="lead">
-                        Static links appear on the main dashboard in the more menu.
+                        Static links appear on the main dashboard in the <FontIcon className="material-icons">games</FontIcon> more menu.
                     </p>
 
                     <ReactJsonEditor title="Static Links"

@@ -207,7 +207,7 @@ class ConversationAgent(object):
                 save_response = True
                 # Receive user message
                 if mode == 'tasks':
-                    is_done = message in DONE_MESSAGES
+                    is_done = message.lower().strip() in DONE_MESSAGES
                     mode_finished = is_done
                     save_response = not is_done
                 elif mode == 'questions':

@@ -631,10 +631,9 @@ class JournalAPI(handlers.JsonRequestHandler):
             if task_json:
                 # Save new tasks for tomorrow
                 tasks = []
-                due = self._get_task_due_date()
                 for t in task_json:
                     if t:
-                        task = Task.Create(self.user, t, due=due)
+                        task = Task.Create(self.user, t)
                         tasks.append(task)
                 ndb.put_multi(tasks)
             self.success = True
@@ -642,10 +641,6 @@ class JournalAPI(handlers.JsonRequestHandler):
         self.set_response({
             'journal': jrnl.json() if jrnl else None
         })
-
-    def _get_task_due_date(self):
-        now = datetime.now()
-        return datetime.combine((now + timedelta(hours=24+8)).date(), time(0,0))
 
 
 class SnapshotAPI(handlers.JsonRequestHandler):

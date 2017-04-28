@@ -132,10 +132,10 @@ export default class ProjectViewer extends React.Component {
         actions={actions}>
 
         <TextField name="title" placeholder="Project title" value={form.title} onChange={this.changeHandler.bind(this, 'form', 'title')} fullWidth />
-        <TextField name="subhead" placeholder="Project subhead" value={form.subhead} onChange={this.changeHandler.bind(this, 'form', 'subhead')} fullWidth />
-        <TextField name="url1" placeholder="Project URL 1" value={form.url1 || ''} onChange={this.changeHandler.bind(this, 'form', 'url1')} fullWidth />
-        <TextField name="url2" placeholder="Project URL 2" value={form.url2 || ''} onChange={this.changeHandler.bind(this, 'form', 'url2')} fullWidth />
-        <DatePicker autoOk={true} floatingLabelText="Due" formatDate={util.printDateObj} value={due_date} onChange={this.changeHandlerNilVal.bind(this, 'form', 'due')} />
+        <TextField name="subhead" placeholder="Project subhead (optional)" value={form.subhead} onChange={this.changeHandler.bind(this, 'form', 'subhead')} fullWidth />
+        <TextField name="url1" placeholder="Project URL 1 (optional)" value={form.url1 || ''} onChange={this.changeHandler.bind(this, 'form', 'url1')} fullWidth />
+        <TextField name="url2" placeholder="Project URL 2 (optional)" value={form.url2 || ''} onChange={this.changeHandler.bind(this, 'form', 'url2')} fullWidth />
+        <DatePicker autoOk={true} floatingLabelText="Due (optional)" formatDate={util.printDateObj} value={due_date} onChange={this.changeHandlerNilVal.bind(this, 'form', 'due')} />
 
       </Dialog>
       )
@@ -171,10 +171,12 @@ export default class ProjectViewer extends React.Component {
         </div>
 
         <div hidden={!empty}>
-          <div className="text-center empty">None yet, create your first!</div>
+          <div className="text-center empty">None yet, <a href="javascript:void(0)" onClick={this.setState.bind(this, {project_dialog_open: true})}>create your first</a>!</div>
         </div>
 
-        <RaisedButton label="New Project" onClick={this.setState.bind(this, {project_dialog_open: true})} />
+        <div hidden={empty}>
+          <RaisedButton label="New Project" onClick={this.setState.bind(this, {project_dialog_open: true})} />
+        </div>
 
       </div>
     )

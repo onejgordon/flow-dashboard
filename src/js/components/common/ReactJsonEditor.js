@@ -125,7 +125,7 @@ export default class ReactJSONEditor extends React.Component {
     } else {
       // Render all props of item
       let _props = attributes.map((att, i) => {
-        let show_value = data[att.name] || att.default_value;
+        let show_value = data[att.name] == null ? att.default_value : data[att.name];
         return (
           <li key={i}>
             <b>{att.title}:</b> { show_value.toString() }
@@ -142,10 +142,11 @@ export default class ReactJSONEditor extends React.Component {
 
   render_input(att, val) {
     let {editing_index} = this.state;
+     let form_value = val == null ? att.default_value : val;
     if (att.type == 'text' || att.type == 'number') {
-      return <TextField name={att.name} value={val || att.default_value} onChange={this.handleTargetChange.bind(this, att.name)} placeholder={att.title} fullWidth />
+      return <TextField name={att.name} value={form_value} onChange={this.handleTargetChange.bind(this, att.name)} placeholder={att.title} fullWidth />
     } else if (att.type == 'checkbox') {
-      return <Toggle name={att.name} toggled={val || att.default_value } onToggle={this.handleToggleChange.bind(this, att.name)} label={att.title} labelPosition="right" />
+      return <Toggle name={att.name} toggled={form_value} onToggle={this.handleToggleChange.bind(this, att.name)} label={att.title} labelPosition="right" />
     } else if (att.type == 'dropdown') {
       return (
         <div><br/>
@@ -182,7 +183,7 @@ export default class ReactJSONEditor extends React.Component {
               { hint }
               { this.render_input(att, val) }
             </div>
-            )
+          )
         })
       }
     }

@@ -256,6 +256,17 @@ class User(ndb.Model):
             return integrations.get(prop, default)
         return default
 
+    def get_setting_prop(self, path, default=None):
+        settings = tools.getJson(self.settings)
+        if settings:
+            cursor = settings
+            for i, pi in enumerate(path):
+                cursor = cursor.get(pi, {})
+                last = i == len(path) - 1
+                if last:
+                    return cursor if cursor is not None else default
+        return default
+
     def set_integration_prop(self, prop, value):
         integrations = tools.getJson(self.integrations)
         if not integrations:
@@ -415,8 +426,14 @@ class Task(UserAccessible):
         if not due:
             tz = user.get_timezone()
             local_now = tools.local_time(tz)
-            schedule_for_same_day = local_now.hour < 16
-            due = datetime.combine(local_now.date(), time(23, 0)) if schedule_for_same_day else (datetime.now() + timedelta(days=1))
+            task_prefs = user.get_setting_prop(['tasks', 'preferences'], {})
+            same_day_hour = int(task_prefs.get('same_day_hour', 16))
+            due_hour = int(task_prefs.get('due_hour', 22))
+            schedule_for_same_day = local_now.hour < same_day_hour
+            time_due = time(due_hour, 0)
+            due = datetime.combine(local_now.date(), time_due)
+            if not schedule_for_same_day:
+                due += timedelta(days=1)
             if due:
                 due = tools.server_time(tz, due)
         return Task(title=tools.capitalize(title), dt_due=due, parent=user.key)
@@ -924,9 +941,9 @@ class Goal(UserAccessible):
     @staticmethod
     def Create(user, id, date=None):
         g = Goal(id=id, parent=user.key)
-        if g.monthly() and not date:
+        if g.monthly(id=id) and not date:
             g.date = tools.fromISODate(id + "-01")
-        elif g.annual() and not g.date:
+        elif g.annual(id=id) and not g.date:
             first_of_year = datetime(int(id), 1, 1)
             date = first_of_year
         return g
@@ -949,11 +966,15 @@ class Goal(UserAccessible):
     def type(self):
         return 'annual' if self.annual() else 'monthly'
 
-    def annual(self):
-        return len(self.key.id()) == 4
+    def annual(self, id=None):
+        if not id:
+            id = self.key.id()
+        return len(id) == 4
 
-    def monthly(self):
-        return len(self.key.id()) == 7
+    def monthly(self, id=None):
+        if not id:
+            id = self.key.id()
+        return len(id) == 7
 
     def longterm(self):
         return str(self.key.id()) == 'longterm'

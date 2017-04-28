@@ -14,7 +14,9 @@ export default class MiniJournalWidget extends React.Component {
   static propTypes = {
     include_location: React.PropTypes.bool,
     tomorrow_top_tasks: React.PropTypes.bool,
-    questions: React.PropTypes.array
+    questions: React.PropTypes.array,
+    window_start_hr: React.PropTypes.number,
+    window_end_hr: React.PropTypes.number
   }
 
   static defaultProps = {
@@ -42,10 +44,9 @@ export default class MiniJournalWidget extends React.Component {
         historical: false,
         historical_date: null,
         historical_incomplete_dates: [],
-        position: null // {lat, lon}
+        position: null, // {lat, lon}
+        submitted: false
       };
-      this.WINDOW_START_HR = AppConstants.JOURNAL_START_HOUR;
-      this.WINDOW_END_HR = AppConstants.JOURNAL_END_HOUR;
       this.MAX_TASKS = 3;
   }
 
@@ -79,15 +80,16 @@ export default class MiniJournalWidget extends React.Component {
     // End of day
     let d = new Date();
     let hrs = d.getHours();
-    return hrs >= this.WINDOW_START_HR || hrs <= this.WINDOW_END_HR;
+    return hrs >= this.props.window_start_hr || hrs <= this.props.window_end_hr;
   }
 
   check_if_not_submitted() {
     // If not yet submitted for day, show dialog
     api.get("/api/journal/today", {}, (res) => {
-      if (!res.journal || (res.journal && !res.journal.data)) {
-        this.open_journal_dialog();
-      }
+      let not_submitted = !res.journal || (res.journal && !res.journal.data);
+      this.setState({submitted: !not_submitted}, () => {
+        if (not_submitted) this.open_journal_dialog();
+      });
     });
   }
 
@@ -133,7 +135,7 @@ export default class MiniJournalWidget extends React.Component {
       params.tasks = JSON.stringify(tasks)
     }
     api.post("/api/journal", params, (res) => {
-      this.dismiss();
+      this.setState({submitted: true, open: false})
     });
   }
 
@@ -172,7 +174,6 @@ export default class MiniJournalWidget extends React.Component {
   render_tag_suggest(str, qname) {
     let {tags_loading} = this.state;
     let entering_tag = false;
-    let tag_type = null;
     let _content, _selector;
     let last_space = str.lastIndexOf(' ');
     let last_word = "";
@@ -334,20 +335,33 @@ export default class MiniJournalWidget extends React.Component {
   }
 
   render() {
-    let {form, open} = this.state;
+    let {form, open, submitted} = this.state;
+    let in_window = this.in_journal_window();
     let actions = [<RaisedButton label="Submit" primary={true} onClick={this.submit.bind(this)} />]
+    let _cta;
+    if (!submitted) _cta = in_window ? <a href="javascript:void(0)" onClick={this.open_journal_dialog.bind(this)}>Submit now</a> : <span>You can submit at {this.props.window_start_hr}:00</span>;
+    let _status = (
+      <p className="lead">{ submitted ? "Journal submitted" : "Journal not yet submitted" }. { _cta }</p>
+    )
     return (
-      <Dialog title="Submit Daily Journal"
-        open={open} onRequestClose={this.dismiss.bind(this)}
-        autoDetectWindowHeight={true} autoScrollBodyContent={true}
-        actions={actions}>
-        <div style={{padding: "10px"}}>
-          { this.render_history_section() }
-          { this.render_questions() }
-          { this.render_tasks() }
-          { this.render_location() }
+      <div>
+        <Dialog title="Submit Daily Journal"
+          open={open} onRequestClose={this.dismiss.bind(this)}
+          autoDetectWindowHeight={true} autoScrollBodyContent={true}
+          actions={actions}>
+          <div style={{padding: "10px"}}>
+            { this.render_history_section() }
+            { this.render_questions() }
+            { this.render_tasks() }
+            { this.render_location() }
+          </div>
+        </Dialog>
+
+        <div>
+          <h3>Daily Journal</h3>
+          { _status }
         </div>
-      </Dialog>
+      </div>
     )
   }
 }
