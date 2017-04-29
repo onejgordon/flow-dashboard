@@ -4,6 +4,8 @@ import {ListItem, FontIcon, Paper, Chip,
 var util = require('utils/util');
 var DateTime = require('components/common/DateTime');
 var api = require('utils/api');
+var util = require('utils/util');
+
 
 export default class ProjectLI extends React.Component {
   static defaultProps = {
@@ -56,6 +58,7 @@ export default class ProjectLI extends React.Component {
 
   set_progress(prg) {
     let {project} = this.props;
+    util.play_audio('complete.mp3');
     this.update(project, {progress: prg});
   }
 

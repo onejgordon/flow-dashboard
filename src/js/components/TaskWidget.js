@@ -1,9 +1,8 @@
 var React = require('react');
-import { FontIcon, IconButton, List,
+import { IconButton, List,
   RaisedButton, TextField, Paper,
-  FlatButton, IconMenu, MenuItem } from 'material-ui';
+  FlatButton } from 'material-ui';
 var util = require('utils/util');
-var UserStore = require('stores/UserStore');
 var api = require('utils/api');
 var TaskLI = require('components/list_items/TaskLI');
 import {findIndexById} from 'utils/store-utils';
@@ -54,6 +53,7 @@ export default class TaskWidget extends React.Component {
       id: task.id,
       status: status
     }
+    util.play_audio('complete.mp3');
     api.post("/api/task", params, (res) => {
       if (res.task) {
         let {tasks} = this.state;
@@ -118,6 +118,7 @@ export default class TaskWidget extends React.Component {
   }
 
   set_task_wip(task, is_wip) {
+    util.play_audio('commit.mp3');
     this.task_update(task, {wip: is_wip ? 1 : 0});
   }
 

@@ -127,7 +127,7 @@ def lookupDict(item_list, keyprop="key_string", valueTransform=None):
             continue
         keyval = None
         if keyprop == 'key_string':
-            keyval = str(item.key())
+            keyval = str(item.key.urlsafe())
         elif keyprop == 'key_id':
             keyval = item.key.id()
         if keyval:

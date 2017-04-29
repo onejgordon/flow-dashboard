@@ -48,6 +48,8 @@ export default class MiniJournalWidget extends React.Component {
         submitted: false
       };
       this.MAX_TASKS = 3;
+      this.NOTIFY_CHECK_MINS = 5;
+      this.notify_checker_id = null; // For interval
   }
 
   componentDidMount() {
@@ -56,6 +58,19 @@ export default class MiniJournalWidget extends React.Component {
       this.check_if_not_submitted();
     }
     if (!tags_loading && !tags_loaded) this.fetch_tags();
+    this.notify_checker_id = setInterval(() => {
+      this.notify_check();
+    }, this.NOTIFY_CHECK_MINS*60*1000);
+  }
+
+  componentWillUnmount() {
+    if (this.notify_checker_id) clearInterval(this.notify_checker_id);
+  }
+
+  notify_check() {
+    if (this.should_notify()) {
+      util.notify("Flow Reminder", "Submit your daily journal");
+    }
   }
 
   change_task(i, event) {
@@ -81,6 +96,13 @@ export default class MiniJournalWidget extends React.Component {
     let d = new Date();
     let hrs = d.getHours();
     return hrs >= this.props.window_start_hr || hrs <= this.props.window_end_hr;
+  }
+
+  should_notify() {
+    let d = new Date();
+    if (!this.state.submitted && d.minutes < this.NOTIFY_CHECK_MINS) {
+      return this.in_journal_window();
+    }
   }
 
   check_if_not_submitted() {
@@ -337,7 +359,10 @@ export default class MiniJournalWidget extends React.Component {
   render() {
     let {form, open, submitted} = this.state;
     let in_window = this.in_journal_window();
-    let actions = [<RaisedButton label="Submit" primary={true} onClick={this.submit.bind(this)} />]
+    let actions = [
+      <RaisedButton label="Submit" primary={true} onClick={this.submit.bind(this)} />,
+      <FlatButton label="Later" onClick={this.dismiss.bind(this)} />
+    ]
     let _cta;
     if (!submitted) _cta = in_window ? <a href="javascript:void(0)" onClick={this.open_journal_dialog.bind(this)}>Submit now</a> : <span>You can submit at {this.props.window_start_hr}:00</span>;
     let _status = (

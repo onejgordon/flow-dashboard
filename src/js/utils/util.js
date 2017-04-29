@@ -14,6 +14,39 @@ var util = {
         }
     },
 
+    play_audio(name) {
+        let audio = new Audio('/static/sounds/' + name);
+        audio.volume = 0.2;
+        audio.play();
+    },
+
+    notify(message, body, tag) {
+      let opts = {
+        body: body,
+        icon: icon || '/images/logo_128.png',
+      };
+      let notification;
+      if (tag) opts.tag = tag;
+      if (!("Notification" in window)) {
+        console.warning("This browser does not support desktop notification");
+      } else if (Notification.permission === "granted") {
+        notification = new Notification(message, opts);
+      }
+      else if (Notification.permission !== "denied") {
+        Notification.requestPermission(function (permission) {
+          if (permission === "granted") {
+            notification = new Notification(message, opts);
+          }
+        });
+      }
+      if (notification) {
+        notification.onclick = function(){
+            window.focus();
+            this.cancel();
+        };
+      }
+    },
+
     colorInterpolate: function(opts) {
         // Takes opts
         // color1, color2 - hex without # e.g. 'FF0000'

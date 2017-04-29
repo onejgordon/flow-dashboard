@@ -75,10 +75,12 @@ export default class HabitWidget extends React.Component {
   }
 
   toggle_day(habit, iso_day) {
+    util.play_audio('complete.mp3');
     this.day_action(habit, iso_day, 'toggle');
   }
 
   commit(habit, iso_day) {
+    util.play_audio('commit.mp3');
     this.day_action(habit, iso_day, 'commit');
   }
 
