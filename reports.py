@@ -26,25 +26,29 @@ class TooLongError(Exception):
 class GCSReportWorker(object):
     KIND = None
 
-    def __init__(self, rkey, start_att="__key__", start_att_desc=False):
+    def __init__(self, rkey, start_att="__key__", start_att_desc=False, title="Report"):
         self.report = rkey.get()
         if not self.report:
             logging.error("Error retrieving report [ %s ] from db" % rkey)
             return
+        self.start_att = start_att
+        self.start_att_desc = start_att_desc
+        self.FILTERS = []
         self.report.status = REPORT.GENERATING
-        self.report.put()
         self.specs = self.report.get_specs()
+        self.start_ts = self.specs.get('start', 0)
+        self.end_ts = self.specs.get('end', 0)
+        self.report.generate_title(title, ts_start=self.start_ts, ts_end=self.end_ts)
+        self.report.put()
+        self.add_date_filters(start=self.start_ts, end=self.end_ts)
         self.user = self.report.key.parent().get()
         self.ancestor = self.user
-        self.FILTERS = []
         self.counters = {
             'run': 0,
             'skipped': 0
         }
         self.worker_start = tools.unixtime()
         self.cursor = None
-        self.start_att = start_att
-        self.start_att_desc = start_att_desc
         self.worker_cancelled = False
         self.prefetch_props = []
         self.date_columns = []
@@ -52,7 +56,7 @@ class GCSReportWorker(object):
         self.projection = None
         self.cursor = None
         self.query = None
-        self.batch_size = 300
+        self.batch_size = 1000
         self.report_prog_mckey = MC_EXPORT_STATUS % self.report.key
         self.setProgress({'val': 0, "status": REPORT.GENERATING})
         self.gcs_file = gcs.open(self.get_gcs_filename(), 'w')
@@ -220,16 +224,9 @@ class HabitReportWorker(GCSReportWorker):
     KIND = HabitDay
 
     def __init__(self, rkey):
-        super(HabitReportWorker, self).__init__(rkey, start_att="dt_created")
-        title_kwargs = {}
-
-        start = self.specs.get("start", 0)
-        end = self.specs.get("end", 0)
-        self.report.generate_title("Habit Report", ts_start=start, ts_end=end, **title_kwargs)
+        super(HabitReportWorker, self).__init__(rkey, start_att="dt_created", title="Habit Report")
         self.prefetch_props = ['habit']
         self.headers = ["Created", "Updated", "Date", "Habit", "Done", "Committed"]
-        self.batch_size = 1000
-        self.add_date_filters(start=start, end=end)
 
     def entityData(self, hd):
         habit = hd.habit.get()
@@ -248,15 +245,9 @@ class TaskReportWorker(GCSReportWorker):
     KIND = Task
 
     def __init__(self, rkey):
-        super(TaskReportWorker, self).__init__(rkey, start_att="dt_created")
-        title_kwargs = {}
-        start = self.specs.get("start", 0)
-        end = self.specs.get("end", 0)
-        self.report.generate_title("Task Report", ts_start=start, ts_end=end, **title_kwargs)
+        super(TaskReportWorker, self).__init__(rkey, start_att="dt_created", title="Task Report")
         self.prefetch_props = ['habit']
         self.headers = ["Date Created", "Date Due", "Date Done", "Title", "Done", "Archived"]
-        self.batch_size = 1000
-        self.add_date_filters(start=start, end=end)
 
     def entityData(self, task):
         row = [
@@ -274,15 +265,9 @@ class GoalReportWorker(GCSReportWorker):
     KIND = Goal
 
     def __init__(self, rkey):
-        super(GoalReportWorker, self).__init__(rkey, start_att="dt_created")
-        title_kwargs = {}
-        start = self.specs.get("start", 0)
-        end = self.specs.get("end", 0)
-        self.report.generate_title("Goal Report", ts_start=start, ts_end=end, **title_kwargs)
+        super(GoalReportWorker, self).__init__(rkey, start_att="dt_created", title="Goal Report")
         self.prefetch_props = ['habit']
         self.headers = ["Date Created", "Text 1", "Text 2", "Text 3", "Text 4", "Assessment"]
-        self.batch_size = 1000
-        self.add_date_filters(start=start, end=end)
 
     def entityData(self, goal):
         texts = len(goal.text) if goal.text else 0
@@ -301,15 +286,9 @@ class JournalReportWorker(GCSReportWorker):
     KIND = MiniJournal
 
     def __init__(self, rkey):
-        super(JournalReportWorker, self).__init__(rkey, start_att="dt_created")
-        title_kwargs = {}
-        start = self.specs.get("start", 0)
-        end = self.specs.get("end", 0)
-        self.report.generate_title("Journal Report", ts_start=start, ts_end=end, **title_kwargs)
+        super(JournalReportWorker, self).__init__(rkey, start_att="dt_created", title="Journal Report")
         self.prefetch_props = ['habit']
         self.headers = ["Date", "Tags", "Location", "Data"]
-        self.batch_size = 1000
-        self.add_date_filters(start=start, end=end)
 
     def entityData(self, jrnl):
         row = [

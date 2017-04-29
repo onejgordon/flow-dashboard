@@ -14,7 +14,7 @@ export default class ReadableLI extends React.Component {
 
   static defaultProps = {
     readable: null,
-    onClick: null,
+    onItemClick: null,
     onProjectUpdate: null
   }
 
@@ -66,7 +66,7 @@ export default class ReadableLI extends React.Component {
   handle_item_click(r) {
     if (this.props.onItemClick != null) this.props.onItemClick(r);
     else {
-      this.goto_url.bind(this, this.get_link_url(readable))
+      this.goto_url(this.get_link_url(r))
     }
   }
 
