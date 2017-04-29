@@ -861,10 +861,11 @@ class Event(UserAccessible):
         return Event.query(ancestor=user.key).order(Event.date_start).fetch(limit=limit, offset=offset)
 
     @staticmethod
-    def Create(user, date_start, date_end=None, title=None):
+    def Create(user, date_start, date_end=None, title=None, details=None, color=None, **params):
         if not date_end:
             date_end = date_start
-        return Event(date_start=date_start, date_end=date_end, title=title, parent=user.key)
+        return Event(date_start=date_start, date_end=date_end, title=title, details=details,
+                     color=color, parent=user.key)
 
     def Update(self, **params):
         if 'title' in params:

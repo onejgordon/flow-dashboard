@@ -342,7 +342,11 @@ class EventAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def batch_create(self, d):
-        events = json.loads(self.request.get('events'))
+        try:
+            events = json.loads(self.request.get('events'))
+        except ValueError, e:
+            self.message = "Malformed JSON"
+            events = []
         dbp = []
         for e in events:
             if 'date_start' in e and isinstance(e['date_start'], basestring):
@@ -351,12 +355,12 @@ class EventAPI(handlers.JsonRequestHandler):
                 e['date_end'] = tools.fromISODate(e['date_end']) if e.get('date_end') else e.get('date_start')
             if not e.get('date_end'):
                 e['date_end'] = e.get('date_start')
-            e = Event(self.user, **e)
+            e = Event.Create(self.user, **e)
             dbp.append(e)
         if dbp:
             ndb.put_multi(dbp)
             self.success = True
-            self.message = "Putting %d" % len(dbp)
+            self.message = "Creating %d event(s)" % len(dbp)
         self.set_response()
 
     @authorized.role('user')

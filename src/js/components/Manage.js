@@ -57,7 +57,9 @@ export default class Manage extends React.Component {
         let {form} = this.state;
         let params = {events: form.events};
         api.post("/api/event/batch", params, (res) => {
-
+            this.setState({form: {}}, () => {
+                if (this.refs.sa) this.refs.sa.fetchItems();
+            });
         });
     }
 
@@ -166,7 +168,8 @@ export default class Manage extends React.Component {
             _more = (
                 <div style={{margin: "10px"}}>
                     <label>Batch Upload from JSON array</label>
-                    <TextField placeholder="Events (JSON)" name="events" value={form.events} onChange={this.changeHandler.bind(this, 'form', 'events')} multiLine={true} fullWidth />
+                    <p>Each element should be a JSON object that includes properties: <code>title</code> (str), <code>date_start</code> (str, YYYY-MM-DD), <code>date_end</code> (str, optional, YYYY-MM-DD), <code>details</code> (str, optional), <code>color</code> (str, e.g. #FF0000, optional).</p>
+                    <TextField placeholder="Events (JSON)" name="events" value={form.events || ""} onChange={this.changeHandler.bind(this, 'form', 'events')} multiLine={true} fullWidth />
                     <RaisedButton label="Batch Upload from JSON" onClick={this.upload_events.bind(this)} />
                 </div>
                 )
@@ -342,7 +345,7 @@ export default class Manage extends React.Component {
             var cn = here ? "active" : "";
             return <li role="presentation" data-t={t.id} className={cn} key={"tab"+i}><a href="javascript:void(0)" onClick={this.gotoTab.bind(this, t.id)}>{t.label}</a></li>
         }, this);
-        let _sa = props != null ? <SimpleAdmin {...props} /> : null;
+        let _sa = props != null ? <SimpleAdmin ref="sa" {...props} /> : null;
         return (
             <div>
 
