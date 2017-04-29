@@ -4,6 +4,7 @@ from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
     Readable, TrackingDay, Event, JournalTag, Report, Quote, Snapshot
 from constants import READABLE
 from google.appengine.ext import ndb
+from google.appengine.api import mail
 from oauth2client import client
 import authorized
 import handlers
@@ -1257,4 +1258,21 @@ class ReportAPI(handlers.JsonRequestHandler):
         else:
             self.message = "Report not found"
         self.set_response()
+
+
+class FeedbackAPI(handlers.JsonRequestHandler):
+    @authorized.role('user')
+    def submit(self, d):
+        from constants import SENDER_EMAIL, ADMIN_EMAIL, SITENAME
+        params = tools.gets(self, strings=['feedback', 'email'])
+        if 'feedback' in params and 'email' in params:
+            feedback = params.get('feedback')
+            email = params.get('email')
+            mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
+                           subject="[ %s ] Feedback from %s" % (SITENAME, email),
+                           body="Message: %s" % feedback)
+            self.success = True
+            self.message = "Thanks for your feedback!"
+        self.set_response()
+
 

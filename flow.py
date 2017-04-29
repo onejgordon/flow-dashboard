@@ -96,6 +96,7 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/report/generate', handler=api.ReportAPI, handler_method="generate", methods=["POST"]),
         webapp2.Route('/api/report/serve', handler=api.ReportAPI, handler_method="serve", methods=["GET"]),
         webapp2.Route('/api/report/delete', handler=api.ReportAPI, handler_method="delete", methods=["POST"]),
+        webapp2.Route('/api/feedback', handler=api.FeedbackAPI, handler_method="submit", methods=["POST"]),
 
         webapp2.Route('/api/auth/google_login', handler=api.AuthenticationAPI, handler_method="google_login"),
         webapp2.Route('/api/auth/google_auth', handler=api.AuthenticationAPI, handler_method="google_auth"),
