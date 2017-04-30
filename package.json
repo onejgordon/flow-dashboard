@@ -8,7 +8,8 @@
     "url": "github.com/onejgordon/flow-dashboard"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "purge": "./node_modules/.bin/react-native-clean-project"
   },
   "keywords": [],
   "author": "Jeremy Gordon",
@@ -40,13 +41,13 @@
     "react-addons-create-fragment": "^15.4.2",
     "react-addons-css-transition-group": "^15.4.2",
     "react-addons-pure-render-mixin": "^15.4.2",
-    "react-addons-transition-group": "^15.4.2",
     "react-addons-update": "^15.4.2",
     "react-chartjs-2": "^2.0.5",
     "react-color": "^2.1.0",
     "react-dom": "^15.4.2",
     "react-g-analytics": "^0.2.6",
     "react-google-login": "^2.8.7",
+    "react-input-autosize": "1.1.0",
     "react-life-timeline": "^1.0.6",
     "react-router": "^2.8.1",
     "react-select": "^1.0.0-rc.1",
@@ -73,6 +74,7 @@
     "jest-cli": "^18.1.0",
     "lodash": "^4.13.1",
     "lodash.assign": "^4.0.0",
+    "react-native-clean-project": "^1.0.4",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.0.0",
     "watchify": "^3.9.0"

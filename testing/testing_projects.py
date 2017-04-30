@@ -26,9 +26,14 @@ class ProjectsTestCase(BaseTestCase):
         self.project.put()
 
     def test_setting_progress(self):
-        set_progresses = [4, 6, 10]
+        set_progresses = [4, 6, 10, 8, 10]
         for p in set_progresses:
+            regression = p < self.project.progress
             self.project.set_progress(p)
+            if regression:
+                # Expect timestamps after new progress to be cleared
+                cleared_timestamps = self.project.progress_ts[(p - 10):]
+                self.assertEqual(sum(cleared_timestamps), 0)
         self.project.put()
 
         progress_ts = self.project.progress_ts

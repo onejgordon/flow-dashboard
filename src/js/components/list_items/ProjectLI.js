@@ -124,6 +124,7 @@ export default class ProjectLI extends React.Component {
       })
     } else title = <a href={project.urls[0]} target="_blank">{ project.title || project.urls[0] || "Unnamed Project" }</a>
     let subheads = [<span key="dt" className="label label-default" style={{marginRight: "5px"}}><DateTime prefix="Created" ms={project.ts_created}/></span>];
+    if (project.complete) subheads.push(<span key="complete" className="label label-success" style={{marginRight: "5px"}}>Complete</span>)
     if (project.due != null) {
       let due_date = new Date(project.due);
       let ms = due_date.getTime();

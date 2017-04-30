@@ -31,7 +31,7 @@ AGENT_FLOW_APP = 3
 
 CONVO_EXPIRE_MINS = 5
 
-HELP_TEXT = "With the Flow agent, you can track top tasks each day, habits to build, and monthly and annual goals. You can also submit daily journals to track anything you want. I'm still in beta, so please visit http://flowdash.co to get set up and see everything you can do."
+HELP_TEXT = "With the Flow agent, you can track top tasks each day, habits to build, and monthly and annual goals. You can also submit daily journals at the end of each day to track anything you want. I'm still in beta, so please visit http://flowdash.co to get set up and see everything you can do."
 
 
 class ConversationState(object):

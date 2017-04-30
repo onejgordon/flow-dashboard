@@ -1,4 +1,5 @@
 var React = require('react');
+import {Link} from 'react-router';
 var AppConstants = require('constants/AppConstants');
 import { Dialog, TextField, Slider,
   FlatButton, RaisedButton, IconButton, List,
@@ -364,7 +365,7 @@ export default class MiniJournalWidget extends React.Component {
       <FlatButton label="Later" onClick={this.dismiss.bind(this)} />
     ]
     let _cta;
-    if (!submitted) _cta = in_window ? <a href="javascript:void(0)" onClick={this.open_journal_dialog.bind(this)}>Submit now</a> : <span>You can submit at {this.props.window_start_hr}:00</span>;
+    if (!submitted) _cta = in_window ? <small><div><a href="javascript:void(0)" onClick={this.open_journal_dialog.bind(this)}>Submit now</a></div></small> : <small><div>You can submit at {this.props.window_start_hr}:00. <Link to="/app/manage">Configure journal timing</Link>.</div></small>;
     let _status = (
       <p className="lead">{ submitted ? "Journal submitted" : "Journal not yet submitted" }. { _cta }</p>
     )

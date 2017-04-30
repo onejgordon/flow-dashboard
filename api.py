@@ -57,6 +57,7 @@ class ProjectAPI(handlers.JsonRequestHandler):
         else:
             prj = Project.Create(self.user)
         if prj:
+            was_complete = prj.is_completed()
             update_urls = False
             urls = []
             if 'url1' in params:
@@ -69,6 +70,9 @@ class ProjectAPI(handlers.JsonRequestHandler):
                 params['urls'] = urls
             prj.Update(**params)
             prj.put()
+            completed = prj.is_completed() and not was_complete
+            if completed:
+                self.message = "Project completed!"
             self.success = True
         self.set_response({
             'project': prj.json() if prj else None
