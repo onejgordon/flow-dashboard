@@ -25,6 +25,7 @@ class ReadableTestCase(BaseTestCase):
         author = "Kevin Simler"
         r = Readable.CreateOrUpdate(self.u, R_SOURCE_ID, title=title, author=author, source="test")
         r.put()
+        Readable.put_sd_batch([r])
 
         EXPECTED_SLUG = "CRONY BELIEFS (SIMLER)"
 

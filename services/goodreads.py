@@ -53,5 +53,6 @@ def get_books_on_shelf(user, shelf='currently-reading'):
                 readables.append(r)
             success = True
         ndb.put_multi(readables)
+        Readable.put_sd_batch(readables)
     return (success, readables)
 

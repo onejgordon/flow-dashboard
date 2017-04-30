@@ -94,6 +94,16 @@ class UserSearchable(UserAccessible):
                 "Search Index Error when updating search doc: %s" % e)
             return (None, None)
 
+    @staticmethod
+    def put_sd_batch(items):
+        sds = []
+        if items:
+            index = items[0].get_index()
+            for i in items:
+                sds.append(i.generate_sd())
+            if sds:
+                index.put(sds)
+
     @classmethod
     def Search(cls, user, term, limit=20):
         kind = cls._get_kind()
@@ -1291,7 +1301,8 @@ class Quote(UserSearchable):
         if self.source:
             if USE_FTS:
                 # Lookup via readable full-text-search
-                success, message, readables = Readable.Search(user, self.source)
+                lookup_term = re.sub(r'\((.*)\)$', '', self.source).strip()
+                success, message, readables = Readable.Search(user, lookup_term)
                 if success and len(readables) == 1:
                     # Non-ambiguous result, link it
                     r = readables[0]

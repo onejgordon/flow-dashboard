@@ -170,6 +170,7 @@ def sync(user, access_token, since_timestamp=0):
                     save.append(r)
                     readables.append(r)
         ndb.put_multi(save)  # Save all
+        Readable.put_sd_batch(save)
         success = True
     else:
         logging.debug(res.headers)
