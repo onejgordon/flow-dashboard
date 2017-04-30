@@ -1287,13 +1287,24 @@ class Quote(UserSearchable):
             return Readable.Slug(author, title)
 
     def lookup_readable(self, user):
+        USE_FTS = True
         if self.source:
-            slug = self.source_slug()
-            if slug:
-                r = Readable.GetBySlug(user, slug)
-                if r:
+            if USE_FTS:
+                # Lookup via readable full-text-search
+                success, message, readables = Readable.Search(user, self.source)
+                if success and len(readables) == 1:
+                    # Non-ambiguous result, link it
+                    r = readables[0]
                     self.readable = r.key
                     return r
+            else:
+                # Lookup via slug query
+                slug = self.source_slug()
+                if slug:
+                    r = Readable.GetBySlug(user, slug)
+                    if r:
+                        self.readable = r.key
+                        return r
 
 
 class Report(UserAccessible):

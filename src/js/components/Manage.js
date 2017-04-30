@@ -6,9 +6,10 @@ var api = require('utils/api');
 var UserStore = require('stores/UserStore');
 var UserActions = require('actions/UserActions');
 var SimpleAdmin = require('components/common/SimpleAdmin');
+var AsyncActionButton = require('components/common/AsyncActionButton');
 var ReactJsonEditor = require('components/common/ReactJsonEditor');
 import {RaisedButton, TextField, DatePicker, FontIcon,
-    Paper} from 'material-ui';
+    Paper, Tabs, Tab} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 import {get, set, clone} from 'lodash';
 import connectToStores from 'alt-utils/lib/connectToStores';
@@ -30,7 +31,9 @@ export default class Manage extends React.Component {
         this.state = {
             form: form,
             settings: settings,
-            tab: "settings"
+            tab: "settings",
+            saving: false,
+            lastSave: util.nowTimestamp()
         };
     }
 
@@ -67,9 +70,12 @@ export default class Manage extends React.Component {
         let params = clone(this.state.form);
         params.settings = JSON.stringify(this.state.settings);
         if (params.birthday) params.birthday = util.printDateObj(params.birthday);
-        api.post("/api/user/me", params, (res) => {
-            if (res.user) UserActions.storeUser(res.user);
-        });
+        this.setState({saving: true}, () => {
+            api.post("/api/user/me", params, (res) => {
+                if (res.user) UserActions.storeUser(res.user);
+                this.setState({saving: false, lastSave: util.nowTimestamp()});
+            });
+        })
     }
 
     handle_settings_change(path, index, data) {
@@ -82,8 +88,7 @@ export default class Manage extends React.Component {
             if (index != null) path.push(index);
             set(settings, path, data);
         }
-
-        this.setState({settings: settings});
+        this.setState({settings: settings, lastChange: util.nowTimestamp()});
     }
 
     render() {
@@ -91,6 +96,7 @@ export default class Manage extends React.Component {
         var props;
         let {form, tab, settings} = this.state;
         let {user} = this.props;
+        let unsaved = this.state.lastSave < this.state.lastChange;
         var tabs = [
             {id: 'settings', label: "User Settings"},
             {id: 'habits', label: "Habits"},
@@ -252,90 +258,106 @@ export default class Manage extends React.Component {
                 <Paper style={{padding: "10px", marginTop: "10px"}}>
                     <h2>{ user.email }</h2>
 
-                    <TextField name="timezone" floatingLabelText="Timezone" value={form.timezone} onChange={this.changeHandler.bind(this, 'form', 'timezone')} /><br/>
-                    <DatePicker autoOk={true} floatingLabelText="Birthday" formatDate={util.printDateObj} value={form.birthday} onChange={this.changeHandlerNilVal.bind(this, 'form', 'birthday')} />
-                    <TextField name="password" floatingLabelText="Update Password" value={form.password} onChange={this.changeHandler.bind(this, 'form', 'password')} /><br/>
+                    <Tabs>
+                        <Tab label="Basics">
+                            <TextField name="timezone" floatingLabelText="Timezone" value={form.timezone} onChange={this.changeHandler.bind(this, 'form', 'timezone')} /><br/>
+                            <DatePicker autoOk={true} floatingLabelText="Birthday" formatDate={util.printDateObj} value={form.birthday} onChange={this.changeHandlerNilVal.bind(this, 'form', 'birthday')} />
+                        </Tab>
 
-                    <h3>Daily Journal Questions</h3>
+                        <Tab label="Daily Journals">
+                            <h3>Daily Journal Questions</h3>
 
-                    <div className="row">
-                        <div className="col-md-6">
-                            <p className="lead">
-                                Basic journal preferences.
-                            </p>
+                            <div className="row">
+                                <div className="col-md-6">
+                                    <p className="lead">
+                                        Basic journal preferences.
+                                    </p>
+                                    <ReactJsonEditor
+                                        array={false} data={get(settings, ['journals', 'preferences'], {})}
+                                        attributes={journal_pref_atts}
+                                        onChange={this.handle_settings_change.bind(this, ['journals', 'preferences'])}
+                                        editButtonLabel="Edit Journal Preferences"
+                                        />
+                                </div>
+                                <div className="col-md-6">
+
+                                    <p className="lead">
+                                        Configure the questions that you answer in each daily journal.
+                                        Responses, if 'chart enabled', can be analyzed on the Analysis page.
+                                    </p>
+
+                                    <ReactJsonEditor title="Daily Journal Questions"
+                                        array={true} data={get(settings, ['journals', 'questions'], [])}
+                                        attributes={question_atts}
+                                        onChange={this.handle_settings_change.bind(this, ['journals', 'questions'])}
+                                        addButtonLabel="Add Question"
+                                        primaryProp="text" secondaryProp="name" />
+                                </div>
+                            </div>
+                        </Tab>
+
+                        <Tab label="Tasks">
+                            <h3>Configure Tasks</h3>
+
                             <ReactJsonEditor
-                                array={false} data={get(settings, ['journals', 'preferences'], {})}
-                                attributes={journal_pref_atts}
-                                onChange={this.handle_settings_change.bind(this, ['journals', 'preferences'])}
-                                editButtonLabel="Edit Journal Preferences"
+                                array={false} data={get(settings, ['tasks', 'preferences'], {})}
+                                attributes={task_pref_atts}
+                                onChange={this.handle_settings_change.bind(this, ['tasks', 'preferences'])}
+                                editButtonLabel="Edit Task Preferences"
                                 />
-                        </div>
-                        <div className="col-md-6">
+                        </Tab>
+
+                        <Tab label="Tracking">
+                            <h3>Configure Tracking Chart (Custom Variables)</h3>
 
                             <p className="lead">
-                                Configure the questions that you answer in each daily journal.
-                                Responses, if 'chart enabled', can be analyzed on the Analysis page.
+                                Choose which variables to display on the <Link to="/app/analysis/misc">tracking chart</Link>.
                             </p>
 
-                            <ReactJsonEditor title="Daily Journal Questions"
-                                array={true} data={get(settings, ['journals', 'questions'], [])}
-                                attributes={question_atts}
-                                onChange={this.handle_settings_change.bind(this, ['journals', 'questions'])}
-                                addButtonLabel="Add Question"
-                                primaryProp="text" secondaryProp="name" />
-                        </div>
-                    </div>
+                            <ReactJsonEditor title="Tracking Chart Variables"
+                                array={true} data={get(settings, ['tracking', 'chart_vars'], [])}
+                                attributes={tracking_var_atts}
+                                onChange={this.handle_settings_change.bind(this, ['tracking', 'chart_vars'])}
+                                addButtonLabel="Add Variable"
+                                primaryProp="label" secondaryProp="name" />
+                        </Tab>
 
-                    <h3>Configure Tasks</h3>
+                        <Tab label="More Menu">
+                            <h3>Configure Flashcards</h3>
 
-                    <ReactJsonEditor
-                        array={false} data={get(settings, ['tasks', 'preferences'], {})}
-                        attributes={task_pref_atts}
-                        onChange={this.handle_settings_change.bind(this, ['tasks', 'preferences'])}
-                        editButtonLabel="Edit Task Preferences"
-                        />
+                            <p className="lead">
+                                Flashcards appear on the main dashboard in the <FontIcon className="material-icons">games</FontIcon> more menu.
+                                Currently, you can configure flashcards to show randomly chosen rows from a Google Spreadsheet.
+                            </p>
 
-                    <h3>Configure Tracking Chart (Custom Variables)</h3>
+                            <ReactJsonEditor title="Flashcards"
+                                array={true} data={get(settings, ['flashcards'], [])}
+                                attributes={flashcard_atts}
+                                onChange={this.handle_settings_change.bind(this, ['flashcards'])}
+                                addButtonLabel="Add Flashcard"
+                                primaryProp="card_title" secondaryProp="id" />
 
-                    <p className="lead">
-                        Choose which variables to display on the <Link to="/app/analysis/misc">tracking chart</Link>.
-                    </p>
+                            <h3>Configure Static Links</h3>
 
-                    <ReactJsonEditor title="Tracking Chart Variables"
-                        array={true} data={get(settings, ['tracking', 'chart_vars'], [])}
-                        attributes={tracking_var_atts}
-                        onChange={this.handle_settings_change.bind(this, ['tracking', 'chart_vars'])}
-                        addButtonLabel="Add Variable"
-                        primaryProp="label" secondaryProp="name" />
+                            <p className="lead">
+                                Static links appear on the main dashboard in the <FontIcon className="material-icons">games</FontIcon> more menu.
+                            </p>
 
-                    <h3>Configure Flashcards</h3>
+                            <ReactJsonEditor title="Static Links"
+                                array={true} data={get(settings, ['links'], [])}
+                                attributes={static_link_atts}
+                                onChange={this.handle_settings_change.bind(this, ['links'])}
+                                addButtonLabel="Add Link"
+                                primaryProp="label" secondaryProp="url" />
+                        </Tab>
 
-                    <p className="lead">
-                        Flashcards appear on the main dashboard in the <FontIcon className="material-icons">games</FontIcon> more menu.
-                        Currently, you can configure flashcards to show randomly chosen rows from a Google Spreadsheet.
-                    </p>
+                        <Tab label="Advanced">
+                            <TextField name="password" floatingLabelText="Update API Password" value={form.password} onChange={this.changeHandler.bind(this, 'form', 'password')} /><br/>
+                        </Tab>
 
-                    <ReactJsonEditor title="Flashcards"
-                        array={true} data={get(settings, ['flashcards'], [])}
-                        attributes={flashcard_atts}
-                        onChange={this.handle_settings_change.bind(this, ['flashcards'])}
-                        addButtonLabel="Add Flashcard"
-                        primaryProp="card_title" secondaryProp="id" />
+                    </Tabs>
 
-                    <h3>Configure Static Links</h3>
-
-                    <p className="lead">
-                        Static links appear on the main dashboard in the <FontIcon className="material-icons">games</FontIcon> more menu.
-                    </p>
-
-                    <ReactJsonEditor title="Static Links"
-                        array={true} data={get(settings, ['links'], [])}
-                        attributes={static_link_atts}
-                        onChange={this.handle_settings_change.bind(this, ['links'])}
-                        addButtonLabel="Add Link"
-                        primaryProp="label" secondaryProp="url" />
-
-                    <RaisedButton primary={true} label="Save" onClick={this.save_user_settings.bind(this)} />
+                    <AsyncActionButton working={this.state.saving} enabled={unsaved} onClick={this.save_user_settings.bind(this)} />
 
                 </Paper>
                 )

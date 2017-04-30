@@ -45,6 +45,11 @@ export default class Reading extends React.Component {
         util.set_title("Reading");
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        let filter_change = prevState.form.reading_filter != this.state.reading_filter;
+        if (filter_change) this.refs.readables.refresh();
+    }
+
     maybe_refresh_quotes() {
         if (this.refs.quotes && this.refs.quotes.empty()) this.refs.quotes.refresh();
     }
