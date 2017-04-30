@@ -940,11 +940,11 @@ class Goal(UserAccessible):
         jan_1 = datetime(year, 1, 1).date()
         goals = Goal.query(ancestor=user.key).filter(Goal.date >= jan_1).fetch(limit=13)
         return sorted(filter(lambda g: g.date.year == year and not g.annual(), goals),
-            key=lambda g: g.date)
+                      key=lambda g: g.date)
 
     @staticmethod
     def Current(user, which="all"):
-        date = datetime.today()
+        date = tools.local_time(user.get_timezone(), datetime.today())
         keys = []
         if which in ["all", "year"]:
             annual_id = ndb.Key('Goal', datetime.strftime(date, "%Y"), parent=user.key)
@@ -1303,11 +1303,12 @@ class Quote(UserSearchable):
                 # Lookup via readable full-text-search
                 lookup_term = re.sub(r'\((.*)\)$', '', self.source).strip()
                 success, message, readables = Readable.Search(user, lookup_term)
-                if success and len(readables) == 1:
-                    # Non-ambiguous result, link it
-                    r = readables[0]
-                    self.readable = r.key
-                    return r
+                if success:
+                    if len(readables) == 1:
+                        # Non-ambiguous result, link it
+                        r = readables[0]
+                        self.readable = r.key
+                        return r
             else:
                 # Lookup via slug query
                 slug = self.source_slug()

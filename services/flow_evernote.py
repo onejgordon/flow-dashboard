@@ -83,6 +83,7 @@ def extract_clipping_content(raw):
 
 
 def get_note(user, note_id):
+    STRIP_WORDS = ["Pocket:"]
     title = url = content = None
     access_token = user_access_token(user)
     if access_token:
@@ -93,6 +94,10 @@ def get_note(user, note_id):
             logging.debug(note)
             content = extract_clipping_content(note.content)
             title = note.title
+            for sw in STRIP_WORDS:
+                if sw in title:
+                    title = title.replace(sw, '')
+            title = title.strip()
             attrs = note.attributes
             if attrs:
                 url = attrs.sourceURL
