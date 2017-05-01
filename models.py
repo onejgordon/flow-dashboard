@@ -1301,8 +1301,8 @@ class Quote(UserSearchable):
         if self.source:
             if USE_FTS:
                 # Lookup via readable full-text-search
-                lookup_term = re.sub(r'\((.*)\)$', '', self.source).strip()
-                success, message, readables = Readable.Search(user, lookup_term)
+                lookup_title_quoted = "\"%s\"" % re.sub(r'\((.*)\)$', '', self.source.replace("\"", "\\\"")).strip()
+                success, message, readables = Readable.Search(user, lookup_title_quoted)
                 if success:
                     if len(readables) == 1:
                         # Non-ambiguous result, link it

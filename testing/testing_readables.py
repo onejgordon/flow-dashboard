@@ -6,8 +6,6 @@ from base_test_case import BaseTestCase
 from models import Readable, Quote, User
 from flow import app as tst_app
 
-R_SOURCE_ID = '1234'
-
 
 class ReadableTestCase(BaseTestCase):
 
@@ -21,28 +19,29 @@ class ReadableTestCase(BaseTestCase):
         self.u = u
 
     def test_quote_readable_matching(self):
-        title = "Crony Beliefs"
-        author = "Kevin Simler"
-        r = Readable.CreateOrUpdate(self.u, R_SOURCE_ID, title=title, author=author, source="test")
-        r.put()
-        Readable.put_sd_batch([r])
+        volley = [
+            ('1000', "Crony Beliefs", "Kevin Simler", "CRONY BELIEFS (SIMLER)", "I contend that the best way to understand all the crazy beliefs out there — aliens, conspiracies, and all the rest — is to analyze them as crony beliefs. Beliefs that have been \"hired\" not for the legitimate purpose of accurately modeling the world, but rather for social and political kickbacks."),
+            ('1001', "Thinking in Systems: A Primer", "Donna H. Meadows", "THINKING IN SYSTEMS A PRIMER (MEADOWS)", "XXX."),
+        ]
 
-        EXPECTED_SLUG = "CRONY BELIEFS (SIMLER)"
+        for v in volley:
+            source_id, title, author, exp_slug, content = v
+            r = Readable.CreateOrUpdate(self.u, source_id, title=title, author=author, source="test")
+            r.put()
+            Readable.put_sd_batch([r])
 
-        self.assertEqual(r.slug, EXPECTED_SLUG)
+            self.assertEqual(r.slug, exp_slug)
 
-        source = "Crony Beliefs (Simler, Kevin)"
-        content = "I contend that the best way to understand all the crazy beliefs out there — aliens, conspiracies, and all the rest — is to analyze them as crony beliefs. Beliefs that have been \"hired\" not for the legitimate purpose of accurately modeling the world, but rather for social and political kickbacks."
-        q = Quote.Create(self.u, source, content)
-        q.put()
-        self.assertIsNotNone(q.readable)
-        self.assertEqual(q.readable, r.key)
-
-        self.assertEqual(q.source_slug(), EXPECTED_SLUG)
-
-        r = Readable.GetByTitleAuthor(self.u, author, title)
-        self.assertIsNotNone(r)
-        self.assertEqual(r.source_id, R_SOURCE_ID)
+            author_names = author.split(' ')
+            source = "%s (%s, %s)" % (title, author_names[-1], author_names[0])
+            q = Quote.Create(self.u, source, content)
+            q.put()
+            self.assertIsNotNone(q.readable)
+            self.assertEqual(q.readable, r.key)
+            self.assertEqual(q.source_slug(), exp_slug)
+            r = Readable.GetByTitleAuthor(self.u, author, title)
+            self.assertIsNotNone(r)
+            self.assertEqual(r.source_id, source_id)
 
         # Create another quote with no readable to link to
         q = Quote.Create(self.u, "xxx", "content...")
