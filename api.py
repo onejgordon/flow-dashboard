@@ -339,6 +339,7 @@ class EventAPI(handlers.JsonRequestHandler):
             event.Update(**params)
             event.put()
             self.success = True
+            self.message = "Event saved"
         else:
             self.message = "Couldn't create event"
         self.set_response({

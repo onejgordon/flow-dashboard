@@ -100,8 +100,8 @@ export default class Manage extends React.Component {
         var tabs = [
             {id: 'settings', label: "User Settings"},
             {id: 'habits', label: "Habits"},
-            {id: 'goals', label: "Goals"},
-            {id: 'projects', label: "Projects"},
+            // {id: 'goals', label: "Goals"},
+            // {id: 'projects', label: "Projects"},
             {id: 'events', label: "Events"}
         ];
         if (tab == "habits") {

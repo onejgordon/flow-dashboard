@@ -90,7 +90,7 @@ class UserSearchable(UserAccessible):
                         index.put(sd)
             return (sd, index)
         except search.Error, e:
-            logging.debug(
+            logging.warning(
                 "Search Index Error when updating search doc: %s" % e)
             return (None, None)
 
