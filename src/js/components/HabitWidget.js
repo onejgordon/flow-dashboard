@@ -1,5 +1,5 @@
 var React = require('react');
-import { IconButton, Dialog, RaisedButton, TextField, FontIcon } from 'material-ui';
+import { IconButton, IconMenu, MenuItem, Dialog, RaisedButton, TextField, FontIcon } from 'material-ui';
 var util = require('utils/util');
 var api = require('utils/api');
 import {clone} from 'lodash';
@@ -250,7 +250,18 @@ export default class HabitWidget extends React.Component {
     );
     return (
       <div className="HabitWidget" id="HabitWidget">
-        <h3>Habits</h3>
+        <div className="row">
+          <div className="col-sm-6">
+            <h3>Habits</h3>
+          </div>
+          <div className="col-sm-6">
+            <div className="pull-right">
+              <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
+                <MenuItem key="gr" primaryText="Refresh" onClick={this.fetch_current.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
+              </IconMenu>
+            </div>
+          </div>
+        </div>
 
         <HabitAnalysis days={60}
           habit={habit_analysis}

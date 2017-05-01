@@ -1,5 +1,6 @@
 var React = require('react');
-import { DatePicker, Dialog, RaisedButton, FlatButton, TextField } from 'material-ui';
+import { DatePicker, Dialog, RaisedButton, FlatButton, TextField,
+  IconMenu, MenuItem, IconButton, FontIcon } from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 import {clone} from 'lodash';
 import {findIndexById} from 'utils/store-utils';
@@ -19,6 +20,7 @@ export default class ProjectViewer extends React.Component {
     due_soon_days: 5,
     initially_show: 3
   }
+
   constructor(props) {
       super(props);
       this.state = {
@@ -32,9 +34,13 @@ export default class ProjectViewer extends React.Component {
   }
 
   componentDidMount() {
-      api.get("/api/project/active", {}, (res) => {
-        this.setState({projects: res.projects})
-      });
+    this.fetch_projects();
+  }
+
+  fetch_projects() {
+    api.get("/api/project/active", {}, (res) => {
+      this.setState({projects: res.projects})
+    });
   }
 
   handle_project_update(p) {
@@ -154,7 +160,19 @@ export default class ProjectViewer extends React.Component {
     let cropped = n_projects > initially_show;
     return (
       <div className="ProjectViewer">
-        <h3>Ongoing Projects</h3>
+
+        <div className="row">
+          <div className="col-sm-6">
+            <h3>Ongoing Projects</h3>
+          </div>
+          <div className="col-sm-6">
+            <div className="pull-right">
+              <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
+                <MenuItem key="gr" primaryText="Refresh" onClick={this.fetch_projects.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
+              </IconMenu>
+            </div>
+          </div>
+        </div>
 
         <ProjectAnalysis project={this.state.project_analysis} onDismiss={this.setState.bind(this, {project_analysis: false})} />
 
