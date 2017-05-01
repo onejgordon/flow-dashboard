@@ -77,7 +77,7 @@ class Site extends React.Component {
             <div>{this.props.children}</div>
 
             <div id="footer">
-              MIT License. &copy; { copyright_years } { AppConstants.AUTHOR }<br/>
+              MIT License. &copy; { copyright_years } <a className="muted" href={ AppConstants.AUTHOR_URL } target="_blank">{ AppConstants.AUTHOR }</a><br/>
             </div>
           </div>
         </MuiThemeProvider>

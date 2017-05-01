@@ -144,8 +144,8 @@ class BigQueryClient(GoogleServiceFetcher):
             for hd in habitdays:
                 hid = hd.habit.id()
                 h = self.habits.get(hid)
-                habits_checklist.remove(hid)
                 if h:
+                    habits_checklist.remove(hid)
                     row[self._habit_col(h)] = 'true' if hd.done else 'false'
                 if hd.done:
                     habits_done += 1

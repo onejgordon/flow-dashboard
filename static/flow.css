@@ -23,6 +23,14 @@ a:hover {
     text-decoration: none;
 }
 
+a.muted:link, a.muted:visited, a.muted:active {
+  color: #92B4C5;
+}
+
+a.muted:hover {
+  color: white;
+}
+
 a > .show_hover {
   opacity: 0.0;
 }
