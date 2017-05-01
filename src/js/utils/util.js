@@ -20,7 +20,7 @@ var util = {
         audio.play();
     },
 
-    notify(message, body, tag) {
+    notify(message, body, tag, icon) {
       let opts = {
         body: body,
         icon: icon || '/images/logo_128.png',
