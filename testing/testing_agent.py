@@ -55,7 +55,7 @@ class AgentTestCase(BaseTestCase):
         self.assertTrue("'Run' is marked as complete" in speech, speech)
 
         speech, data, end_convo = self.ca.respond_to_action('input.habit_status')
-        self.assertEqual("Good work on doing 1 habit (Run)!", speech)
+        self.assertEqual("Good work on doing 1 habit ('Run')!", speech)
 
     def test_agent_task_report(self):
         speech, data, end_convo = self.ca.respond_to_action('input.habit_or_task_report', parameters={'habit_or_task': 'the milk'})

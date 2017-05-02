@@ -175,3 +175,14 @@ class UtilTestCase(BaseTestCase):
         self.assertTrue(u1_key in lookup)
         self.assertTrue(u2_key in lookup)
         self.assertEqual(lookup.get(u1_key).name, "Person 1")
+
+    def testEnglishList(self):
+        volley = [
+            (["one", "two", "three"], "'one', 'two' and 'three'"),
+            (["cat", "dog"], "'cat' and 'dog'"),
+            ([], "--")
+        ]
+        for v in volley:
+            arr, expected = v
+            res = tools.english_list(arr, quote="'")
+            self.assertEqual(res, expected)

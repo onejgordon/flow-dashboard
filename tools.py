@@ -527,3 +527,13 @@ def parse_last_name(name):
             return name.split(',')[0]
         else:
             return name.split(' ')[-1]
+
+
+def english_list(arr, quote="'", if_empty="--"):
+    quoted_arr = [quote + li + quote for li in arr]
+    if len(arr) > 1:
+        return ', '.join(quoted_arr[:-1]) + ' and ' + quoted_arr[-1]
+    elif quoted_arr:
+        return quoted_arr[0]
+    else:
+        return if_empty

@@ -304,7 +304,7 @@ class ConversationAgent(object):
         else:
             text = "You haven't completed any tasks yet."
         if tasks_undone:
-            text += " You still need to do '%s'." % (' and '.join(tasks_undone))
+            text += " You still need to do %s." % tools.english_list(tasks_undone)
         if not n_done and not tasks_undone:
             text += " Try adding tasks by saying 'add task Q2 planning'"
         return text
@@ -391,7 +391,11 @@ class ConversationAgent(object):
                     n_habits_done += 1
         if habits:
             if n_habits_done:
-                text = "Good work on doing %d %s (%s)!" % (n_habits_done, tools.pluralize('habit', n_habits_done), ' and '.join(habits_done))
+                text = "Good work on doing %d %s (%s)!" % (
+                    n_habits_done,
+                    tools.pluralize('habit', n_habits_done),
+                    tools.english_list(habits_done)
+                )
             else:
                 text = "No habits done yet."
             if habits_committed_undone:
