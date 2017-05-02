@@ -121,6 +121,30 @@ class TaskAPI(handlers.JsonRequestHandler):
             'task': task.json() if task else None
         })
 
+    @authorized.role('user')
+    def action(self, d):
+        '''
+        '''
+        action = self.request.get('action')
+        res = {}
+        if action == 'archive_complete':
+            recent = Task.Recent(self.user, limit=20)
+            to_archive = []
+            for t in recent:
+                if not t.archived and t.is_done():
+                    t.archive()
+                    to_archive.append(t)
+            if to_archive:
+                ndb.put_multi(to_archive)
+                res['archived_ids'] = [t.key.id() for t in to_archive]
+                self.message = "Archived %d %s" % (len(to_archive), tools.pluralize('task', count=len(to_archive)))
+            else:
+                self.message = "No completed tasks to archive"
+            self.success = True
+        else:
+            self.message = "Unknown action"
+        self.set_response(res)
+
 
 class HabitAPI(handlers.JsonRequestHandler):
 
@@ -577,6 +601,7 @@ class QuoteAPI(handlers.JsonRequestHandler):
             'quote': quote.json() if quote else None
         })
 
+
 class JournalTagAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
@@ -647,6 +672,7 @@ class JournalAPI(handlers.JsonRequestHandler):
                         tasks.append(task)
                 ndb.put_multi(tasks)
             self.success = True
+            self.message = "Journal submitted!"
 
         self.set_response({
             'journal': jrnl.json() if jrnl else None

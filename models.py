@@ -484,6 +484,10 @@ class Task(UserAccessible):
     def is_done(self):
         return self.status == TASK.DONE
 
+    def archive(self):
+        self.archived = True
+        self.wip = False
+
 
 class Habit(UserAccessible):
     """

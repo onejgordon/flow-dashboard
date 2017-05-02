@@ -3,6 +3,7 @@ var React = require('react');
 import {Line, Bar, Doughnut} from "react-chartjs-2";
 import connectToStores from 'alt-utils/lib/connectToStores';
 var api = require('utils/api');
+var UserStore = require('stores/UserStore');
 var util = require('utils/util');
 import {Paper} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
@@ -103,67 +104,15 @@ export default class AnalysisSnapshot extends React.Component {
         });
     }
 
-    get_pie_data() {
-        let labels = [];
-        let data = [];
-        let colors = [];
-        return {
-            labels: labels,
-            datasets: [
-                {
-                  data: data,
-                  backgroundColor: colors
-                }
-            ]
-        }
-    }
 
-    get_data() {
-        let {form, dimensions} = this.state;
-        let {segment_by} = form;
-        let segment_var = dimensions[segment_by];
-        if (segment_var) {
-            let pie_data = {
-                labels: [],
-                datasets: [
-                    {
-                        data: [],
-                        backgroundColor: []
-                    }
-                ]
-            };
-            let datasets = segment_var.map((sv) => {
-                let sv_data = this.generate_dataset(sv);
-                let color = util.stringToColor(sv);
-                pie_data.labels.push(sv);
-                pie_data.datasets[0].data.push(sv_data.length);
-                pie_data.datasets[0].backgroundColor.push(color);
-                return {
-                    label: sv,
-                    data: sv_data,
-                    backgroundColor: color
-                };
-            });
-            return {
-                scatter: {
-                    datasets: datasets
-                },
-                pie: pie_data
-            };
-        }
-    }
-
-    get_drilldown_data(drilldown) {
-        let {snapshots, form} = this.state;
+    generate_averages_dataset(snapshots, dim) {
+        let {form} = this.state;
         let sb = form.segment_by;
-        snapshots = snapshots.filter((s) => {
-            return s[sb] == drilldown;
-        })
+        if (dim == null) dim = sb;
         let dimension_metric_aves = {};
         this.METRICS.forEach((m) => {
             dimension_metric_aves[m.value] = {};
         })
-        let dim = sb == this.DIMENSIONS[0] ? this.DIMENSIONS[1] : this.DIMENSIONS[0];
         snapshots.forEach((s) => {
             this.METRICS.forEach((m) => {
                 let sdim = s[dim];
@@ -177,7 +126,7 @@ export default class AnalysisSnapshot extends React.Component {
             let dim_average = [];
             dim_labels = [];
             Object.entries(dimension_metric_aves[m.value]).forEach(([key, arr]) => {
-                let ave = util.average(arr);
+                let ave = util.average(arr).toFixed(2);
                 dim_average.push(ave);
                 dim_labels.push(key);
             });
@@ -194,7 +143,55 @@ export default class AnalysisSnapshot extends React.Component {
         return data;
     }
 
+    get_data() {
+        let {form, dimensions, snapshots} = this.state;
+        let {segment_by} = form;
+        let segment_var = dimensions[segment_by];
+        if (segment_var) {
+            let pie_data = {
+                labels: [],
+                datasets: [
+                    {
+                        data: [],
+                        backgroundColor: []
+                    }
+                ]
+            };
+            let averages_data = this.generate_averages_dataset(snapshots);
+            let datasets = segment_var.map((sv) => {
+                let sv_data = this.generate_dataset(sv);
+                let color = util.stringToColor(sv);
+                pie_data.labels.push(sv);
+                pie_data.datasets[0].data.push(sv_data.length);
+                pie_data.datasets[0].backgroundColor.push(color);
+                return {
+                    label: sv,
+                    data: sv_data,
+                    backgroundColor: color
+                };
+            });
+            return {
+                scatter: {
+                    datasets: datasets
+                },
+                pie: pie_data,
+                averages: averages_data
+            };
+        }
+    }
+
+    get_drilldown_data(drilldown) {
+        let {form, snapshots} = this.state;
+        let sb = form.segment_by;
+        snapshots = snapshots.filter((s) => {
+            return s[sb] == drilldown;
+        })
+        let dim = sb == this.DIMENSIONS[0] ? this.DIMENSIONS[1] : this.DIMENSIONS[0];
+        return this.generate_averages_dataset(snapshots, dim);
+    }
+
     render() {
+        let {user} = this.props;
         let {snapshots, form, dimensions} = this.state;
         let data = this.get_data();
         if (data == null) return <div></div>
@@ -232,6 +229,19 @@ export default class AnalysisSnapshot extends React.Component {
             showLines: false,
             maintainAspectRatio: false
         };
+        let avgs_opts = {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        max: 10,
+                        min: 0,
+                        stepSize: 1
+                    }
+                }]
+            },
+            showLines: false,
+            maintainAspectRatio: false
+        };
         let _drilldown;
         let drilldown_opts = dimensions[form.segment_by].map((op) => {
             return {value: op, label: op};
@@ -255,45 +265,74 @@ export default class AnalysisSnapshot extends React.Component {
                 </div>
             )
         }
+        let seg_name = util.capitalize(form.segment_by);
+        let content;
+        if (user.level == 2) {
+            content = (
+                <div>
+                    <Paper style={{padding: 10, marginBottom: 20, marginTop: 20}}>
+                        <div className="row">
+                            <div className="col-sm-4">
+                                <Select onChange={this.changeHandlerVal.bind(this, 'form', 'segment_by')} value={form.segment_by} options={this.segment_opts} simpleValue />
+                            </div>
+                            <div className="col-sm-4">
+                                <Select onChange={this.changeHandlerVal.bind(this, 'form', 'x_axis')} value={form.x_axis} options={this.x_axis_opts} simpleValue />
+                            </div>
+                            <div className="col-sm-4">
+                                <Select onChange={this.changeHandlerVal.bind(this, 'form', 'metric')} value={form.metric} options={this.metric_opts} simpleValue />
+                            </div>
+                        </div>
+                    </Paper>
+
+                    <div>
+                        <Line data={data.scatter} options={opts} height={this.CHART_HEIGHT}/>
+                    </div>
+
+                    <div className="row">
+                        <div className="col-sm-6">
+                            <h4>Averages by { seg_name }</h4>
+                            <div style={{height: "400px"}}>
+                                <Bar data={data.averages} options={avgs_opts} height={this.CHART_HEIGHT} />
+                            </div>
+                        </div>
+                        <div className="col-sm-6">
+                            <h4>Frequency by { seg_name }</h4>
+                            <div style={{height: "400px"}}>
+                                <Doughnut data={data.pie} options={this.DEF_OPTS} height={this.CHART_HEIGHT} />
+                            </div>
+                        </div>
+                    </div>
+
+                    <br/><br/>
+                    <div className="row">
+                        <p>Showing data from <b>{snapshots.length}</b> snapshots.</p>
+                    </div>
+
+                    <h4>{ seg_name } Filter</h4>
+
+                    <div className="row">
+                        <div className="col-sm-6 col-sm-offset-6">
+                            <Select onChange={this.changeHandlerVal.bind(this, 'form', 'drilldown')} value={form.drilldown} options={drilldown_opts} simpleValue />
+                        </div>
+                    </div>
+
+                    { _drilldown }
+                </div>
+            )
+        } else {
+            content = (
+                <div className="empty">
+                    <h3>Snapshots are a beta feature</h3>
+                    <small>Snapshots are a short questionnaire collected at random times throughout the day via your smartphone</small>
+                </div>
+            );
+        }
         return (
             <div>
 
                 <h4>Snapshots</h4>
 
-                <Paper style={{padding: 10, marginBottom: 20, marginTop: 20}}>
-                    <div className="row">
-                        <div className="col-sm-4">
-                            <Select onChange={this.changeHandlerVal.bind(this, 'form', 'segment_by')} value={form.segment_by} options={this.segment_opts} simpleValue />
-                        </div>
-                        <div className="col-sm-4">
-                            <Select onChange={this.changeHandlerVal.bind(this, 'form', 'x_axis')} value={form.x_axis} options={this.x_axis_opts} simpleValue />
-                        </div>
-                        <div className="col-sm-4">
-                            <Select onChange={this.changeHandlerVal.bind(this, 'form', 'metric')} value={form.metric} options={this.metric_opts} simpleValue />
-                        </div>
-                    </div>
-                </Paper>
-
-                <div className="row">
-                    <div className="col-sm-8">
-                        <Line data={data.scatter} options={opts} height={this.CHART_HEIGHT}/>
-                    </div>
-                    <div className="col-sm-4">
-                        <Doughnut data={data.pie} options={this.DEF_OPTS} height={this.CHART_HEIGHT} />
-                    </div>
-                </div>
-
-                <p>Showing data from <b>{snapshots.length}</b> snapshots.</p>
-
-                <h4>Drilldown by { util.capitalize(form.segment_by) }</h4>
-
-                <div className="row">
-                    <div className="col-sm-6 col-sm-offset-6">
-                        <Select onChange={this.changeHandlerVal.bind(this, 'form', 'drilldown')} value={form.drilldown} options={drilldown_opts} simpleValue />
-                    </div>
-                </div>
-
-                { _drilldown }
+                { content }
 
             </div>
         );

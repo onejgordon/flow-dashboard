@@ -78,6 +78,7 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/tracking', handler=api.TrackingAPI, handler_method="update", methods=["POST"]),
         webapp2.Route('/api/task', handler=api.TaskAPI, handler_method="list", methods=["GET"]),
         webapp2.Route('/api/task', handler=api.TaskAPI, handler_method="update", methods=["POST"]),
+        webapp2.Route('/api/task/action', handler=api.TaskAPI, handler_method="action", methods=["POST"]),
         webapp2.Route('/api/readable', handler=api.ReadableAPI, handler_method="list", methods=["GET"]),
         webapp2.Route('/api/readable', handler=api.ReadableAPI, handler_method="update", methods=["POST"]),
         webapp2.Route('/api/readable/delete', handler=api.ReadableAPI, handler_method="delete", methods=["POST"]),
