@@ -1,9 +1,8 @@
 var React = require('react');
-
+import {Link} from 'react-router';
 import {Line, Bar, Doughnut} from "react-chartjs-2";
 import connectToStores from 'alt-utils/lib/connectToStores';
 var api = require('utils/api');
-var UserStore = require('stores/UserStore');
 var util = require('utils/util');
 import {Paper} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
@@ -121,23 +120,33 @@ export default class AnalysisSnapshot extends React.Component {
             });
         });
         let datasets = [];
-        let dim_labels = [];
-        this.METRICS.forEach((m) => {
-            let dim_average = [];
-            dim_labels = [];
-            Object.entries(dimension_metric_aves[m.value]).forEach(([key, arr]) => {
+        let bars = [];
+        let sort_metric = this.METRICS[0].value; // By convention, sorty by first
+        let dims = Object.keys(dimension_metric_aves[sort_metric]);
+        dims.forEach((dim) => {
+            let bar = {
+                _label: dim
+            };
+            this.METRICS.forEach((m) => {
+                let arr = dimension_metric_aves[m.value][dim];
                 let ave = util.average(arr).toFixed(2);
-                dim_average.push(ave);
-                dim_labels.push(key);
+                bar[m.value] = ave;
             });
+            bars.push(bar);
+        })
+        bars = bars.sort((a, b) => {
+            return a[sort_metric] - b[sort_metric];
+        });
+        console.log(bars);
+        this.METRICS.forEach((m) => {
             datasets.push({
-                data: dim_average,
+                data: bars.map((b) => { return b[m.value] }),
                 label: util.capitalize(m.value),
                 backgroundColor: m.color
             })
-        });
+        })
         let data = {
-            labels: dim_labels,
+            labels: bars.map((b) => { return b._label }),
             datasets: datasets
         };
         return data;
@@ -311,7 +320,7 @@ export default class AnalysisSnapshot extends React.Component {
                     <h4>{ seg_name } Filter</h4>
 
                     <div className="row">
-                        <div className="col-sm-6 col-sm-offset-6">
+                        <div className="col-sm-6">
                             <Select onChange={this.changeHandlerVal.bind(this, 'form', 'drilldown')} value={form.drilldown} options={drilldown_opts} simpleValue />
                         </div>
                     </div>
@@ -322,8 +331,8 @@ export default class AnalysisSnapshot extends React.Component {
         } else {
             content = (
                 <div className="empty">
-                    <h3>Snapshots are a beta feature</h3>
-                    <small>Snapshots are a short questionnaire collected at random times throughout the day via your smartphone</small>
+                    <h3>Snapshots are still in beta!</h3>
+                    <small>Snapshots are a short questionnaire collected at random times throughout the day via your smartphone. Want to be a tester? <Link to="/app/feedback">Send a message</Link>.</small>
                 </div>
             );
         }

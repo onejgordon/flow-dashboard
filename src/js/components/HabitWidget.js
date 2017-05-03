@@ -275,7 +275,11 @@ export default class HabitWidget extends React.Component {
             actions={actions}>
 
             <TextField placeholder="Habit name" value={form.name} onChange={this.changeHandler.bind(this, 'form', 'name')} fullWidth />
-            <TextField placeholder="Weekly Target (#)" value={form.tgt_weekly} onChange={this.changeHandler.bind(this, 'form', 'tgt_weekly')} fullWidth />
+            <TextField placeholder="Weekly Target (# of completions per week)"
+                       value={form.tgt_weekly}
+                       onChange={this.changeHandler.bind(this, 'form', 'tgt_weekly')}
+                       type="number"
+                       fullWidth />
             <label>Choose Color</label>
             <SwatchesPicker width={600} height={150} display={true} color={form.color || "#2D6CFA"} onChangeComplete={this.select_habit_color.bind(this)} />
 
