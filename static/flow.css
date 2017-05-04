@@ -338,6 +338,11 @@ div.section {
   }
 }
 
+/* Timezone Picker */
+
+.timezone-picker .timezone-picker-textfield > input {
+}
+
 /* Pace */
 
 .pace {

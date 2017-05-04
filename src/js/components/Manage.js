@@ -8,6 +8,7 @@ var UserActions = require('actions/UserActions');
 var SimpleAdmin = require('components/common/SimpleAdmin');
 var AsyncActionButton = require('components/common/AsyncActionButton');
 var ReactJsonEditor = require('components/common/ReactJsonEditor');
+import Select from 'react-select';
 import {RaisedButton, TextField, DatePicker, FontIcon,
     Paper, Tabs, Tab} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
@@ -260,8 +261,22 @@ export default class Manage extends React.Component {
 
                     <Tabs>
                         <Tab label="Basics">
-                            <TextField name="timezone" floatingLabelText="Timezone" value={form.timezone} onChange={this.changeHandler.bind(this, 'form', 'timezone')} /><br/>
-                            <DatePicker autoOk={true} floatingLabelText="Birthday" formatDate={util.printDateObj} value={form.birthday} onChange={this.changeHandlerNilVal.bind(this, 'form', 'birthday')} />
+                            <div className="row" style={{padding: '10px'}}>
+                                <div className="col-sm-6">
+                                    <DatePicker autoOk={true} floatingLabelText="Birthday" formatDate={util.printDateObj} value={form.birthday} onChange={this.changeHandlerNilVal.bind(this, 'form', 'birthday')} />
+                                </div>
+                                <div className="col-sm-6">
+                                    <label>Timezone</label>
+                                    <Select
+                                        options={AppConstants.TIMEZONES}
+                                        value={form.timezone}
+                                        cancelable={false}
+                                        onChange={this.changeHandlerVal.bind(this, 'form', 'timezone')}
+                                        placeholder="Select timezone"
+                                        simpleValue
+                                      />
+                                </div>
+                            </div>
                         </Tab>
 
                         <Tab label="Daily Journals">

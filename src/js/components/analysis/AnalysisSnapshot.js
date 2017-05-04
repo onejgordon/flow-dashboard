@@ -70,7 +70,6 @@ export default class AnalysisSnapshot extends React.Component {
                     if (s[dk] && dimensions[dk].indexOf(s[dk]) == -1) dimensions[dk].push(s[dk]);
                 })
             });
-            console.log(dimensions);
             this.setState({snapshots: res.snapshots, dimensions: dimensions});
         })
     }
@@ -137,7 +136,6 @@ export default class AnalysisSnapshot extends React.Component {
         bars = bars.sort((a, b) => {
             return a[sort_metric] - b[sort_metric];
         });
-        console.log(bars);
         this.METRICS.forEach((m) => {
             datasets.push({
                 data: bars.map((b) => { return b[m.value] }),
