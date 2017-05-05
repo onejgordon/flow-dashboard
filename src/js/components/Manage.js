@@ -227,6 +227,7 @@ export default class Manage extends React.Component {
                 { name: 'id', title: 'Unique Card ID', type: 'text' },
                 { name: 'card_title', title: 'Card Title', type: 'text' },
                 { name: 'data_source', title: 'Spreadsheet ID', type: 'text' },
+                { name: 'worksheet', title: 'Worksheet Name (Default, first)', type: 'number', default_value: 1},
                 { name: 'colstart', title: 'First data column', type: 'text', default_value: 'A' },
                 { name: 'colend', title: 'Last data column', type: 'text', default_value: 'F' },
                 { name: 'widget_name', title: 'Widget Name', type: 'text' },
@@ -338,10 +339,13 @@ export default class Manage extends React.Component {
                         </Tab>
 
                         <Tab label="More Menu">
+
+                            <br/>
+                            <p className="lead">The following items can be added to the <FontIcon className="material-icons">games</FontIcon> more menu that appears at the bottom of the main dashboard.</p>
+
                             <h3>Configure Flashcards</h3>
 
                             <p className="lead">
-                                Flashcards appear on the main dashboard in the <FontIcon className="material-icons">games</FontIcon> more menu.
                                 Currently, you can configure flashcards to show randomly chosen rows from a Google Spreadsheet.
                             </p>
 
@@ -353,10 +357,6 @@ export default class Manage extends React.Component {
                                 primaryProp="card_title" secondaryProp="id" />
 
                             <h3>Configure Static Links</h3>
-
-                            <p className="lead">
-                                Static links appear on the main dashboard in the <FontIcon className="material-icons">games</FontIcon> more menu.
-                            </p>
 
                             <ReactJsonEditor title="Static Links"
                                 array={true} data={get(settings, ['links'], [])}

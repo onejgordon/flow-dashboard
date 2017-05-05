@@ -2,13 +2,13 @@ var React = require('react');
 import { IconButton, FlatButton } from 'material-ui';
 var UserStore = require('stores/UserStore');
 var toastr = require('toastr');
-import {G_OAUTH_CLIENT_ID, GOOGLE_API_KEY} from 'constants/client_secrets';
 // import gapi from 'gapi-client';
 
 export default class FlashCard extends React.Component {
   static defaultProps = {
     data_source: null, // For Google Sheet, unique Spreadsheet Id from URL
     data_source_type: 'gsheet',
+    worksheet: null,
     widget_name: "Flash Card",
     layout: 'card',
     colstart: 'A',  // First column with data
@@ -72,9 +72,10 @@ export default class FlashCard extends React.Component {
   }
 
   request_spreadsheet_data() {
-    let {data_source, colstart, colend} = this.props;
+    let {data_source, colstart, colend, worksheet} = this.props;
     console.log('request_spreadsheet_data');
     let range = `${colstart}:${colend}`;
+    if (worksheet != null) range = worksheet + '!' + range;
     return gapi.client.request({
       path: `https://sheets.googleapis.com/v4/spreadsheets/${data_source}/values/${range}?majorDimension=COLUMNS`
     })
