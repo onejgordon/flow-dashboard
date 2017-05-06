@@ -141,6 +141,40 @@ export default class HabitWidget extends React.Component {
     return res;
   }
 
+  generate_habit_table() {
+    let {habits} = this.state;
+    let habit_rows = [];
+    let target = 0, done = 0, committed = 0, committed_done = 0;
+    habits.forEach((h) => {
+      let {row, n_done, n_committed, n_committed_done, n_target} = this.render_habit(h);
+      target += n_target;
+      done += n_done;
+      committed += n_committed;
+      committed_done += n_committed_done;
+      habit_rows.push(row);
+    })
+    let _table = (
+        <table width="100%" style={{backgroundColor: "rgba(0,0,0,0)"}}>
+          <thead>
+          <tr>
+            <th></th>
+            { this.render_day_headers() }
+          </tr>
+          </thead>
+          <tbody>
+            { habit_rows }
+          </tbody>
+        </table>
+      );
+    return {
+      table: _table,
+      target: target,
+      done: done,
+      committed: committed,
+      committed_done: committed_done
+    }
+  }
+
   render_habit(h) {
     let {days, commitments} = this.props;
     let {habitdays} = this.state;
@@ -150,7 +184,8 @@ export default class HabitWidget extends React.Component {
     let res = [];
     let done_in_week = 0;
     let today_iso = util.printDateObj(new Date());
-    var done = false, committed = false;
+    var done = false, is_committed = false;
+    let n_committed = 0, n_committed_done = 0;
     cursor.setDate(cursor.getDate() - days + 1);
     while (cursor <= today) {
       let iso_day = util.printDateObj(cursor);
@@ -160,17 +195,23 @@ export default class HabitWidget extends React.Component {
       if (habitdays[id]) {
         let hd = habitdays[id];
         done = hd.done;
-        committed = hd.committed;
+        is_committed = hd.committed;
       } else {
         done = false;
-        committed = false;
+        is_committed = false;
       }
       let icon = 'check';
       if (done) icon = h.icon || 'check_circle';
-      if (done && in_week) done_in_week += 1;
+      if (in_week) {
+        if (done) {
+          done_in_week += 1;
+          if (is_committed) n_committed_done += 1;
+        }
+        if (is_committed) n_committed += 1;
+      }
       let st = {};
       if (done) st.color = h.color || cyanA400;
-      else if (committed) st.color = AppConstants.COMMIT_COLOR;
+      else if (is_committed) st.color = AppConstants.COMMIT_COLOR;
       if (!in_week) st.opacity = 0.6;
       let tt = done ? "Mark Not Done" : "Mark Done";
       res.push(<td key={iso_day}>
@@ -200,7 +241,7 @@ export default class HabitWidget extends React.Component {
     let _commitment;
     if (commitments) _commitment = (
         <td className="text-center">
-          { (!done && !committed) ?
+          { (!done && !is_committed) ?
           <IconButton iconClassName="material-icons"
             onClick={this.commit.bind(this, h, today_iso)}
             tooltip="Commit"
@@ -209,7 +250,7 @@ export default class HabitWidget extends React.Component {
           : null }
         </td>
     )
-    return (
+    let row = (
       <tr key={h.id}>
         <td className="text-center">
           <a href="javascript:void(0)" onClick={this.show_analysis.bind(this, h)}><span className="show_hover"><FontIcon className="material-icons" style={{fontSize: 17, lineHeight: '17px'}}>show_chart</FontIcon></span> <b style={st} title={h.description || null}>{ h.name }</b></a>
@@ -221,6 +262,9 @@ export default class HabitWidget extends React.Component {
         </td>
       </tr>
       );
+    let n_target = h.tgt_weekly;
+    let n_done = done_in_week;
+    return { row, n_target, n_done, n_committed, n_committed_done };
   }
 
   select_habit_color(color) {
@@ -232,38 +276,11 @@ export default class HabitWidget extends React.Component {
   render() {
     let {habits, habitdays, new_dialog_open, form, habit_analysis, creating} = this.state;
     let no_habits = habits.length == 0;
-    let _table, _bars;
+    let _bars, table;
+    let target = 0, done = 0, committed = 0, committed_done = 0;
     let actions = [<RaisedButton primary={true} label="Create Habit" onClick={this.create_habit.bind(this)} disabled={creating} />]
     if (!no_habits) {
-      _table = (
-        <table width="100%" style={{backgroundColor: "rgba(0,0,0,0)"}}>
-          <thead>
-          <tr>
-            <th></th>
-            { this.render_day_headers() }
-          </tr>
-          </thead>
-          <tbody>
-          { habits.map((h) => {
-            return this.render_habit(h);
-          }) }
-          </tbody>
-        </table>
-      );
-      let _sum = util.sum(habits.map((h) => { return h.tgt_weekly }))
-      console.log(_sum);
-      let target = _sum.sum;
-      let done = 0;
-      let committed = 0;
-      let committed_done = 0;
-      Object.keys(habitdays).forEach((hd_id) => {
-        let hd = habitdays[hd_id];
-        if (hd.committed) {
-          committed += 1;
-          if (hd.done) committed_done += 1;
-        }
-        if (hd.done) done += 1;
-      })
+      ({table, target, done, committed, committed_done} = this.generate_habit_table());
       let target_tooltip = `${util.printPercent(done/target)} of weekly target`;
       let commit_tooltip = `${util.printPercent(committed_done/committed)} of commitments completed`;
       _bars = (
@@ -280,7 +297,7 @@ export default class HabitWidget extends React.Component {
                               color="#FC3D6F" /></div>
             </div>
             <div className="col-sm-1">
-              <div className="pull-right"><FontIcon className="material-icons" color="#444" titl={commit_tooltip}>fast_forward</FontIcon></div>
+              <div className="pull-right"><FontIcon className="material-icons" color="#444" title={commit_tooltip}>fast_forward</FontIcon></div>
             </div>
             <div className="col-sm-5">
               <div>
@@ -337,7 +354,7 @@ export default class HabitWidget extends React.Component {
         { this.render_commitment_alert() }
 
         { _bars }
-        { _table }
+        { table }
       </div>
     )
   }

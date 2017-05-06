@@ -262,13 +262,13 @@ div.section {
     color: white;
 }
 
-.HabitWidget span.target.target-reached {
-    color: #22FF7A;
-    font-weight: bold;
+.HabitWidget span.target.target-near {
+    color: #F9D23D;
 }
 
 .HabitWidget span.target.target-reached {
-    color: #F8BA1D;
+    color: #22FF7A;
+    font-weight: bold;
 }
 
 .LifeTimeline {
