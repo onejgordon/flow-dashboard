@@ -2,7 +2,7 @@ import traceback
 import tools
 from google.appengine.ext import ndb
 from google.appengine.api import logservice, memcache
-from models import Report, HabitDay, Task, Goal, MiniJournal
+from models import Report, HabitDay, Task, Goal, MiniJournal, Event
 from constants import REPORT, GCS_REPORT_BUCKET
 import cloudstorage as gcs
 from datetime import datetime
@@ -296,5 +296,23 @@ class JournalReportWorker(GCSReportWorker):
             ', '.join([key.id() for key in jrnl.tags]),
             str(jrnl.location) if jrnl.location else "",
             jrnl.data if jrnl.data else ""
+        ]
+        return row
+
+
+class EventReportWorker(GCSReportWorker):
+    KIND = Event
+
+    def __init__(self, rkey):
+        super(EventReportWorker, self).__init__(rkey, start_att="date_start", title="Event Report")
+        self.headers = ["Date Start", "Date End", "Title", "Details", "Color"]
+
+    def entityData(self, event):
+        row = [
+            tools.iso_date(event.date_start),
+            tools.iso_date(event.date_end),
+            event.title,
+            event.details,
+            event.color
         ]
         return row

@@ -1438,12 +1438,14 @@ class Report(UserAccessible):
 
     def run(self, start_cursor=None):
         """Begins report generation"""
-        from reports import HabitReportWorker, TaskReportWorker, GoalReportWorker, JournalReportWorker
+        from reports import HabitReportWorker, TaskReportWorker, GoalReportWorker, JournalReportWorker, \
+            EventReportWorker
         worker_lookup = {
             REPORT.HABIT_REPORT: HabitReportWorker,
             REPORT.TASK_REPORT: TaskReportWorker,
             REPORT.GOAL_REPORT: GoalReportWorker,
-            REPORT.JOURNAL_REPORT: JournalReportWorker
+            REPORT.JOURNAL_REPORT: JournalReportWorker,
+            REPORT.EVENT_REPORT: EventReportWorker
         }
         worker_class = worker_lookup.get(self.type)
         worker = None

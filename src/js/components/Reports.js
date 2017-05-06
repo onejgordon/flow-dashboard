@@ -102,7 +102,7 @@ export default class Reports extends React.Component {
         return (
             <div>
 
-                <h1>Reports</h1>
+                <h1>Exports</h1>
 
                 <FetchedList ref="list" url="/api/report" listStyle="mui" listProp="reports" renderItem={this.render_report.bind(this)} autofetch={true}/>
 
@@ -148,6 +148,16 @@ export default class Reports extends React.Component {
                     { this.render_date_form() }
 
                     <RaisedButton label="Generate" primary={true} icon={<FontIcon className="material-icons">play_circle_filled</FontIcon>} onClick={this.generate_report.bind(this, 4)} />
+                  </Tab>
+
+                  <Tab label="Events">
+
+                    <br/>
+                    <p className="lead">Export event data</p>
+
+                    { this.render_date_form() }
+
+                    <RaisedButton label="Generate" primary={true} icon={<FontIcon className="material-icons">play_circle_filled</FontIcon>} onClick={this.generate_report.bind(this, 5)} />
                   </Tab>
 
                 </Tabs>

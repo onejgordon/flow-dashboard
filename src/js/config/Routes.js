@@ -43,7 +43,7 @@ module.exports = (
       <Route path="manage" component={Manage} />
       <Route path="integrations" component={Integrations} />
       <Route path="integrations/:action" component={Integrations} />
-      <Route path="reports" component={Reports} />
+      <Route path="exports" component={Reports} />
       <Route path="reading" component={Reading} />
       <Route path="feedback" component={Feedback} />
       <Route path="admin/agent" component={AdminAgent} />
