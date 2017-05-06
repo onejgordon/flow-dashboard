@@ -330,7 +330,7 @@ export default class AnalysisSnapshot extends React.Component {
             content = (
                 <div className="empty">
                     <h3>Snapshots are still in beta!</h3>
-                    <small>Snapshots are a short questionnaire collected at random times throughout the day via your smartphone. Want to be a tester? <Link to="/app/feedback">Send a message</Link>.</small>
+                    <small>Snapshots are a short questionnaire collected at random times throughout the day via your smartphone. The Snapshot Android app is in a limited beta -- Want to be a tester? <Link to="/app/feedback">Send a message</Link>.</small>
                 </div>
             );
         }
