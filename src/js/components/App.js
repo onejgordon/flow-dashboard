@@ -112,7 +112,7 @@ export default class Private extends React.Component {
   render() {
     let {user} = this.props;
     let {SITENAME} = AppConstants;
-    let LOGO = <img src="/images/logo_white.png" className="center-block flowlogo glow" width="50" style={{marginTop: "7px", cursor: 'pointer'}} />
+    let LOGO = <img src="/images/logo_white.png" className="flowlogo glow" width="50" />
     return (
       <div>
         <AppBar

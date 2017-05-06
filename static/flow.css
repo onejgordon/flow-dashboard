@@ -59,6 +59,16 @@ body {
     min-height: 600px;
 }
 
+.flowlogo {
+  position: absolute;
+  display: inline-block;
+  top: 7px;
+  left: 50%;
+  margin-left: -25px;
+  width: 50px;
+  cursor: pointer;
+}
+
 div.section {
   margin-top: 15px;
 }
