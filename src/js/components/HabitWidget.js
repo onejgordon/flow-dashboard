@@ -27,6 +27,10 @@ export default class HabitWidget extends React.Component {
           form: {},
           creating: false
       };
+      this.SHOW_MATERIAL_ICONS = ['check_circle', 'group_work', 'add', 'directions_run',
+                                  'spa', 'lightbulb_outline', 'access_alarm', 'fitness_center',
+                                  'lock', 'stars', 'visibility', 'play_circle_filled',
+                                  'brightness_low', 'monetization_on'];
 
   }
 
@@ -273,6 +277,22 @@ export default class HabitWidget extends React.Component {
     this.setState({form});
   }
 
+  show_creator() {
+    this.setState({new_dialog_open: true});
+  }
+
+  set_new_habit_icon(ic) {
+    let {form} = this.state;
+    form.icon = ic;
+    this.setState({form});
+  }
+
+  render_icon_chooser() {
+    return this.SHOW_MATERIAL_ICONS.map((ic) => {
+      return <IconButton iconClassName="material-icons" onClick={this.set_new_habit_icon.bind(this, ic)}>{ic}</IconButton>
+    })
+  }
+
   render() {
     let {habits, habitdays, new_dialog_open, form, habit_analysis, creating} = this.state;
     let no_habits = habits.length == 0;
@@ -320,6 +340,7 @@ export default class HabitWidget extends React.Component {
             <div className="pull-right">
               <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
                 <MenuItem key="gr" primaryText="Refresh" onClick={this.fetch_current.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
+                <MenuItem key="new" primaryText="New Habit" onClick={this.show_creator.bind(this)} leftIcon={<FontIcon className="material-icons">add</FontIcon>} />
               </IconMenu>
             </div>
           </div>
@@ -342,13 +363,24 @@ export default class HabitWidget extends React.Component {
                        onChange={this.changeHandler.bind(this, 'form', 'tgt_weekly')}
                        type="number"
                        fullWidth />
-            <label>Choose Color</label>
-            <SwatchesPicker width={600} height={150} display={true} color={form.color || "#2D6CFA"} onChangeComplete={this.select_habit_color.bind(this)} />
+
+            <div className="row">
+              <div className="col-sm-6">
+                <label>Choose Color</label>
+                <SwatchesPicker width={320} height={300} display={true} color={form.color || "#2D6CFA"} onChangeComplete={this.select_habit_color.bind(this)} />
+              </div>
+              <div className="col-sm-6">
+                <label>Habit Icon</label>
+                <p className="help-block">Choose an icon below, or enter any icon ID from https://material.io/icons/.</p>
+                <TextField placeholder="Habit icon ID" value={form.icon || ''} onChange={this.changeHandler.bind(this, 'form', 'icon')} fullWidth />
+                { this.render_icon_chooser() }
+              </div>
+            </div>
 
         </Dialog>
 
         <div hidden={!no_habits}>
-          <div className="text-center empty">None yet, <a href="javascript:void(0)" onClick={this.setState.bind(this, {new_dialog_open: true})}>create</a> your first habit!</div>
+          <div className="text-center empty">None yet, <a href="javascript:void(0)" onClick={this.show_creator.bind(this)}>create</a> your first habit!</div>
         </div>
 
         { this.render_commitment_alert() }
