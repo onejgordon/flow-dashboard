@@ -76,7 +76,7 @@ export default class GoalViewer extends React.Component {
   }
 
   show_longterm() {
-    if (this.state.longterm) this.show_goal_dialog(this.state.longterm);
+    if (this.state.longterm) this.show_goal_dialog(this.state.longterm, 'longterm');
     else this.setState({set_goal_form: 'longterm', form: {}});
   }
 
@@ -86,7 +86,10 @@ export default class GoalViewer extends React.Component {
       if (g) {
         form = util.spread_array(g, 'text', 'text', 4);
       }
-      let id = type == 'annual' ? today.getFullYear() : util.printDate(today.getTime(), this.GOAL_M_FORMAT);
+      let id;
+      if (type == 'annual') id = today.getFullYear();
+      else if (type == 'monthly') id = util.printDate(today.getTime(), this.GOAL_M_FORMAT);
+      else if (type == 'longterm') id = 'longterm';
       let st = {
         form: form,
         set_goal_form: id
