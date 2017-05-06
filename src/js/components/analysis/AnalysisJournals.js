@@ -204,6 +204,7 @@ export default class AnalysisJournals extends React.Component {
         loadGoogleMapsAPI({
             key: GOOGLE_API_KEY
         }).then((googleMaps) => {
+            console.log("Got Google Maps")
             this.setState({google_maps: googleMaps, map_showing: true});
         }).catch((err) => {
             console.error(err);
@@ -281,8 +282,8 @@ export default class AnalysisJournals extends React.Component {
                     <DropDownMenu onChange={this.change_color_scale.bind(this)} value={color_scale_question}>
                         { this.state.questions.filter((q) => {
                             return q.chart;
-                        }).map((q) => {
-                            return <MenuItem primaryText={q.label} value={q} />
+                        }).map((q, i) => {
+                            return <MenuItem primaryText={q.label} value={q} key={i} />
                         }) }
                     </DropDownMenu>
 
@@ -319,7 +320,7 @@ export default class AnalysisJournals extends React.Component {
                 { _journals_segmented }
 
                 <div hidden={map_showing}>
-                    <FlatButton label="Show Map" onClick={this.show_map.bind(this)} />
+                    <FlatButton label="Show Map" onClick={this.show_map.bind(this)} disabled />
                 </div>
 
                 { _map }
