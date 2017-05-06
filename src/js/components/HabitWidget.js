@@ -7,6 +7,7 @@ import {cyanA400} from 'material-ui/styles/colors';
 var AppConstants = require('constants/AppConstants')
 import {changeHandler} from 'utils/component-utils';
 var HabitAnalysis = require('components/HabitAnalysis');
+var ProgressLine = require('components/common/ProgressLine');
 import { SwatchesPicker } from 'react-color';
 
 @changeHandler
@@ -229,11 +230,12 @@ export default class HabitWidget extends React.Component {
   }
 
   render() {
-    let {habits, new_dialog_open, form, habit_analysis, creating} = this.state;
+    let {habits, habitdays, new_dialog_open, form, habit_analysis, creating} = this.state;
     let no_habits = habits.length == 0;
-    let _table;
+    let _table, _bars;
     let actions = [<RaisedButton primary={true} label="Create Habit" onClick={this.create_habit.bind(this)} disabled={creating} />]
-    if (!no_habits) _table = (
+    if (!no_habits) {
+      _table = (
         <table width="100%" style={{backgroundColor: "rgba(0,0,0,0)"}}>
           <thead>
           <tr>
@@ -247,7 +249,50 @@ export default class HabitWidget extends React.Component {
           }) }
           </tbody>
         </table>
-    );
+      );
+      let _sum = util.sum(habits.map((h) => { return h.tgt_weekly }))
+      console.log(_sum);
+      let target = _sum.sum;
+      let done = 0;
+      let committed = 0;
+      let committed_done = 0;
+      Object.keys(habitdays).forEach((hd_id) => {
+        let hd = habitdays[hd_id];
+        if (hd.committed) {
+          committed += 1;
+          if (hd.done) committed_done += 1;
+        }
+        if (hd.done) done += 1;
+      })
+      let target_tooltip = `${util.printPercent(done/target)} of weekly target`;
+      let commit_tooltip = `${util.printPercent(committed_done/committed)} of commitments completed`;
+      _bars = (
+        <div style={{marginBottom: '15px'}}>
+          <div className="row">
+            <div className="col-sm-1">
+              <div className="pull-right"><FontIcon className="material-icons" color="#444" title={target_tooltip}>check</FontIcon></div>
+            </div>
+            <div className="col-sm-5">
+              <div>
+                <ProgressLine value={done}
+                              total={target}
+                              style={{marginTop: '11px'}}
+                              color="#FC3D6F" /></div>
+            </div>
+            <div className="col-sm-1">
+              <div className="pull-right"><FontIcon className="material-icons" color="#444" titl={commit_tooltip}>fast_forward</FontIcon></div>
+            </div>
+            <div className="col-sm-5">
+              <div>
+                <ProgressLine value={committed_done}
+                              total={committed}
+                              style={{marginTop: '11px'}}
+                              color={AppConstants.COMMIT_COLOR} /></div>
+            </div>
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="HabitWidget" id="HabitWidget">
         <div className="row">
@@ -274,9 +319,9 @@ export default class HabitWidget extends React.Component {
             onRequestClose={this.setState.bind(this, {new_dialog_open: false})}
             actions={actions}>
 
-            <TextField placeholder="Habit name" value={form.name} onChange={this.changeHandler.bind(this, 'form', 'name')} fullWidth />
+            <TextField placeholder="Habit name" value={form.name || ''} onChange={this.changeHandler.bind(this, 'form', 'name')} fullWidth />
             <TextField placeholder="Weekly Target (# of completions per week)"
-                       value={form.tgt_weekly}
+                       value={form.tgt_weekly || ''}
                        onChange={this.changeHandler.bind(this, 'form', 'tgt_weekly')}
                        type="number"
                        fullWidth />
@@ -291,6 +336,7 @@ export default class HabitWidget extends React.Component {
 
         { this.render_commitment_alert() }
 
+        { _bars }
         { _table }
       </div>
     )

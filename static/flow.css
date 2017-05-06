@@ -154,7 +154,7 @@ div.section {
 .dateProgressBar {
     display: block;
     height: 2px;
-    background: #777;
+    background: #444;
     position: relative;
     margin: 5px 0;
 }

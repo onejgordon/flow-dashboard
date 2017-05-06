@@ -142,7 +142,7 @@ export default class TaskWidget extends React.Component {
     let _buttons = [
       <IconButton key="ref" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.fetch_recent.bind(this)} tooltip="Refresh">refresh</IconButton>,
       <IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.show_new_box.bind(this)} tooltip="Add Task (T)">add</IconButton>,
-      <span className="pull-right" style={{marginRight: '20px'}}><IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.archive_all_done.bind(this)} tooltip="Archive Complete">archive</IconButton></span>,
+      <span key="archive_all" className="pull-right" style={{marginRight: '20px'}}><IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.archive_all_done.bind(this)} tooltip="Archive Complete">archive</IconButton></span>,
     ]
     return (
       <div className="TaskWidget" id="TaskWidget">
