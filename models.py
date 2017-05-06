@@ -199,9 +199,12 @@ class User(ndb.Model):
             u.setPass(password)
             u.Update(settings=DEFAULT_USER_SETTINGS)
             if not tools.on_dev_server():
-                mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
-                               subject="[ %s ] New User - %s" % (SITENAME, email),
-                               body="That's all")
+                try:
+                    mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
+                                   subject="[ %s ] New User - %s" % (SITENAME, email),
+                                   body="That's all")
+                except Exception, e:
+                    logging.warning("Failed to send email")
             return u
         return None
 
@@ -844,7 +847,7 @@ class Snapshot(UserAccessible):
 
     @staticmethod
     def Recent(user, limit=500):
-        return Snapshot.query().order(-Snapshot.dt_created).fetch(limit=limit)
+        return Snapshot.query(ancestor=user.key).order(-Snapshot.dt_created).fetch(limit=limit)
 
     def get_data_value(self, prop):
         metrics = tools.getJson(self.metrics, {})
