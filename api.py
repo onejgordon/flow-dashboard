@@ -1299,9 +1299,13 @@ class FeedbackAPI(handlers.JsonRequestHandler):
         if 'feedback' in params and 'email' in params:
             feedback = params.get('feedback')
             email = params.get('email')
-            mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
-                           subject="[ %s ] Feedback from %s" % (SITENAME, email),
-                           body="Message: %s" % feedback)
+            try:
+                mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
+                               subject="[ %s ] Feedback from %s" % (SITENAME, email),
+                               body="Message: %s" % feedback)
+            except Exception, e:
+                logging.warning("Can't send mail")
+                logging.debug(feedback)
             self.success = True
             self.message = "Thanks for your feedback!"
         self.set_response()
