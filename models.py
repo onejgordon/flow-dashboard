@@ -377,14 +377,12 @@ class Project(UserAccessible):
         if not self.progress_ts:
             self.progress_ts = [0 for x in range(10)]  # Initialize
         self.progress_ts[progress-1] = tools.unixtime()
-        logging.debug("set progress -> %s" % progress)
         if regression:
             clear_index = progress
             while clear_index < 10:
                 self.progress_ts[clear_index] = 0
                 clear_index += 1
         changed = progress != self.progress
-        logging.debug(self.progress_ts)
         self.progress = progress
         if changed and self.is_completed():
             self.dt_completed = datetime.now()

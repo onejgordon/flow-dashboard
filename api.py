@@ -1305,6 +1305,7 @@ class FeedbackAPI(handlers.JsonRequestHandler):
                                body="Message: %s" % feedback)
             except Exception, e:
                 logging.warning("Can't send mail")
+                logging.debug(email)
                 logging.debug(feedback)
             self.success = True
             self.message = "Thanks for your feedback!"

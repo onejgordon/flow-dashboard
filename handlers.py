@@ -68,9 +68,12 @@ class BaseRequestHandler(webapp2.RequestHandler):
                 uname = "Unknown"
             memcache.add(throttle_name, 1, exception_expiration)
             subject = '[%s] exception, user:%s [%s: %s]' % (sitename, uname, exception_name, exception_details)
-            mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
-                           subject=subject,
-                           body=exception_traceback)
+            try:
+                mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
+                               subject=subject,
+                               body=exception_traceback)
+            except Exception, e:
+                pass
         template_values = {
             'YEAR': datetime.now().year,
             'SITENAME': SITENAME
