@@ -8,6 +8,7 @@ var TaskLI = require('components/list_items/TaskLI');
 import {findIndexById, removeItemsById} from 'utils/store-utils';
 var ProgressLine = require('components/common/ProgressLine');
 var toastr = require('toastr');
+var AsyncActionButton = require('components/common/AsyncActionButton');
 import {changeHandler} from 'utils/component-utils';
 
 @changeHandler
@@ -75,13 +76,15 @@ export default class TaskWidget extends React.Component {
 
   add_task() {
     let {form} = this.state;
-    api.post("/api/task", {title: form.new_task}, (res) => {
-      let {tasks} = this.state;
-      tasks.push(res.task);
-      this.setState({tasks: tasks, new_showing: false, form: {}}, () => {
-        this.refs.new_task.focus()
+    this.setState({creating: true}, () => {
+      api.post("/api/task", {title: form.new_task}, (res) => {
+        let {tasks} = this.state;
+        tasks.push(res.task);
+        this.setState({tasks: tasks, new_showing: false, form: {}, creating: false}, () => {
+          this.refs.new_task.focus()
+        });
       });
-    });
+    })
   }
 
   archive_all_done() {
@@ -92,6 +95,16 @@ export default class TaskWidget extends React.Component {
         res.archive_all_done
       }
     })
+  }
+
+  new_task_key_press(event) {
+    if (event.charCode === 13) { // enter key pressed
+      let {form} = this.state;
+      event.preventDefault();
+      if (form.new_task && form.new_task.length > 0) {
+        this.add_task();
+      }
+    }
   }
 
   show_new_box() {
@@ -134,11 +147,12 @@ export default class TaskWidget extends React.Component {
 
   render() {
     let {show_task_progressbar} = this.props;
-    let {tasks, new_showing, form} = this.state;
+    let {tasks, new_showing, form, creating} = this.state;
     let now = new Date();
     let total_mins = 24 * 60;
     let current_mins = now.getHours() * 60 + now.getMinutes();
     let {tasks_done, tasks_total} = this.task_progress();
+    let new_task_entered = form.new_task && form.new_task.length > 0;
     let _buttons = [
       <IconButton key="ref" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.fetch_recent.bind(this)} tooltip="Refresh">refresh</IconButton>,
       <IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.show_new_box.bind(this)} tooltip="Add Task (T)">add</IconButton>,
@@ -165,8 +179,14 @@ export default class TaskWidget extends React.Component {
 
         <div hidden={!new_showing}>
           <Paper style={{padding: '10px'}}>
-            <TextField name="new_task" ref="new_task" floatingLabelText="Enter new task title..." value={form.new_task || ""} onChange={this.changeHandler.bind(this, 'form', 'new_task')} fullWidth />
-            <RaisedButton label="Add Task" onClick={this.add_task.bind(this)} />
+            <TextField name="new_task" ref="new_task" floatingLabelText="Enter new task title..." value={form.new_task || ""} onChange={this.changeHandler.bind(this, 'form', 'new_task')} onKeyPress={this.new_task_key_press.bind(this)} fullWidth />
+            <AsyncActionButton
+              working={creating}
+              enabled={new_task_entered}
+              text_disabled="Add Task"
+              text_working="Adding..."
+              text_enabled="Add Task"
+              onClick={this.add_task.bind(this)} />
             <FlatButton label="Cancel" onClick={this.setState.bind(this, {new_showing: false})} />
           </Paper>
         </div>

@@ -69,7 +69,6 @@ export default class GoalViewer extends React.Component {
 
   fetch_current() {
     api.get("/api/goal/current", {}, (res) => {
-      console.log(res);
       let st = {annual: res.annual, monthly: res.monthly, longterm: res.longterm};
       this.setState(st);
     });
