@@ -117,7 +117,7 @@ export default class AnalysisMisc extends React.Component {
 
                 <h4>Tracking</h4>
 
-                <Line data={trackingData} options={trackingOps} width={1000} height={450}/>
+                <Bar data={trackingData} options={trackingOps} width={1000} height={450}/>
 
             </div>
         );
