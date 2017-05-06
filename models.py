@@ -537,7 +537,7 @@ class Habit(UserAccessible):
         if 'color' in params:
             self.color = params.get('color')
         if 'icon' in params:
-            self.icon = params.get('icon')
+            self.icon = params.get('icon').strip().replace(' ', '_')
         if 'archived' in params:
             self.archived = params.get('archived')
         if 'tgt_weekly' in params:
