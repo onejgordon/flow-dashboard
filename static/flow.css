@@ -23,6 +23,14 @@ a:hover {
     text-decoration: none;
 }
 
+a.muted:link, a.muted:visited, a.muted:active {
+  color: #92B4C5;
+}
+
+a.muted:hover {
+  color: white;
+}
+
 a > .show_hover {
   opacity: 0.0;
 }
@@ -146,7 +154,7 @@ div.section {
 .dateProgressBar {
     display: block;
     height: 2px;
-    background: #777;
+    background: #444;
     position: relative;
     margin: 5px 0;
 }
@@ -254,13 +262,13 @@ div.section {
     color: white;
 }
 
-.HabitWidget span.target.target-reached {
-    color: #22FF7A;
-    font-weight: bold;
+.HabitWidget span.target.target-near {
+    color: #F9D23D;
 }
 
 .HabitWidget span.target.target-reached {
-    color: #F8BA1D;
+    color: #22FF7A;
+    font-weight: bold;
 }
 
 .LifeTimeline {
@@ -328,6 +336,11 @@ div.section {
   100% {
     opacity: 1.0;
   }
+}
+
+/* Timezone Picker */
+
+.timezone-picker .timezone-picker-textfield > input {
 }
 
 /* Pace */

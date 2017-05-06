@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf8 -*-
 
 from datetime import datetime, timedelta, time
 from google.appengine.ext import ndb
@@ -88,9 +90,19 @@ class UserSearchable(UserAccessible):
                         index.put(sd)
             return (sd, index)
         except search.Error, e:
-            logging.debug(
+            logging.warning(
                 "Search Index Error when updating search doc: %s" % e)
             return (None, None)
+
+    @staticmethod
+    def put_sd_batch(items):
+        sds = []
+        if items:
+            index = items[0].get_index()
+            for i in items:
+                sds.append(i.generate_sd())
+            if sds:
+                index.put(sds)
 
     @classmethod
     def Search(cls, user, term, limit=20):
@@ -254,6 +266,17 @@ class User(ndb.Model):
             return integrations.get(prop, default)
         return default
 
+    def get_setting_prop(self, path, default=None):
+        settings = tools.getJson(self.settings)
+        if settings:
+            cursor = settings
+            for i, pi in enumerate(path):
+                cursor = cursor.get(pi, {})
+                last = i == len(path) - 1
+                if last:
+                    return cursor if cursor is not None else default
+        return default
+
     def set_integration_prop(self, prop, value):
         integrations = tools.getJson(self.integrations)
         if not integrations:
@@ -289,12 +312,13 @@ class Project(UserAccessible):
     dt_created = ndb.DateTimeProperty(auto_now_add=True)
     dt_completed = ndb.DateTimeProperty()
     dt_archived = ndb.DateTimeProperty()
+    dt_due = ndb.DateTimeProperty()
     urls = ndb.TextProperty(repeated=True)
     title = ndb.TextProperty()
     subhead = ndb.TextProperty()
     starred = ndb.BooleanProperty(default=False)
     archived = ndb.BooleanProperty(default=False)
-    progress = ndb.IntegerProperty(default=0) # 1 - 10 (-1 disabled)
+    progress = ndb.IntegerProperty(default=0)  # 1 - 10 (-1 disabled)
     progress_ts = ndb.IntegerProperty(repeated=True, indexed=False) # Timestamp (ms) for each progress step (len 10)
 
     def json(self):
@@ -303,13 +327,15 @@ class Project(UserAccessible):
             'ts_created': tools.unixtime(self.dt_created),
             'ts_completed': tools.unixtime(self.dt_completed),
             'ts_archived': tools.unixtime(self.dt_archived),
+            'due': tools.iso_date(self.dt_due),
             'title': self.title,
             'subhead': self.subhead,
             'progress': self.progress,
             'progress_ts': self.progress_ts,
             'archived': self.archived,
             'starred': self.starred,
-            'urls': self.urls
+            'complete': self.is_completed(),
+            'urls': [url for url in self.urls if url]
         }
 
     @staticmethod
@@ -340,12 +366,22 @@ class Project(UserAccessible):
                 self.dt_archived = datetime.now()
         if 'progress' in params:
             self.set_progress(params.get('progress'))
+        if 'due' in params:
+            self.dt_due = params.get('due')
 
     def set_progress(self, progress):
+        regression = progress < self.progress
         if not self.progress_ts:
-            self.progress_ts = [0 for x in range(10)] # Initialize
+            self.progress_ts = [0 for x in range(10)]  # Initialize
         self.progress_ts[progress-1] = tools.unixtime()
+        logging.debug("set progress -> %s" % progress)
+        if regression:
+            clear_index = progress
+            while clear_index < 10:
+                self.progress_ts[clear_index] = 0
+                clear_index += 1
         changed = progress != self.progress
+        logging.debug(self.progress_ts)
         self.progress = progress
         if changed and self.is_completed():
             self.dt_completed = datetime.now()
@@ -409,8 +445,14 @@ class Task(UserAccessible):
         if not due:
             tz = user.get_timezone()
             local_now = tools.local_time(tz)
-            schedule_for_same_day = local_now.hour < 16
-            due = datetime.combine(local_now.date(), time(23, 0)) if schedule_for_same_day else (datetime.now() + timedelta(days=1))
+            task_prefs = user.get_setting_prop(['tasks', 'preferences'], {})
+            same_day_hour = int(task_prefs.get('same_day_hour', 16))
+            due_hour = int(task_prefs.get('due_hour', 22))
+            schedule_for_same_day = local_now.hour < same_day_hour
+            time_due = time(due_hour, 0)
+            due = datetime.combine(local_now.date(), time_due)
+            if not schedule_for_same_day:
+                due += timedelta(days=1)
             if due:
                 due = tools.server_time(tz, due)
         return Task(title=tools.capitalize(title), dt_due=due, parent=user.key)
@@ -442,6 +484,10 @@ class Task(UserAccessible):
     def is_done(self):
         return self.status == TASK.DONE
 
+    def archive(self):
+        self.archived = True
+        self.wip = False
+
 
 class Habit(UserAccessible):
     """
@@ -449,6 +495,7 @@ class Habit(UserAccessible):
     """
     dt_created = ndb.DateTimeProperty(auto_now_add=True)
     name = ndb.TextProperty()
+    description = ndb.TextProperty()
     color = ndb.TextProperty()
     tgt_weekly = ndb.IntegerProperty(indexed=False)
     archived = ndb.BooleanProperty(default=False)
@@ -459,6 +506,7 @@ class Habit(UserAccessible):
             'id': self.key.id(),
             'ts_created': tools.unixtime(self.dt_created),
             'name': self.name,
+            'description': self.description,
             'color': self.color,
             'archived': self.archived,
             'tgt_weekly': self.tgt_weekly,
@@ -483,6 +531,8 @@ class Habit(UserAccessible):
     def Update(self, **params):
         if 'name' in params:
             self.name = params.get('name').title()
+        if 'description' in params:
+            self.description = params.get('description').title()
         if 'color' in params:
             self.color = params.get('color')
         if 'icon' in params:
@@ -742,10 +792,13 @@ class Snapshot(UserAccessible):
         - GPS location, if available
 
     """
+    ACTIVITY_SEPS = [" - ", ": "]
+
     date = ndb.DateProperty(auto_now_add=True)  # Date for entry
     dt_created = ndb.DateTimeProperty(auto_now_add=True)
     activity = ndb.StringProperty()
-    where = ndb.StringProperty()
+    activity_sub = ndb.StringProperty()
+    place = ndb.StringProperty()
     people = ndb.StringProperty(repeated=True)
     metrics = ndb.TextProperty()  # JSON
     location = ndb.GeoPtProperty()
@@ -753,11 +806,13 @@ class Snapshot(UserAccessible):
     def json(self):
         res = {
             'id': self.key.id(),
+            'ts': tools.unixtime(self.dt_created),
             'iso_date': tools.iso_date(self.date),
             'metrics': tools.getJson(self.metrics),
             'people': self.people,
-            'where': self.where,
-            'activity': self.activity
+            'place': self.place,
+            'activity': self.activity,
+            'activity_sub': self.activity_sub
         }
         if self.location:
             res.update({
@@ -767,14 +822,24 @@ class Snapshot(UserAccessible):
         return res
 
     @staticmethod
-    def Create(user, activity=None, where=None, people=None, metrics=None, lat=None, lon=None):
-        date = datetime.now()
-        location = None
+    def Create(user, activity=None, place=None, people=None, metrics=None, lat=None, lon=None, date=None):
+        if not date:
+            date = datetime.now()
+        location = activity_sub = None
         if lat and lon:
             gp = ndb.GeoPt("%s, %s" % (lat, lon))
             location = gp
-        return Snapshot(dt_created=date, where=where, people=people if people else [],
-                        activity=activity, metrics=json.dumps(metrics) if metrics else None,
+        if activity:
+            for sep in Snapshot.ACTIVITY_SEPS:
+                if sep in activity:
+                    act_list = activity.split(sep)
+                    if act_list:
+                        activity = act_list[0]
+                    if len(act_list) > 1:
+                        activity_sub = act_list[1]
+                    break
+        return Snapshot(dt_created=date, place=place, people=people if people else [],
+                        activity=activity, activity_sub=activity_sub, metrics=json.dumps(metrics) if metrics else None,
                         location=location, parent=user.key)
 
     @staticmethod
@@ -819,10 +884,11 @@ class Event(UserAccessible):
         return Event.query(ancestor=user.key).order(Event.date_start).fetch(limit=limit, offset=offset)
 
     @staticmethod
-    def Create(user, date_start, date_end=None, title=None):
+    def Create(user, date_start, date_end=None, title=None, details=None, color=None, **params):
         if not date_end:
             date_end = date_start
-        return Event(date_start=date_start, date_end=date_end, title=title, parent=user.key)
+        return Event(date_start=date_start, date_end=date_end, title=title, details=details,
+                     color=color, parent=user.key)
 
     def Update(self, **params):
         if 'title' in params:
@@ -878,11 +944,11 @@ class Goal(UserAccessible):
         jan_1 = datetime(year, 1, 1).date()
         goals = Goal.query(ancestor=user.key).filter(Goal.date >= jan_1).fetch(limit=13)
         return sorted(filter(lambda g: g.date.year == year and not g.annual(), goals),
-            key=lambda g: g.date)
+                      key=lambda g: g.date)
 
     @staticmethod
     def Current(user, which="all"):
-        date = datetime.today()
+        date = tools.local_time(user.get_timezone(), datetime.today())
         keys = []
         if which in ["all", "year"]:
             annual_id = ndb.Key('Goal', datetime.strftime(date, "%Y"), parent=user.key)
@@ -899,15 +965,17 @@ class Goal(UserAccessible):
     @staticmethod
     def Create(user, id, date=None):
         g = Goal(id=id, parent=user.key)
-        if g.monthly() and not date:
+        if g.monthly(id=id) and not date:
             g.date = tools.fromISODate(id + "-01")
-        elif g.annual() and not g.date:
+        elif g.annual(id=id) and not g.date:
             first_of_year = datetime(int(id), 1, 1)
             date = first_of_year
         return g
 
     @staticmethod
-    def CreateMonthly(user, date):
+    def CreateMonthly(user, date=None):
+        if not date:
+            date = datetime.now()
         id = datetime.strftime(date, "%Y-%m")
         return Goal.Create(user, id)
 
@@ -922,11 +990,15 @@ class Goal(UserAccessible):
     def type(self):
         return 'annual' if self.annual() else 'monthly'
 
-    def annual(self):
-        return len(self.key.id()) == 4
+    def annual(self, id=None):
+        if not id:
+            id = self.key.id()
+        return len(id) == 4
 
-    def monthly(self):
-        return len(self.key.id()) == 7
+    def monthly(self, id=None):
+        if not id:
+            id = self.key.id()
+        return len(id) == 7
 
     def longterm(self):
         return str(self.key.id()) == 'longterm'
@@ -984,6 +1056,7 @@ class Readable(UserSearchable):
     dt_read = ndb.DateTimeProperty()
     title = ndb.TextProperty()  # Can have multiple goals for period
     author = ndb.TextProperty()
+    slug = ndb.StringProperty()  # Uppercase TITLE (AUTHOR LAST NAME), symbols removed
     image_url = ndb.TextProperty()
     url = ndb.TextProperty()  # Original source URL
     favorite = ndb.BooleanProperty(default=False)
@@ -996,11 +1069,15 @@ class Readable(UserSearchable):
     read = ndb.BooleanProperty(default=False)
     word_count = ndb.IntegerProperty()
 
+    def __str__(self):
+        return "%s (%s)" % (self.title, self.author)
+
     def json(self):
         return {
             'id': self.key.id(),
             'title': self.title,
             'author': self.author,
+            'slug': self.slug,
             'favorite': self.favorite,
             'image_url': self.image_url,
             'url': self.url,  # Original url
@@ -1010,6 +1087,7 @@ class Readable(UserSearchable):
             'notes': self.notes,
             'has_notes': self.has_notes,
             'read': self.read,
+            'tags': self.tags,
             'word_count': self.word_count,
             'date_read': tools.iso_date(self.dt_read) if self.dt_read else None
         }
@@ -1033,18 +1111,6 @@ class Readable(UserSearchable):
         if until:
             q = q.filter(ordering_prop <= tools.fromISODate(until))
         return q.fetch(limit=limit, offset=offset, keys_only=keys_only)
-
-    @staticmethod
-    @auto_cache()
-    def CountUnread(user, limit=200, refresh=False):
-        counts = {}
-        readables = Readable.query(ancestor=user.key).filter(Readable.read == False).order(-Readable.dt_added).fetch(limit=limit)
-        for r in readables:
-            type_string = r.print_type().lower()
-            if type_string not in counts:
-                counts[type_string] = 0
-            counts[type_string] += 1
-        return counts
 
     @staticmethod
     def CreateOrUpdate(user, source_id, title=None, url=None,
@@ -1072,8 +1138,20 @@ class Readable(UserSearchable):
                                        tags=tags, dt_read=dt_read,
                                        image_url=image_url, author=author,
                                        word_count=word_count)
+            if not r.slug:
+                r.generate_slug()
             r.has_notes = bool(r.notes)
             return r
+
+    @staticmethod
+    def GetByTitleAuthor(user, author, title):
+        slug = Readable.Slug(author, title)
+        return Readable.GetBySlug(user, slug)
+
+    @staticmethod
+    @auto_cache()
+    def GetBySlug(user, slug):
+        return Readable.query(ancestor=user.key).filter(Readable.slug == slug).get()
 
     def Update(self, **params):
         if 'read' in params:
@@ -1108,7 +1186,22 @@ class Readable(UserSearchable):
             self.author = params.get('author')
         if 'word_count' in params:
             self.word_count = params.get('word_count')
-        self.update_sd() # doc put
+        if not self.slug:
+            self.generate_slug()
+        self.update_sd()  # doc put
+
+    @staticmethod
+    def Slug(author, title):
+        if title:
+            slug = tools.strip_symbols(title).upper()
+            if author:
+                slug += " (%s)" % tools.parse_last_name(tools.strip_symbols(author)).upper()
+            return slug
+
+    def generate_slug(self):
+        if self.title:
+            self.slug = Readable.Slug(self.author, self.title)
+            return self.slug
 
     def generate_sd(self):
         return self.doc_from_fields(text_fields=['title', 'notes', 'author'],
@@ -1146,6 +1239,7 @@ class Quote(UserSearchable):
             'link': self.link,
             'content': self.content,
             'location': self.location,
+            'readable': self.readable.id() if self.readable else None,
             'iso_date': tools.iso_date(self.dt_added) if self.dt_added else None,
             'tags': self.tags
         }
@@ -1158,13 +1252,19 @@ class Quote(UserSearchable):
             id = m.hexdigest()
             if not dt_added:
                 dt_added = datetime.now()
-            return Quote(id=id, source=source, content=content,
+            q = Quote(id=id, source=source, content=content,
                          location=location,
                          dt_added=dt_added, parent=user.key)
+            q.lookup_readable(user)
+            return q
 
     @staticmethod
-    def Fetch(user, limit=50, offset=0, keys_only=False):
-        return Quote.query(ancestor=user.key).order(-Quote.dt_added).fetch(limit=limit, offset=offset, keys_only=keys_only)
+    def Fetch(user, readable_id=None, limit=50, offset=0, keys_only=False):
+        query = Quote.query(ancestor=user.key).order(-Quote.dt_added)
+        if readable_id:
+            key = ndb.Key('User', user.key.id(), 'Readable', readable_id)
+            query = query.filter(Quote.readable == key)
+        return query.fetch(limit=limit, offset=offset, keys_only=keys_only)
 
     def Update(self, **params):
         if 'source' in params:
@@ -1186,6 +1286,41 @@ class Quote(UserSearchable):
         return self.doc_from_fields(text_fields=['source', 'content'],
                                     repeated_attom_fields=['tags'],
                                     atom_fields=['link'])
+
+    def source_slug(self):
+        pattern = r"(?P<title>.*) \((?P<author>.*)\)"
+        match = re.search(pattern, self.source, flags=re.M)
+        author = None
+        if match:
+            mdict = match.groupdict()
+            title = mdict.get('title')
+            author = tools.parse_last_name(mdict.get('author'))
+        else:
+            title = self.source
+        if title:
+            return Readable.Slug(author, title)
+
+    def lookup_readable(self, user):
+        USE_FTS = True
+        if self.source:
+            if USE_FTS:
+                # Lookup via readable full-text-search
+                lookup_title_quoted = "\"%s\"" % re.sub(r'\((.*)\)$', '', self.source.replace("\"", "\\\"")).strip()
+                success, message, readables = Readable.Search(user, lookup_title_quoted)
+                if success:
+                    if len(readables) == 1:
+                        # Non-ambiguous result, link it
+                        r = readables[0]
+                        self.readable = r.key
+                        return r
+            else:
+                # Lookup via slug query
+                slug = self.source_slug()
+                if slug:
+                    r = Readable.GetBySlug(user, slug)
+                    if r:
+                        self.readable = r.key
+                        return r
 
 
 class Report(UserAccessible):

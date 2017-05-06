@@ -42,29 +42,33 @@ DEFAULT_USER_SETTINGS = {
 HABIT_DONE_REPLIES = [
     "Well done!",
     "Nice work!",
-    "Alrighty!",
-    "Nifty!",
-    "Phew!",
+    "Alright!",
+    "Great!",
+    "Great job!",
     "Keep it up!"
 ]
 
 HABIT_COMMIT_REPLIES = [
     "Yeah, do it!",
     "You can do it!",
-    "If it's important, you make the time!",
     "Can't wait!",
     "Great idea!",
-    "Looking forward!"
+    "You got this"
 ]
 
 TASK_DONE_REPLIES = [
     "That didn't look hard!",
     "Just like that",
-    "Fin",
-    "OK!"
+    "Fini",
+    "OK!",
+    "OK",
+    "Roger",
+    "Check",
+    "Great"
 ]
 
 COOKIE_NAME = "flow_session"
+
 
 class HABIT():
 

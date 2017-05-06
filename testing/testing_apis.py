@@ -5,6 +5,7 @@ from datetime import datetime
 from base_test_case import BaseTestCase
 from models import Goal
 from flow import app as tst_app
+from constants import USER
 from models import Habit, Task, Project, Event, Readable, Quote, Snapshot
 from services.agent import ConversationAgent
 import json
@@ -33,6 +34,20 @@ class APITestCase(BaseTestCase):
         g = Goal.CreateMonthly(u, date=datetime.today().date())
         g.Update(text=["Get it done", "Also get exercise"])
         g.put()
+
+    def test_user_calls(self):
+        # Update self
+        DOB = '1985-10-21'
+        TZ = 'Africa/Nairobi'
+        response = self.post_json("/api/user/me", {
+            'timezone': TZ,
+            'birthday': DOB
+            }, headers=self.api_headers)
+        u = response.get('user')
+        self.assertIsNotNone(u)
+        self.assertEqual(u.get('birthday'), DOB)
+        self.assertEqual(u.get('timezone'), TZ)
+
 
     def test_habit_calls(self):
         # List
@@ -73,10 +88,10 @@ class APITestCase(BaseTestCase):
         self.assertEqual(goal.get('text')[0], "Get it done")
 
         # Update
-        response = self.post_json("/api/goal", {'id': goal.get('id'), 'text1': 'New goal 1', 'text2': 'New goal 2'}, headers=self.api_headers)
+        response = self.post_json("/api/goal", {'id': goal.get('id'), 'text1': 'New goal 1', 'text2': u'New goal 2 with unicode. ありがとう'}, headers=self.api_headers)
         goal = response.get('goal')
         self.assertEqual(goal.get('text')[0], 'New goal 1')
-        self.assertEqual(goal.get('text')[1], 'New goal 2')
+        self.assertEqual(goal.get('text')[1], u'New goal 2 with unicode. ありがとう')
 
     def test_task_calls(self):
         response = self.get_json("/api/task", {}, headers=self.api_headers)
@@ -90,25 +105,26 @@ class APITestCase(BaseTestCase):
 
     def test_project_calls(self):
         p = Project.Create(self.u)
-        p.Update(urls=['http://www.x.com','http://www.y.com'],
+        p.Update(urls=['http://www.x.com', 'http://www.y.com'],
                  title="New Project",
                  subhead="Details")
         p.put()
 
         # List
         response = self.get_json("/api/project", {}, headers=self.api_headers)
-        h = response.get('projects')[0]
-        self.assertEqual(h.get('title'), "New Project")
+        prj = response.get('projects')[0]
+        self.assertEqual(prj.get('title'), "New Project")
 
         # Update
-        response = self.post_json("/api/project", {'id': h.get('id'), 'title': 'New Name'}, headers=self.api_headers)
-        h = response.get('project')
-        self.assertEqual(h.get('title'), 'New Name')
+        response = self.post_json("/api/project", {'id': prj.get('id'), 'title': 'New Name', 'due': '2018-01-01'}, headers=self.api_headers)
+        prj = response.get('project')
+        self.assertEqual(prj.get('title'), 'New Name')
+        self.assertEqual(prj.get('due'), '2018-01-01')
 
         # Delete
-        response = self.post_json("/api/project/delete", {'id': h.get('id')}, headers=self.api_headers)
-        h = self.u.get(Project, id=h.get('id'))
-        self.assertIsNone(h)  # Confirm deletion
+        response = self.post_json("/api/project/delete", {'id': prj.get('id')}, headers=self.api_headers)
+        prj = self.u.get(Project, id=prj.get('id'))
+        self.assertIsNone(prj)  # Confirm deletion
 
     def test_event_calls(self):
         date_start = datetime.today()
@@ -192,9 +208,31 @@ class APITestCase(BaseTestCase):
         quotes = response.get('quotes')
         self.assertEqual(len(quotes), 1)
 
+    def test_journal_calls(self):
+        # Create
+        params = {
+            'data': json.dumps({
+                'metric1': 10
+            })
+        }
+        response = self.post_json("/api/journal", params, headers=self.api_headers)
+        jrnl = response.get('journal')
+        self.assertIsNotNone(jrnl)
+
+        # Today
+        response = self.get_json("/api/journal/today", {}, headers=self.api_headers)
+        today_jrnl = response.get('journal')
+        self.assertEqual(today_jrnl.get('id'), jrnl.get('id'))
+
+        # List
+        response = self.get_json("/api/journal", {}, headers=self.api_headers)
+        listed_jrnls = response.get('journals')
+        self.assertEqual(len(listed_jrnls), 1)
+        self.assertEqual(listed_jrnls[0].get('id'), jrnl.get('id'))
+
     def test_snapshot_calls(self):
         # Create
-        snap = Snapshot.Create(self.u, activity="Eating", where="Restaurant", people=["Elizabeth"],
+        snap = Snapshot.Create(self.u, activity="Eating", place="Restaurant", people=["Elizabeth"],
                                metrics={'stress': 2})
         snap.put()
 

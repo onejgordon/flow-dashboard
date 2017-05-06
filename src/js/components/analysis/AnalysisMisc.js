@@ -1,9 +1,9 @@
 var React = require('react');
 
-import {Bar} from "react-chartjs-2";
+import {Bar, Line} from "react-chartjs-2";
 import connectToStores from 'alt-utils/lib/connectToStores';
 var api = require('utils/api');
-import {get, set, clone} from 'lodash';
+import {get} from 'lodash';
 import {findItemById} from 'utils/store-utils';
 
 @connectToStores

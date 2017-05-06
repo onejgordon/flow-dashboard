@@ -12,7 +12,6 @@ class UserStore {
         this.exportPublicMethods({
             get_user: this.get_user,
             admin: this.admin,
-            bank_connected: this.bank_connected,
             request_scopes: this.request_scopes
         });
     }
@@ -104,11 +103,6 @@ class UserStore {
 
     admin() {
         return this.getState().user.level == AppConstants.USER_ADMIN;
-    }
-
-    bank_connected() {
-        let u = this.getState().user;
-        return u && u.n_connected_accounts > 0;
     }
 
 }

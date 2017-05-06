@@ -14,6 +14,39 @@ var util = {
         }
     },
 
+    play_audio(name) {
+        let audio = new Audio('/static/sounds/' + name);
+        audio.volume = 0.2;
+        audio.play();
+    },
+
+    notify(message, body, tag, icon) {
+      let opts = {
+        body: body,
+        icon: icon || '/images/logo_128.png',
+      };
+      let notification;
+      if (tag) opts.tag = tag;
+      if (!("Notification" in window)) {
+        console.warning("This browser does not support desktop notification");
+      } else if (Notification.permission === "granted") {
+        notification = new Notification(message, opts);
+      }
+      else if (Notification.permission !== "denied") {
+        Notification.requestPermission(function (permission) {
+          if (permission === "granted") {
+            notification = new Notification(message, opts);
+          }
+        });
+      }
+      if (notification) {
+        notification.onclick = function(){
+            window.focus();
+            this.cancel();
+        };
+      }
+    },
+
     colorInterpolate: function(opts) {
         // Takes opts
         // color1, color2 - hex without # e.g. 'FF0000'
@@ -199,12 +232,14 @@ var util = {
         let secs_since = Math.round((now - ms)/1000);
         let handled = false;
         let full_date = util.printDate(ms);
+        let past = secs_since > 0;
+        let diff_label = past ? "ago" : "from now";
         for (let i=0; i<LEVELS.length; i++) {
             let level = LEVELS[i];
-            let units_since = secs_since / level.seconds;
-            if (units_since < level.cutoff) {
+            let units_diff = Math.abs(secs_since / level.seconds);
+            if (units_diff < level.cutoff) {
                 if (level.recent) recent = true;
-                text = parseInt(units_since) + " " + level.label + "(s) ago";
+                text = parseInt(units_diff) + " " + level.label + "(s) " + diff_label;
                 handled = true;
                 break;
             }
@@ -234,6 +269,7 @@ var util = {
     },
 
     printPercent: function(dec) {
+        if (dec == Infinity || isNaN(dec)) return "N/A";
         return parseInt(dec*100) + "%";
     },
 

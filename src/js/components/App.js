@@ -99,6 +99,7 @@ export default class Private extends React.Component {
         <MenuItem key="int" onClick={this.goto_page.bind(this, "/app/integrations")} leftIcon={<FontIcon className="material-icons">share</FontIcon>}>Integrations</MenuItem>,
         <MenuItem key="read" onClick={this.goto_page.bind(this, "/app/reading")} leftIcon={<FontIcon className="material-icons">book</FontIcon>}>Reading</MenuItem>,
         <MenuItem key="rep" onClick={this.goto_page.bind(this, "/app/reports")} leftIcon={<FontIcon className="material-icons">file_download</FontIcon>}>Reports</MenuItem>,
+        <MenuItem key="feed" onClick={this.goto_page.bind(this, "/app/feedback")} leftIcon={<FontIcon className="material-icons">feedback</FontIcon>}>Send Feedback</MenuItem>,
         <MenuItem key="exit" onClick={this.signout.bind(this)} leftIcon={<FontIcon className="material-icons">exit_to_app</FontIcon>}>Sign Out</MenuItem>
       ]);
     }

@@ -17,3 +17,5 @@ include/*
 .Python
 client_secret.json
 .coverage
+yarn-error.log
+yarn.lock

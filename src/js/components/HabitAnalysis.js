@@ -94,7 +94,7 @@ export default class HabitAnalysis extends React.Component {
     return (
       <div className="row">
         <div className="col-sm-6">
-          <div className="habitCalendar">
+          <div className="habitCalendar" style={{marginTop: "10px"}}>
             { _squares }
           </div>
         </div>
@@ -131,6 +131,7 @@ export default class HabitAnalysis extends React.Component {
       <Dialog
           open={!!habit}
           title={habit ? `Habit: ${habit.name}` : ""}
+          autoScrollBodyContent={true}
           onRequestClose={this.dismiss.bind(this)}
           actions={actions}>
 

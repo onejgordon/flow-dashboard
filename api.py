@@ -4,6 +4,7 @@ from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
     Readable, TrackingDay, Event, JournalTag, Report, Quote, Snapshot
 from constants import READABLE
 from google.appengine.ext import ndb
+from google.appengine.api import mail
 from oauth2client import client
 import authorized
 import handlers
@@ -48,6 +49,7 @@ class ProjectAPI(handlers.JsonRequestHandler):
             strings=['title', 'subhead', 'url1', 'url2'],
             booleans=['starred', 'archived'],
             integers=['progress'],
+            dates=['due'],
             supportTextBooleans=True
         )
         if id:
@@ -55,6 +57,7 @@ class ProjectAPI(handlers.JsonRequestHandler):
         else:
             prj = Project.Create(self.user)
         if prj:
+            was_complete = prj.is_completed()
             update_urls = False
             urls = []
             if 'url1' in params:
@@ -67,6 +70,9 @@ class ProjectAPI(handlers.JsonRequestHandler):
                 params['urls'] = urls
             prj.Update(**params)
             prj.put()
+            completed = prj.is_completed() and not was_complete
+            if completed:
+                self.message = "Project completed!"
             self.success = True
         self.set_response({
             'project': prj.json() if prj else None
@@ -80,6 +86,7 @@ class ProjectAPI(handlers.JsonRequestHandler):
             prj.key.delete()
             self.success = True
         self.set_response()
+
 
 class TaskAPI(handlers.JsonRequestHandler):
 
@@ -101,10 +108,10 @@ class TaskAPI(handlers.JsonRequestHandler):
             booleans=['archived', 'wip'],
             integers=['status']
         )
-        logging.debug(params)
+        task = None
         if id:
             task = self.user.get(Task, id=id)
-        else:
+        elif 'title' in params:
             task = Task.Create(self.user, None)
         if task:
             self.message = task.Update(**params)
@@ -113,6 +120,30 @@ class TaskAPI(handlers.JsonRequestHandler):
         self.set_response({
             'task': task.json() if task else None
         })
+
+    @authorized.role('user')
+    def action(self, d):
+        '''
+        '''
+        action = self.request.get('action')
+        res = {}
+        if action == 'archive_complete':
+            recent = Task.Recent(self.user, limit=20)
+            to_archive = []
+            for t in recent:
+                if not t.archived and t.is_done():
+                    t.archive()
+                    to_archive.append(t)
+            if to_archive:
+                ndb.put_multi(to_archive)
+                res['archived_ids'] = [t.key.id() for t in to_archive]
+                self.message = "Archived %d %s" % (len(to_archive), tools.pluralize('task', count=len(to_archive)))
+            else:
+                self.message = "No completed tasks to archive"
+            self.success = True
+        else:
+            self.message = "Unknown action"
+        self.set_response(res)
 
 
 class HabitAPI(handlers.JsonRequestHandler):
@@ -201,7 +232,7 @@ class HabitAPI(handlers.JsonRequestHandler):
         '''
         id = self.request.get_range('id')
         params = tools.gets(self,
-                            strings=['name', 'color', 'icon'],
+                            strings=['name', 'description', 'color', 'icon'],
                             booleans=['archived'],
                             integers=['tgt_weekly'],
                             supportTextBooleans=True
@@ -294,7 +325,7 @@ class GoalAPI(handlers.JsonRequestHandler):
                 params['text'] = text
             goal.Update(**params)
             goal.put()
-            self.message = "Assessment saved" if 'assessment' in params else "Goal saved"
+            self.message = "Goal saved"
             self.success = True
         else:
             self.message = "Couldn't create goal"
@@ -332,6 +363,7 @@ class EventAPI(handlers.JsonRequestHandler):
             event.Update(**params)
             event.put()
             self.success = True
+            self.message = "Event saved"
         else:
             self.message = "Couldn't create event"
         self.set_response({
@@ -340,7 +372,11 @@ class EventAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def batch_create(self, d):
-        events = json.loads(self.request.get('events'))
+        try:
+            events = json.loads(self.request.get('events'))
+        except ValueError, e:
+            self.message = "Malformed JSON"
+            events = []
         dbp = []
         for e in events:
             if 'date_start' in e and isinstance(e['date_start'], basestring):
@@ -349,12 +385,12 @@ class EventAPI(handlers.JsonRequestHandler):
                 e['date_end'] = tools.fromISODate(e['date_end']) if e.get('date_end') else e.get('date_start')
             if not e.get('date_end'):
                 e['date_end'] = e.get('date_start')
-            e = Event(self.user, **e)
+            e = Event.Create(self.user, **e)
             dbp.append(e)
         if dbp:
             ndb.put_multi(dbp)
             self.success = True
-            self.message = "Putting %d" % len(dbp)
+            self.message = "Creating %d event(s)" % len(dbp)
         self.set_response()
 
     @authorized.role('user')
@@ -391,7 +427,8 @@ class ReadableAPI(handlers.JsonRequestHandler):
         params = tools.gets(self,
             integers=['type'],
             strings=['notes', 'title', 'url', 'author', 'source'],
-            booleans=['read', 'favorite'])
+            booleans=['read', 'favorite'],
+            lists=['tags'])
         if id:
             r = self.user.get(Readable, id=id)
         else:
@@ -476,7 +513,8 @@ class QuoteAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def list(self, d):
         page, max, offset = tools.paging_params(self.request)
-        quotes = Quote.Fetch(self.user, limit=max, offset=offset)
+        readable_id = self.request.get('readable_id')
+        quotes = Quote.Fetch(self.user, readable_id=readable_id, limit=max, offset=offset)
         self.set_response({
             'quotes': [q.json() for q in quotes]
         }, success=True)
@@ -540,6 +578,28 @@ class QuoteAPI(handlers.JsonRequestHandler):
             'quotes': [q.json() for q in quotes]
         }
         self.set_response(data)
+
+    @authorized.role('user')
+    def action(self, d):
+        action = self.request.get('action')
+        id = self.request.get('id')
+        quote = self.user.get(Quote, id=id)
+        if quote:
+            if action == 'link_readable':
+                readable = quote.lookup_readable(self.user)
+                if readable:
+                    quote.put()
+                    self.success = True
+                    self.message = "Linked %s" % readable
+                else:
+                    self.message = "Couldn't match readable to quote source - %s" % quote.source
+            else:
+                self.message = "Action not supported"
+        else:
+            self.message = "Quote not found"
+        self.set_response({
+            'quote': quote.json() if quote else None
+        })
 
 
 class JournalTagAPI(handlers.JsonRequestHandler):
@@ -606,21 +666,17 @@ class JournalAPI(handlers.JsonRequestHandler):
             if task_json:
                 # Save new tasks for tomorrow
                 tasks = []
-                due = self._get_task_due_date()
                 for t in task_json:
                     if t:
-                        task = Task.Create(self.user, t, due=due)
+                        task = Task.Create(self.user, t)
                         tasks.append(task)
                 ndb.put_multi(tasks)
             self.success = True
+            self.message = "Journal submitted!"
 
         self.set_response({
             'journal': jrnl.json() if jrnl else None
         })
-
-    def _get_task_due_date(self):
-        now = datetime.now()
-        return datetime.combine((now + timedelta(hours=24+8)).date(), time(0,0))
 
 
 class SnapshotAPI(handlers.JsonRequestHandler):
@@ -639,7 +695,7 @@ class SnapshotAPI(handlers.JsonRequestHandler):
         Submit a snapshot. Assume snapshot is now
         '''
         params = tools.gets(self,
-            strings=['lat', 'lon', 'activity', 'where'],
+            strings=['lat', 'lon', 'activity', 'place'],
             json=['metrics'],
             lists=['people']
         )
@@ -688,7 +744,6 @@ class UserAPI(handlers.JsonRequestHandler):
                             strings=['timezone', 'birthday', 'password'],
                             lists=['sync_services'],
                             json=['settings'])
-        logging.debug(params)
         self.user.Update(**params)
         self.user.put()
         self.update_session_user(self.user)
@@ -1234,4 +1289,21 @@ class ReportAPI(handlers.JsonRequestHandler):
         else:
             self.message = "Report not found"
         self.set_response()
+
+
+class FeedbackAPI(handlers.JsonRequestHandler):
+    @authorized.role('user')
+    def submit(self, d):
+        from constants import SENDER_EMAIL, ADMIN_EMAIL, SITENAME
+        params = tools.gets(self, strings=['feedback', 'email'])
+        if 'feedback' in params and 'email' in params:
+            feedback = params.get('feedback')
+            email = params.get('email')
+            mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
+                           subject="[ %s ] Feedback from %s" % (SITENAME, email),
+                           body="Message: %s" % feedback)
+            self.success = True
+            self.message = "Thanks for your feedback!"
+        self.set_response()
+
 

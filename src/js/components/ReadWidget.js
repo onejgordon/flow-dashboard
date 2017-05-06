@@ -134,7 +134,7 @@ export default class ReadWidget extends React.Component {
             <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
               <MenuItem key="gr" primaryText="Refresh from Goodreads" onClick={this.fetch_from_goodreads.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
               <MenuItem key="po" primaryText="Refresh from Pocket" onClick={this.fetch_from_pocket.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
-              <MenuItem key="adv" primaryText="Advanced" onClick={this.goto_advanced.bind(this)} leftIcon={<FontIcon className="material-icons">list</FontIcon>} />
+              <MenuItem key="adv" primaryText="Full Reading List" onClick={this.goto_advanced.bind(this)} leftIcon={<FontIcon className="material-icons">list</FontIcon>} />
             </IconMenu>
           </div>
         </div>

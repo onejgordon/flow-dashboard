@@ -6,7 +6,7 @@ var api = require('utils/api');
 import {get} from 'lodash';
 import {Link} from 'react-router';
 import connectToStores from 'alt-utils/lib/connectToStores';
-
+var UserStore = require('stores/UserStore');
 
 @connectToStores
 export default class Analysis extends React.Component {
@@ -81,6 +81,7 @@ export default class Analysis extends React.Component {
             tracking_days,
             journals, tasks} = this.state;
         let today = new Date();
+        let admin = UserStore.admin();
         if (!loaded) return null;
         return (
             <div>
@@ -93,6 +94,7 @@ export default class Analysis extends React.Component {
                 <Link to="/app/analysis/journals"><FlatButton label="Journals" /></Link>
                 <Link to="/app/analysis/tasks"><FlatButton label="Tasks" /></Link>
                 <Link to="/app/analysis/habits"><FlatButton label="Habits" /></Link>
+                <Link to="/app/analysis/snapshots"><FlatButton label="Snapshots" /></Link>
                 <Link to="/app/analysis/misc"><FlatButton label="Tracking" /></Link>
 
                 <p className="lead">Note that on all charts clicking on series labels will toggle visibility</p>

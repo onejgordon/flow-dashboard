@@ -127,7 +127,7 @@ def lookupDict(item_list, keyprop="key_string", valueTransform=None):
             continue
         keyval = None
         if keyprop == 'key_string':
-            keyval = str(item.key())
+            keyval = str(item.key.urlsafe())
         elif keyprop == 'key_id':
             keyval = item.key.id()
         if keyval:
@@ -515,3 +515,25 @@ def parseTimeString(raw):
             return dt.time()
     except Exception, e:
         return None
+
+
+def parse_last_name(name):
+    '''
+    Parse last name from name in either "Adam J Smith" or "Smith, Adam" format
+    '''
+    if name:
+        last_first = ',' in name
+        if last_first:
+            return name.split(',')[0]
+        else:
+            return name.split(' ')[-1]
+
+
+def english_list(arr, quote="'", if_empty="--"):
+    quoted_arr = [quote + li + quote for li in arr]
+    if len(arr) > 1:
+        return ', '.join(quoted_arr[:-1]) + ' and ' + quoted_arr[-1]
+    elif quoted_arr:
+        return quoted_arr[0]
+    else:
+        return if_empty

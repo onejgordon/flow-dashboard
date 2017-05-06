@@ -4,6 +4,8 @@ import {ListItem, FontIcon, Paper, Chip,
 var util = require('utils/util');
 var DateTime = require('components/common/DateTime');
 var api = require('utils/api');
+var util = require('utils/util');
+
 
 export default class ProjectLI extends React.Component {
   static defaultProps = {
@@ -56,6 +58,7 @@ export default class ProjectLI extends React.Component {
 
   set_progress(prg) {
     let {project} = this.props;
+    util.play_audio('complete.mp3');
     this.update(project, {progress: prg});
   }
 
@@ -71,6 +74,10 @@ export default class ProjectLI extends React.Component {
 
   show_analysis() {
     this.props.onShowAnalysis();
+  }
+
+  handle_edit_click(p) {
+    if (this.props.onEdit) this.props.onEdit(p);
   }
 
   render_progress() {
@@ -116,7 +123,15 @@ export default class ProjectLI extends React.Component {
         );
       })
     } else title = <a href={project.urls[0]} target="_blank">{ project.title || project.urls[0] || "Unnamed Project" }</a>
-    let subheads = [<span key="dt" className="label label-default" style={{marginRight: "5px"}}><DateTime ms={project.ts_created}/></span>];
+    let subheads = [<span key="dt" className="label label-default" style={{marginRight: "5px"}}><DateTime prefix="Created" ms={project.ts_created}/></span>];
+    if (project.complete) subheads.push(<span key="complete" className="label label-success" style={{marginRight: "5px"}}>Complete</span>)
+    if (project.due != null) {
+      let due_date = new Date(project.due);
+      let ms = due_date.getTime();
+      let days_until = util.dayDiff(due_date, new Date());
+      let color = days_until < 5 ? '#FC4C4C' : 'gray';
+      subheads.push(<span key="due" className="label label-default" style={{marginRight: "5px"}}><DateTime color={color} prefix="Due" ms={ms}/></span>);
+    }
     if (project.subhead) subheads.push(project.subhead)
     subhead = <h3 style={this.SUBHEAD}>{ subheads }</h3>
     let st = {padding: "10px", marginBottom: "10px"};
@@ -127,9 +142,10 @@ export default class ProjectLI extends React.Component {
           <div className="col-sm-12">
             <div className="pull-right">
               <IconMenu iconButtonElement={<IconButton><FontIcon className="material-icons">more_vert</FontIcon></IconButton>}>
-                <MenuItem primaryText="Toggle progress tracking" onClick={this.toggle_progress.bind(this)} />
-                <MenuItem primaryText="Archive project" onClick={this.archive.bind(this)} />
-                <MenuItem primaryText="Chart Progress" onClick={this.show_analysis.bind(this)} />
+                <MenuItem primaryText="Edit" leftIcon={<FontIcon className="material-icons">mode_edit</FontIcon>} onClick={this.handle_edit_click.bind(this, project)} />
+                <MenuItem primaryText="Toggle progress tracking" leftIcon={<FontIcon className="material-icons">view_week</FontIcon>} onClick={this.toggle_progress.bind(this)} />
+                <MenuItem primaryText="Archive project" leftIcon={<FontIcon className="material-icons">archive</FontIcon>} onClick={this.archive.bind(this)} />
+                <MenuItem primaryText="Chart Progress (Burn Up)" leftIcon={<FontIcon className="material-icons">show_chart</FontIcon>} onClick={this.show_analysis.bind(this)} />
               </IconMenu>
             </div>
             <h2 style={this.H}>

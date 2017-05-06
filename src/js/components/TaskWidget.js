@@ -1,12 +1,11 @@
 var React = require('react');
-import { FontIcon, IconButton, List,
+import { IconButton, List,
   RaisedButton, TextField, Paper,
-  FlatButton, IconMenu, MenuItem } from 'material-ui';
+  FlatButton } from 'material-ui';
 var util = require('utils/util');
-var UserStore = require('stores/UserStore');
 var api = require('utils/api');
 var TaskLI = require('components/list_items/TaskLI');
-import {findIndexById} from 'utils/store-utils';
+import {findIndexById, removeItemsById} from 'utils/store-utils';
 var ProgressLine = require('components/common/ProgressLine');
 var toastr = require('toastr');
 import {changeHandler} from 'utils/component-utils';
@@ -54,6 +53,7 @@ export default class TaskWidget extends React.Component {
       id: task.id,
       status: status
     }
+    util.play_audio('complete.mp3');
     api.post("/api/task", params, (res) => {
       if (res.task) {
         let {tasks} = this.state;
@@ -82,6 +82,16 @@ export default class TaskWidget extends React.Component {
         this.refs.new_task.focus()
       });
     });
+  }
+
+  archive_all_done() {
+    api.post("/api/task/action", {action: 'archive_complete'}, (res) => {
+      if (res.archived_ids) {
+        let tasks = removeItemsById(this.state.tasks, res.archived_ids, 'id');
+        this.setState({tasks});
+        res.archive_all_done
+      }
+    })
   }
 
   show_new_box() {
@@ -118,6 +128,7 @@ export default class TaskWidget extends React.Component {
   }
 
   set_task_wip(task, is_wip) {
+    util.play_audio('commit.mp3');
     this.task_update(task, {wip: is_wip ? 1 : 0});
   }
 
@@ -130,7 +141,8 @@ export default class TaskWidget extends React.Component {
     let {tasks_done, tasks_total} = this.task_progress();
     let _buttons = [
       <IconButton key="ref" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.fetch_recent.bind(this)} tooltip="Refresh">refresh</IconButton>,
-      <IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.show_new_box.bind(this)} tooltip="Add Task (T)">add</IconButton>
+      <IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.show_new_box.bind(this)} tooltip="Add Task (T)">add</IconButton>,
+      <span key="archive_all" className="pull-right" style={{marginRight: '20px'}}><IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.archive_all_done.bind(this)} tooltip="Archive Complete">archive</IconButton></span>,
     ]
     return (
       <div className="TaskWidget" id="TaskWidget">

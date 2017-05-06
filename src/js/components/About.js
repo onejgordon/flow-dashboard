@@ -1,6 +1,7 @@
 var React = require('react');
 import {RaisedButton} from 'material-ui';
 var AppConstants = require('constants/AppConstants');
+var util = require('utils/util');
 
 export default class About extends React.Component {
     static defaultProps = {}
@@ -47,9 +48,19 @@ export default class About extends React.Component {
 
                         <img src="/images/screenshots/analysis.png" className="img-responsive" />
 
-                        <p className="lead" style={{fontSize: "1.45em"}}>...performance on individual habits, and more.</p>
+                        <p className="lead" style={{fontSize: "1.45em"}}>...performance on individual habits...</p>
 
                         <img src="/images/screenshots/habit.png" className="img-responsive" />
+
+                        <p className="lead" style={{fontSize: "1.45em"}}>...progress towards weekly targets, and more.</p>
+
+                        <img src="/images/screenshots/habit_trend.png" className="img-responsive" />
+
+                        <h3>Flow Snapshot (beta).</h3>
+
+                        <p className="lead" style={{fontSize: "1.45em"}}>Snapshots are a short questionnaire collected at random times throughout the day via your smartphone.</p>
+
+                        <img src="/images/screenshots/snapshots.png" className="img-responsive" />
 
                         <h3>Your timeline.</h3>
 

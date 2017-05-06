@@ -11,7 +11,7 @@ var util = require('utils/util');
 
 @connectToStores
 @changeHandler
-export default class Timeline extends React.Component {
+class Timeline extends React.Component {
     static defaultProps = {};
     constructor(props) {
         super(props);
@@ -50,7 +50,10 @@ export default class Timeline extends React.Component {
     }
 
     edit_event(e, i) {
-        this.setState({editing_index: i, form: clone(e)});
+        let form = clone(e);
+        if (form.date_start) form.date_start = new Date(form.date_start);
+        if (form.date_end) form.date_end = new Date(form.date_end);
+        this.setState({editing_index: i, form: form});
     }
 
     render_events() {
@@ -73,14 +76,16 @@ export default class Timeline extends React.Component {
                 <TextField floatingLabelText="Title" name="title" value={form.title||''} onChange={this.changeHandler.bind(this, 'form', 'title')} fullWidth />
                 <TextField floatingLabelText="Details" name="details" value={form.details||''} onChange={this.changeHandler.bind(this, 'form', 'details')} fullWidth />
                 <TextField floatingLabelText="Color (hex)" name="color" value={form.color||''} onChange={this.changeHandler.bind(this, 'form', 'color')} fullWidth />
-                <TextField floatingLabelText="Date Start (YYYY-MM-DD)" name="date_start" value={form.date_start||''} onChange={this.changeHandler.bind(this, 'form', 'date_start')} fullWidth />
-                <TextField floatingLabelText="Date End (optional, YYYY-MM-DD)" name="date_end" value={form.date_end||''} onChange={this.changeHandler.bind(this, 'form', 'date_end')} fullWidth />
+                <DatePicker autoOk={true} floatingLabelText="Date Start" formatDate={util.printDateObj} value={form.date_start||''} onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_start')} />
+                <DatePicker autoOk={true} floatingLabelText="Date End (optional)" formatDate={util.printDateObj} value={form.date_end||''} onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_end')} />
             </div>
             )
     }
 
     save_event() {
         let params = clone(this.state.form);
+        if (params.date_start) params.date_start = util.printDateObj(params.date_start);
+        if (params.date_end) params.date_end = util.printDateObj(params.date_end);
         api.post("/api/event", params, (res) => {
             // Update events list
             let events = this.state.events;
@@ -115,12 +120,16 @@ export default class Timeline extends React.Component {
             </div>
         );
         let events = this.state.events;
+        let dialog_actions = [
+            <RaisedButton label="Save" onClick={this.save_event.bind(this)} primary={true} />,
+            <FlatButton label="Cancel" onClick={this.setState.bind(this, {editing_index: null})} />
+        ]
         return (
             <div>
 
                 <Dialog title="Edit Event"
                     open={this.state.editing_index != null}
-                    actions={[<RaisedButton label="Save" onClick={this.save_event.bind(this)} primary={true} />]}
+                    actions={dialog_actions}
                     autoDetectWindowHeight={true} autoScrollBodyContent={true}
                     onRequestClose={this.setState.bind(this, {editing_index: null})} >
                     { this.render_edit_form() }
@@ -154,6 +163,6 @@ export default class Timeline extends React.Component {
             </div>
         );
     }
-};
+}
 
-module.exports = Timeline;
+export default Timeline;

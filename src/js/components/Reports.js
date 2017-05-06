@@ -106,7 +106,7 @@ export default class Reports extends React.Component {
 
                 <FetchedList ref="list" url="/api/report" listStyle="mui" listProp="reports" renderItem={this.render_report.bind(this)} autofetch={true}/>
 
-                <h2>Generate Report</h2>
+                <h2>Export Data</h2>
 
                 <Tabs>
 
