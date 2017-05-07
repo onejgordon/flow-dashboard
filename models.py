@@ -1254,7 +1254,7 @@ class Quote(UserSearchable):
         }
 
     @staticmethod
-    def Create(user, source, content, dt_added=None, location=None, **params):
+    def Create(user, source=None, content=None, dt_added=None, location=None, **params):
         if source and content:
             m = hashlib.md5()
             m.update('|'.join([tools.removeNonAscii(x) for x in [source, content]]))
