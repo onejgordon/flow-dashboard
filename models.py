@@ -867,6 +867,7 @@ class Event(UserAccessible):
     color = ndb.StringProperty()  # Hex
     private = ndb.BooleanProperty(default=True)
     type = ndb.IntegerProperty(default=EVENT.PERSONAL)
+    ongoing = ndb.BooleanProperty(default=False)
 
     def json(self):
         res = {
@@ -878,7 +879,8 @@ class Event(UserAccessible):
             'color': self.color,
             'private': self.private,
             'single': self.single(),
-            'type': self.type
+            'type': self.type,
+            'ongoing': self.ongoing
         }
         return res
 
@@ -906,6 +908,10 @@ class Event(UserAccessible):
             self.date_end = params.get('date_end')
         if 'type' in params:
             self.type = params.get('type')
+        if 'ongoing' in params:
+            self.ongoing = params.get('ongoing')
+            if self.ongoing:
+                self.date_end = None
 
     def single(self):
         return self.date_start == self.date_end

@@ -2,7 +2,7 @@ var React = require('react');
 var api = require('utils/api');
 var UserActions = require('actions/UserActions');
 import {Drawer, AppBar, IconButton, FlatButton, RaisedButton,
-    List, ListItem, TextField, Dialog, DatePicker} from 'material-ui';
+    List, ListItem, TextField, Dialog, DatePicker, Toggle} from 'material-ui';
 import {clone} from 'lodash';
 var ReactLifeTimeline = require('react-life-timeline');
 import connectToStores from 'alt-utils/lib/connectToStores';
@@ -67,8 +67,8 @@ class Timeline extends React.Component {
         let {events} = this.state;
         return events.map((e, i) => {
             let date_range = e.date_start;
-            if (e.date_end && e.date_end != e.date_start) date_range += " - " + e.date_end;
-
+            if (e.ongoing) date_range += ` (ongoing)`;
+            else if (e.date_end && e.date_end != e.date_start) date_range += " - " + e.date_end;
             return <ListItem
                         key={i}
                         primaryText={e.title}
@@ -91,6 +91,7 @@ class Timeline extends React.Component {
                     <div className="col-sm-6">
                         <DatePicker autoOk={true} floatingLabelText="Date Start" formatDate={util.printDateObj} value={form.date_start||''} onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_start')} />
                         <DatePicker autoOk={true} floatingLabelText="Date End (optional)" formatDate={util.printDateObj} value={form.date_end||''} onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_end')} />
+                        <Toggle toggled={form.ongoing} onToggle={this.changeHandlerToggle.bind(this, 'form', 'ongoing')} label="Ongoing" labelPosition="right" />
                     </div>
                 </div>
             </div>

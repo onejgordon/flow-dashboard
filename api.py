@@ -369,8 +369,11 @@ class EventAPI(handlers.JsonRequestHandler):
         id = self.request.get_range('id')
         params = tools.gets(self,
             strings=['title', 'details', 'color'],
-            dates=['date_start', 'date_end']
+            dates=['date_start', 'date_end'],
+            booleans=['ongoing'],
+            supportTextBooleans=True
         )
+        self.log_request_params()
         event = self.user.get(Event, id=id)
         if not event:
             start = params.get('date_start')
