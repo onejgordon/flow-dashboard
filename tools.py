@@ -259,7 +259,7 @@ def fromISODate(s, timestamp=False):
 
 
 def minutes_in(dt=None):
-    "# of minutes into the current day"
+    '''# of minutes into the current day'''
     if dt is None:
         dt = datetime.now()
     return 60*dt.hour + dt.minute
