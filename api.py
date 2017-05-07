@@ -122,6 +122,23 @@ class TaskAPI(handlers.JsonRequestHandler):
         })
 
     @authorized.role('user')
+    def delete(self, d):
+        '''
+        Delete task
+        '''
+        id = self.request.get_range('id')
+        task = None
+        if id:
+            task = self.user.get(Task, id=id)
+            if task:
+                task.key.delete()
+                self.success = True
+                self.message = "Task deleted"
+            else:
+                self.message = "Task not found"
+        self.set_response()
+
+    @authorized.role('user')
     def action(self, d):
         '''
         '''
@@ -352,7 +369,9 @@ class EventAPI(handlers.JsonRequestHandler):
         id = self.request.get_range('id')
         params = tools.gets(self,
             strings=['title', 'details', 'color'],
-            dates=['date_start', 'date_end']
+            dates=['date_start', 'date_end'],
+            booleans=['ongoing'],
+            supportTextBooleans=True
         )
         event = self.user.get(Event, id=id)
         if not event:
@@ -1090,7 +1109,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         if reason in ENABLED_REASONS:
             user = User.query().filter(User.evernote_id == evernote_id).get()
             if user:
-                config_notebook_ids = user.get_integration_prop('evernote_notebook_ids').split(',') # Comma sep
+                config_notebook_ids = user.get_integration_prop('evernote_notebook_ids', default='').split(',')  # Comma sep
                 if not config_notebook_ids or notebook_guid in config_notebook_ids:
                     title, content, url = flow_evernote.get_note(user, note_guid)
                     if title and content:
@@ -1299,9 +1318,14 @@ class FeedbackAPI(handlers.JsonRequestHandler):
         if 'feedback' in params and 'email' in params:
             feedback = params.get('feedback')
             email = params.get('email')
-            mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
-                           subject="[ %s ] Feedback from %s" % (SITENAME, email),
-                           body="Message: %s" % feedback)
+            try:
+                mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
+                               subject="[ %s ] Feedback from %s" % (SITENAME, email),
+                               body="Message: %s" % feedback)
+            except Exception, e:
+                logging.warning("Can't send mail")
+                logging.debug(email)
+                logging.debug(feedback)
             self.success = True
             self.message = "Thanks for your feedback!"
         self.set_response()

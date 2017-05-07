@@ -1,5 +1,6 @@
 var React = require('react');
-import {RaisedButton} from 'material-ui';
+import {RaisedButton, FlatButton} from 'material-ui';
+import {Link} from 'react-router';
 var AppConstants = require('constants/AppConstants');
 var util = require('utils/util');
 
@@ -30,7 +31,7 @@ export default class About extends React.Component {
 
                 <div className="text-center">
 
-                    <h2 style={{marginTop: "40px", marginBottom: "60px"}}>About</h2>
+                    <h2 style={{marginTop: "40px", marginBottom: "60px"}}>About Flow</h2>
 
                     <p className="lead" style={{fontSize: "1.45em"}}>{ AppConstants.TAGLINE }</p>
 
@@ -56,11 +57,16 @@ export default class About extends React.Component {
 
                         <img src="/images/screenshots/habit_trend.png" className="img-responsive" />
 
+                        <h3>Export everything.</h3>
+
+                        <p className="lead" style={{fontSize: "1.45em"}}>Export your data, at any time, to CSV.</p>
+
                         <h3>Flow Snapshot (beta).</h3>
 
                         <p className="lead" style={{fontSize: "1.45em"}}>Snapshots are a short questionnaire collected at random times throughout the day via your smartphone.</p>
 
                         <img src="/images/screenshots/snapshots.png" className="img-responsive" />
+
 
                         <h3>Your timeline.</h3>
 
@@ -72,18 +78,24 @@ export default class About extends React.Component {
                         <h3>Chat with Flow</h3>
 
                         <div className="center-block">
-                            <img src="/images/messenger_512.png" width="200" />
+                            <img src="/images/messenger_512.png" width="120" />
                         </div>
 
                         <p className="lead" style={{fontSize: "1.45em"}}>You can chat with <a href="https://www.facebook.com/FlowDashboard/" target="_blank">Flow on Facebook Messenger</a> to review goals, commit to and complete tasks and habits, and answer your daily journal questions.</p>
 
-                        <h3>Flow is Open Source</h3>
-
-                        <p className="lead" style={{fontSize: "1.45em"}}>Spin up your own instance, or contribute.</p>
-
-                        <a href="https://github.com/onejgordon/flow-dashboard" target="_blank"><RaisedButton label="Source on Github" /></a>
-
-                        { _feedback }
+                        <div className="row">
+                            <div className="col-sm-6">
+                                <div hidden={user != null}>
+                                    <h3>Try Flow</h3>
+                                    <p className="lead" style={{fontSize: "1.45em"}}><Link to="/app/login"><RaisedButton primary={true} label="Sign in" /></Link> to get started.</p>
+                                </div>
+                            </div>
+                            <div className="col-sm-6">
+                                <h3>Flow is Open Source</h3>
+                                <p className="lead" style={{fontSize: "1.45em"}}>Spin up your own instance, or contribute.</p>
+                                <a href="https://github.com/onejgordon/flow-dashboard" target="_blank"><RaisedButton label="Source on Github" /></a>
+                            </div>
+                        </div>
 
                     </div>
                 </div>

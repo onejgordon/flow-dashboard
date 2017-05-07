@@ -1,5 +1,6 @@
 var React = require('react');
 import {browserHistory} from 'react-router';
+import {Link} from 'react-router';
 import { FontIcon, IconButton, MenuItem, IconMenu, List,
   Dialog } from 'material-ui';
 var api = require('utils/api');
@@ -107,6 +108,8 @@ export default class ReadWidget extends React.Component {
   render_readables() {
     let {readables} = this.state;
     let res = [];
+    let n_readables = Object.keys(readables).length;
+    if (n_readables == 0) return <div className="empty">Nothing yet. Configure <Link to="/app/integrations">integrations</Link>.</div>
     for (var id in readables) {
       if (readables.hasOwnProperty(id)) {
         let r = readables[id];

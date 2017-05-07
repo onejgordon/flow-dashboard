@@ -274,7 +274,7 @@ export default class Integrations extends React.Component {
                     <p className="lead">Sync enabled on <b>{ user.sync_services.length }</b> service(s).</p>
 
                     <p>
-                        Enable toggles below to enable daily synchronization from the specified services.
+                        Use toggles below to enable daily synchronization from each specified service.
                         Note that you may need to add additional information or credentials to enable
                         sync with some services.
                     </p>

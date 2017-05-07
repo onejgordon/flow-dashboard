@@ -16,6 +16,9 @@ NOTIF_EMAILS = [APP_OWNER]
 GCS_REPORT_BUCKET = "/flow_reports"
 BACKGROUND_SERVICE = "default"
 
+# Flags
+NEW_USER_NOTIFICATIONS = False
+
 DEFAULT_USER_SETTINGS = {
     'journals': {
         'questions': [
@@ -162,6 +165,7 @@ class REPORT():
     TASK_REPORT = 2
     GOAL_REPORT = 3
     JOURNAL_REPORT = 4
+    EVENT_REPORT = 5
 
     # Status
     CREATED = 1
@@ -182,7 +186,8 @@ class REPORT():
         HABIT_REPORT: "Habit Report",
         TASK_REPORT: "Task Report",
         GOAL_REPORT: "Goal Report",
-        JOURNAL_REPORT: "Journal Report"
+        JOURNAL_REPORT: "Journal Report",
+        EVENT_REPORT: "Event Report"
     }
 
     STATUS_LABELS = {

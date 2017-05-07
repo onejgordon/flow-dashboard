@@ -2,11 +2,12 @@ var React = require('react');
 var api = require('utils/api');
 var UserActions = require('actions/UserActions');
 import {Drawer, AppBar, IconButton, FlatButton, RaisedButton,
-    List, ListItem, TextField, Dialog, DatePicker} from 'material-ui';
+    List, ListItem, TextField, Dialog, DatePicker, Toggle} from 'material-ui';
 import {clone} from 'lodash';
 var ReactLifeTimeline = require('react-life-timeline');
 import connectToStores from 'alt-utils/lib/connectToStores';
 import {changeHandler} from 'utils/component-utils';
+import { SwatchesPicker } from 'react-color';
 var util = require('utils/util');
 
 @connectToStores
@@ -56,15 +57,22 @@ class Timeline extends React.Component {
         this.setState({editing_index: i, form: form});
     }
 
+    color_change(color) {
+        let {form} = this.state;
+        form.color = color.hex;
+        this.setState({form});
+    }
+
     render_events() {
         let {events} = this.state;
         return events.map((e, i) => {
             let date_range = e.date_start;
-            if (e.date_end && e.date_end != e.date_start) date_range += " - " + e.date_end;
+            if (e.ongoing) date_range += ` (ongoing)`;
+            else if (e.date_end && e.date_end != e.date_start) date_range += " - " + e.date_end;
             return <ListItem
                         key={i}
                         primaryText={e.title}
-                        secondaryText={date_range}
+                        secondaryText={<span style={{color: e.color || "#CCC"}}>{date_range}</span>}
                         onClick={this.edit_event.bind(this, e, i)} />
         });
     }
@@ -75,9 +83,17 @@ class Timeline extends React.Component {
             <div>
                 <TextField floatingLabelText="Title" name="title" value={form.title||''} onChange={this.changeHandler.bind(this, 'form', 'title')} fullWidth />
                 <TextField floatingLabelText="Details" name="details" value={form.details||''} onChange={this.changeHandler.bind(this, 'form', 'details')} fullWidth />
-                <TextField floatingLabelText="Color (hex)" name="color" value={form.color||''} onChange={this.changeHandler.bind(this, 'form', 'color')} fullWidth />
-                <DatePicker autoOk={true} floatingLabelText="Date Start" formatDate={util.printDateObj} value={form.date_start||''} onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_start')} />
-                <DatePicker autoOk={true} floatingLabelText="Date End (optional)" formatDate={util.printDateObj} value={form.date_end||''} onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_end')} />
+                <div className="row">
+                    <div className="col-sm-6">
+                        <label>Event Color (optional)</label>
+                        <SwatchesPicker width="100%" height={200} display={true} color={form.color || ""} onChangeComplete={this.color_change.bind(this)} />
+                    </div>
+                    <div className="col-sm-6">
+                        <DatePicker autoOk={true} floatingLabelText="Date Start" formatDate={util.printDateObj} value={form.date_start||''} onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_start')} />
+                        <DatePicker autoOk={true} floatingLabelText="Date End (optional)" formatDate={util.printDateObj} value={form.date_end||''} onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_end')} />
+                        <Toggle toggled={form.ongoing} onToggle={this.changeHandlerToggle.bind(this, 'form', 'ongoing')} label="Ongoing" labelPosition="right" />
+                    </div>
+                </div>
             </div>
             )
     }
@@ -127,7 +143,7 @@ class Timeline extends React.Component {
         return (
             <div>
 
-                <Dialog title="Edit Event"
+                <Dialog title="Add / Edit Event"
                     open={this.state.editing_index != null}
                     actions={dialog_actions}
                     autoDetectWindowHeight={true} autoScrollBodyContent={true}

@@ -59,8 +59,8 @@ class GoogleServiceFetcher(object):
         flow = client.OAuth2WebServerFlow(client_id=GOOGLE_CLIENT_ID,
                                           client_secret=GOOGLE_CLIENT_SECRET,
                                           scope=scope,
-                                          access_type = 'offline',
-                                          approval_prompt='force',
+                                          access_type='offline',
+                                          prompt='consent',
                                           redirect_uri=base + "/api/auth/google/oauth2callback")
         flow.params['include_granted_scopes'] = 'true'
         # flow.params['access_type'] = 'offline'

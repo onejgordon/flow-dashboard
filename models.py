@@ -4,7 +4,7 @@
 from datetime import datetime, timedelta, time
 from google.appengine.ext import ndb
 from google.appengine.api import mail, search
-from constants import EVENT, USER, TASK, READABLE, JOURNALTAG, REPORT
+from constants import EVENT, USER, TASK, READABLE, JOURNALTAG, REPORT, NEW_USER_NOTIFICATIONS
 import tools
 import json
 import random
@@ -141,6 +141,7 @@ class User(ndb.Model):
     integrations = ndb.TextProperty()  # Flat JSON dict
     settings = ndb.TextProperty()  # JSON
     sync_services = ndb.StringProperty(repeated=True)  # See AppConstants.INTEGRATIONS
+    plugins = ndb.StringProperty(repeated=True, indexed=False)  # Lowercase
     # Integration IDs
     g_id = ndb.StringProperty()
     fb_id = ndb.StringProperty()
@@ -161,7 +162,8 @@ class User(ndb.Model):
             'timezone': self.timezone,
             'birthday': tools.iso_date(self.birthday) if self.birthday else None,
             'evernote_id': self.evernote_id,
-            'sync_services': self.sync_services
+            'sync_services': self.sync_services,
+            'plugins': self.plugins if self.plugins else []
         }
 
     @staticmethod
@@ -198,10 +200,13 @@ class User(ndb.Model):
                 password = tools.GenPasswd()
             u.setPass(password)
             u.Update(settings=DEFAULT_USER_SETTINGS)
-            if not tools.on_dev_server():
-                mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
-                               subject="[ %s ] New User - %s" % (SITENAME, email),
-                               body="That's all")
+            if not tools.on_dev_server() and NEW_USER_NOTIFICATIONS:
+                try:
+                    mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
+                                   subject="[ %s ] New User - %s" % (SITENAME, email),
+                                   body="That's all")
+                except Exception, e:
+                    logging.warning("Failed to send email")
             return u
         return None
 
@@ -374,14 +379,12 @@ class Project(UserAccessible):
         if not self.progress_ts:
             self.progress_ts = [0 for x in range(10)]  # Initialize
         self.progress_ts[progress-1] = tools.unixtime()
-        logging.debug("set progress -> %s" % progress)
         if regression:
             clear_index = progress
             while clear_index < 10:
                 self.progress_ts[clear_index] = 0
                 clear_index += 1
         changed = progress != self.progress
-        logging.debug(self.progress_ts)
         self.progress = progress
         if changed and self.is_completed():
             self.dt_completed = datetime.now()
@@ -536,7 +539,7 @@ class Habit(UserAccessible):
         if 'color' in params:
             self.color = params.get('color')
         if 'icon' in params:
-            self.icon = params.get('icon')
+            self.icon = params.get('icon').strip().replace(' ', '_')
         if 'archived' in params:
             self.archived = params.get('archived')
         if 'tgt_weekly' in params:
@@ -844,7 +847,7 @@ class Snapshot(UserAccessible):
 
     @staticmethod
     def Recent(user, limit=500):
-        return Snapshot.query().order(-Snapshot.dt_created).fetch(limit=limit)
+        return Snapshot.query(ancestor=user.key).order(-Snapshot.dt_created).fetch(limit=limit)
 
     def get_data_value(self, prop):
         metrics = tools.getJson(self.metrics, {})
@@ -864,6 +867,7 @@ class Event(UserAccessible):
     color = ndb.StringProperty()  # Hex
     private = ndb.BooleanProperty(default=True)
     type = ndb.IntegerProperty(default=EVENT.PERSONAL)
+    ongoing = ndb.BooleanProperty(default=False)
 
     def json(self):
         res = {
@@ -875,7 +879,8 @@ class Event(UserAccessible):
             'color': self.color,
             'private': self.private,
             'single': self.single(),
-            'type': self.type
+            'type': self.type,
+            'ongoing': self.ongoing
         }
         return res
 
@@ -903,6 +908,10 @@ class Event(UserAccessible):
             self.date_end = params.get('date_end')
         if 'type' in params:
             self.type = params.get('type')
+        if 'ongoing' in params:
+            self.ongoing = params.get('ongoing')
+            if self.ongoing:
+                self.date_end = None
 
     def single(self):
         return self.date_start == self.date_end
@@ -1437,12 +1446,14 @@ class Report(UserAccessible):
 
     def run(self, start_cursor=None):
         """Begins report generation"""
-        from reports import HabitReportWorker, TaskReportWorker, GoalReportWorker, JournalReportWorker
+        from reports import HabitReportWorker, TaskReportWorker, GoalReportWorker, JournalReportWorker, \
+            EventReportWorker
         worker_lookup = {
             REPORT.HABIT_REPORT: HabitReportWorker,
             REPORT.TASK_REPORT: TaskReportWorker,
             REPORT.GOAL_REPORT: GoalReportWorker,
-            REPORT.JOURNAL_REPORT: JournalReportWorker
+            REPORT.JOURNAL_REPORT: JournalReportWorker,
+            REPORT.EVENT_REPORT: EventReportWorker
         }
         worker_class = worker_lookup.get(self.type)
         worker = None
