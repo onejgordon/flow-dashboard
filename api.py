@@ -1090,7 +1090,7 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         if reason in ENABLED_REASONS:
             user = User.query().filter(User.evernote_id == evernote_id).get()
             if user:
-                config_notebook_ids = user.get_integration_prop('evernote_notebook_ids').split(',') # Comma sep
+                config_notebook_ids = user.get_integration_prop('evernote_notebook_ids', default='').split(',')  # Comma sep
                 if not config_notebook_ids or notebook_guid in config_notebook_ids:
                     title, content, url = flow_evernote.get_note(user, note_guid)
                     if title and content:
