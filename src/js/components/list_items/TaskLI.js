@@ -7,6 +7,7 @@ export default class TaskLI extends React.Component {
   static propTypes = {
     onUpdateStatus: React.PropTypes.func,
     onArchive: React.PropTypes.func,
+    onDelete: React.PropTypes.func,
     onUpdateWIP: React.PropTypes.func
   }
 
@@ -40,6 +41,7 @@ export default class TaskLI extends React.Component {
       if (t.wip) menu.push({icon: 'stop', click: this.set_wip.bind(this, false), label: 'Clear WIP'});
       else menu.push({icon: 'play_for_work', click: this.set_wip.bind(this, true), label: 'On It (Set as WIP)'});
     }
+    if (!done) menu.push({icon: 'delete', click: this.props.onDelete.bind(this, t), label: 'Delete'})
     if (!archived) menu.push({icon: 'archive', click: this.props.onArchive.bind(this, t), label: 'Archive'});
     if (t.status == this.NOT_DONE) click = this.props.onUpdateStatus.bind(this, t, this.DONE);
     if (done) click = this.props.onUpdateStatus.bind(this, t, this.NOT_DONE);

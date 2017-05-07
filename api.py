@@ -122,6 +122,23 @@ class TaskAPI(handlers.JsonRequestHandler):
         })
 
     @authorized.role('user')
+    def delete(self, d):
+        '''
+        Delete task
+        '''
+        id = self.request.get_range('id')
+        task = None
+        if id:
+            task = self.user.get(Task, id=id)
+            if task:
+                task.key.delete()
+                self.success = True
+                self.message = "Task deleted"
+            else:
+                self.message = "Task not found"
+        self.set_response()
+
+    @authorized.role('user')
     def action(self, d):
         '''
         '''

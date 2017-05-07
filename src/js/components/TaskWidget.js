@@ -140,6 +140,14 @@ export default class TaskWidget extends React.Component {
     this.task_update(task, {archived: 1});
   }
 
+  delete_task(task) {
+    api.post("/api/task/delete", {id: task.id}, (res) => {
+      let {tasks} = this.state;
+      tasks = removeItemsById(tasks, [task.id], 'id');
+      this.setState({tasks});
+    });
+  }
+
   set_task_wip(task, is_wip) {
     util.play_audio('commit.mp3');
     this.task_update(task, {wip: is_wip ? 1 : 0});
@@ -153,6 +161,7 @@ export default class TaskWidget extends React.Component {
     let current_mins = now.getHours() * 60 + now.getMinutes();
     let {tasks_done, tasks_total} = this.task_progress();
     let new_task_entered = form.new_task && form.new_task.length > 0;
+    let visible_tasks = tasks.filter((t) => { return !t.archived; });
     let _buttons = [
       <IconButton key="ref" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.fetch_recent.bind(this)} tooltip="Refresh">refresh</IconButton>,
       <IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.show_new_box.bind(this)} tooltip="Add Task (T)">add</IconButton>,
@@ -163,12 +172,13 @@ export default class TaskWidget extends React.Component {
 
         <h3 onClick={this.fetch_recent.bind(this)}>Top Tasks for {util.printDateObj(new Date(), "UTC", {format: "dddd, MMMM DD"})} { _buttons }</h3>
         <ProgressLine value={current_mins} total={total_mins} />
-        { tasks.length > 0 ?
+        { visible_tasks.length > 0 ?
         <List>
-          { tasks.sort((a, b) => { return b.wip - a.wip;}).map((t) => {
+          { visible_tasks.sort((a, b) => { return b.wip - a.wip;}).map((t) => {
             return <TaskLI key={t.id} task={t}
                       onUpdateWIP={this.set_task_wip.bind(this)}
                       onUpdateStatus={this.update_status.bind(this)}
+                      onDelete={this.delete_task.bind(this)}
                       onArchive={this.archive.bind(this)} />;
           }) }
         </List>
