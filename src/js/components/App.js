@@ -20,7 +20,8 @@ export default class Private extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      ln_open: false
+      ln_open: false,
+      signing_in: false
     };
   }
 
@@ -63,10 +64,15 @@ export default class Private extends React.Component {
       let new_user = !user || profile.getEmail() != user.email;
       if (new_user) {
         let data = {token: id_token};
-        api.post('/api/auth/google_login', data, (res) => {
+        this.setState({signing_in: true}, () => {
+          api.post('/api/auth/google_login', data, (res) => {
             UserActions.storeUser(res.user);
             browserHistory.push('/app/dashboard');
-        })
+            this.setState({signing_in: false});
+          }, (res_fail) => {
+            this.setState({signing_in: false});
+          })
+        });
       }
     }
   }
@@ -116,7 +122,9 @@ export default class Private extends React.Component {
     let LOGO = <img src="/images/logo_white.png" className="flowlogo glow" width="50" />
     let right_icon;
     let on_signin = this.props.location.pathname == '/app/login';
+    let on_about = this.props.location.pathname == '/app/about';
     if (!user && !on_signin) right_icon = <Link to="/app/login"><RaisedButton primary={true} label="Sign In" style={{marginTop: "5px", marginRight: "5px"}}/></Link>
+    if (user && on_about) right_icon = <Link to="/app/dashboard"><RaisedButton primary={true} label="Dashboard" style={{marginTop: "5px", marginRight: "5px"}}/></Link>
     return (
       <div>
         <AppBar

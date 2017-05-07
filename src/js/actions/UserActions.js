@@ -23,19 +23,6 @@ class UserActions {
         }
     }
 
-    login() {
-        return function(dispatch) {
-            try {
-                $.post('/api/auth/login', {}, (res) => {
-                    dispatch({ok: res.success, redirect: res.data.auth_uri});
-                }, 'json');
-            } catch (err) {
-                console.error(err);
-                dispatch({ok: false, error: err.data});
-            }
-        }
-    }
-
     update(data) {
         return (dispatch) => {
             api.post("/api/user/me", data, (res) => {

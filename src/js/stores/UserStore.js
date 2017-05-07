@@ -63,17 +63,6 @@ class UserStore {
         localStorage.removeItem(AppConstants.USER_STORAGE_KEY);
     }
 
-    onLogin(data) {
-        if (data.ok) {
-            // this.storeUser(data.user);
-            // defer(browserHistory.push.bind(this, `/app/main`));
-            window.location = data.redirect;
-        } else {
-            this.clearUser();
-            this.error = data.error;
-        }
-    }
-
     onLogout(data) {
         if (data.success) {
             this.clearUser();

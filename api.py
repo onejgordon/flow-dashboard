@@ -373,7 +373,6 @@ class EventAPI(handlers.JsonRequestHandler):
             booleans=['ongoing'],
             supportTextBooleans=True
         )
-        self.log_request_params()
         event = self.user.get(Event, id=id)
         if not event:
             start = params.get('date_start')

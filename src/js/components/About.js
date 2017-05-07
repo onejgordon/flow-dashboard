@@ -57,11 +57,16 @@ export default class About extends React.Component {
 
                         <img src="/images/screenshots/habit_trend.png" className="img-responsive" />
 
+                        <h3>Export everything.</h3>
+
+                        <p className="lead" style={{fontSize: "1.45em"}}>Export your data, at any time, to CSV.</p>
+
                         <h3>Flow Snapshot (beta).</h3>
 
                         <p className="lead" style={{fontSize: "1.45em"}}>Snapshots are a short questionnaire collected at random times throughout the day via your smartphone.</p>
 
                         <img src="/images/screenshots/snapshots.png" className="img-responsive" />
+
 
                         <h3>Your timeline.</h3>
 
@@ -80,8 +85,10 @@ export default class About extends React.Component {
 
                         <div className="row">
                             <div className="col-sm-6">
-                                <h3>Try Flow</h3>
-                                <p className="lead" style={{fontSize: "1.45em"}}><Link to="/app/login"><RaisedButton primary={true} label="Sign in" /></Link> to get started.</p>
+                                <div hidden={user != null}>
+                                    <h3>Try Flow</h3>
+                                    <p className="lead" style={{fontSize: "1.45em"}}><Link to="/app/login"><RaisedButton primary={true} label="Sign in" /></Link> to get started.</p>
+                                </div>
                             </div>
                             <div className="col-sm-6">
                                 <h3>Flow is Open Source</h3>
@@ -89,8 +96,6 @@ export default class About extends React.Component {
                                 <a href="https://github.com/onejgordon/flow-dashboard" target="_blank"><RaisedButton label="Source on Github" /></a>
                             </div>
                         </div>
-
-                        { _feedback }
 
                     </div>
                 </div>
