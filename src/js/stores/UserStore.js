@@ -82,7 +82,7 @@ class UserStore {
             var auth2 = gapi.auth2.getAuthInstance();
             auth2.signOut().then(function () {
                 console.log('Signed out of Google');
-                browserHistory.push('/app/splash');
+                browserHistory.push('/app');
             });
         }
     }
@@ -99,6 +99,11 @@ class UserStore {
     get_user(uid) {
         var u = this.getState().users[uid];
         return u;
+    }
+
+    plugin_enabled(plugin) {
+        let plugins = this.getState().user.plugins;
+        return plugins != null && plugins.indexOf(plugin) > -1;
     }
 
     admin() {

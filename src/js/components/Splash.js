@@ -38,13 +38,10 @@ export default class Splash extends React.Component {
                     </div>
 
                     <div hidden={user}>
-                        <Link to="/app/about"><RaisedButton label="Learn More" /></Link>
-
-                        <p style={{marginTop: "6px"}}>OR</p>
 
                         <GoogleLogin
                             clientId={client_secrets.G_OAUTH_CLIENT_ID}
-                            buttonText="Login"
+                            buttonText="Sign In"
                             scope="profile email"
                             onSuccess={this.success.bind(this)}
                             onFailure={this.fail.bind(this)} />

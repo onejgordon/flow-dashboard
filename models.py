@@ -4,7 +4,7 @@
 from datetime import datetime, timedelta, time
 from google.appengine.ext import ndb
 from google.appengine.api import mail, search
-from constants import EVENT, USER, TASK, READABLE, JOURNALTAG, REPORT
+from constants import EVENT, USER, TASK, READABLE, JOURNALTAG, REPORT, NEW_USER_NOTIFICATIONS
 import tools
 import json
 import random
@@ -141,6 +141,7 @@ class User(ndb.Model):
     integrations = ndb.TextProperty()  # Flat JSON dict
     settings = ndb.TextProperty()  # JSON
     sync_services = ndb.StringProperty(repeated=True)  # See AppConstants.INTEGRATIONS
+    plugins = ndb.StringProperty(repeated=True, indexed=False)  # Lowercase
     # Integration IDs
     g_id = ndb.StringProperty()
     fb_id = ndb.StringProperty()
@@ -161,7 +162,8 @@ class User(ndb.Model):
             'timezone': self.timezone,
             'birthday': tools.iso_date(self.birthday) if self.birthday else None,
             'evernote_id': self.evernote_id,
-            'sync_services': self.sync_services
+            'sync_services': self.sync_services,
+            'plugins': self.plugins if self.plugins else []
         }
 
     @staticmethod
@@ -198,7 +200,7 @@ class User(ndb.Model):
                 password = tools.GenPasswd()
             u.setPass(password)
             u.Update(settings=DEFAULT_USER_SETTINGS)
-            if not tools.on_dev_server():
+            if not tools.on_dev_server() and NEW_USER_NOTIFICATIONS:
                 try:
                     mail.send_mail(to=ADMIN_EMAIL, sender=SENDER_EMAIL,
                                    subject="[ %s ] New User - %s" % (SITENAME, email),

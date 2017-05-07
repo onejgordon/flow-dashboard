@@ -16,6 +16,9 @@ NOTIF_EMAILS = [APP_OWNER]
 GCS_REPORT_BUCKET = "/flow_reports"
 BACKGROUND_SERVICE = "default"
 
+# Flags
+NEW_USER_NOTIFICATIONS = False
+
 DEFAULT_USER_SETTINGS = {
     'journals': {
         'questions': [

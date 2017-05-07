@@ -376,7 +376,7 @@ div.section {
   width: 100%;
   height: 2px;
 }
-
+/*
 .pace .pace-progress-inner {
   display: block;
   position: absolute;
@@ -409,7 +409,7 @@ div.section {
   -ms-animation: pace-spinner 400ms linear infinite;
   -o-animation: pace-spinner 400ms linear infinite;
   animation: pace-spinner 400ms linear infinite;
-}
+}*/
 
 @-webkit-keyframes pace-spinner {
   0% { -webkit-transform: rotate(0deg); transform: rotate(0deg); }

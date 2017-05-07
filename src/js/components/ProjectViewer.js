@@ -189,7 +189,7 @@ export default class ProjectViewer extends React.Component {
         </div>
 
         <div hidden={!empty}>
-          <div className="text-center empty">None yet, <a href="javascript:void(0)" onClick={this.setState.bind(this, {project_dialog_open: true})}>create your first</a>!</div>
+          <div className="text-center empty">None yet, <a href="javascript:void(0)" onClick={this.setState.bind(this, {project_dialog_open: true})}>create</a> your first project!</div>
         </div>
 
         <div hidden={empty}>

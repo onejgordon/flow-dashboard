@@ -1,8 +1,9 @@
 'use strict';
 
 var React = require('react');
+import {Link} from 'react-router';
 import {browserHistory} from 'react-router';
-import { FontIcon, MenuItem,
+import { FontIcon, MenuItem, RaisedButton,
   IconButton, AppBar, Drawer} from 'material-ui';
 var AppConstants = require('constants/AppConstants');
 var UserActions = require('actions/UserActions');
@@ -113,12 +114,16 @@ export default class Private extends React.Component {
     let {user} = this.props;
     let {SITENAME} = AppConstants;
     let LOGO = <img src="/images/logo_white.png" className="flowlogo glow" width="50" />
+    let right_icon;
+    let on_signin = this.props.location.pathname == '/app/login';
+    if (!user && !on_signin) right_icon = <Link to="/app/login"><RaisedButton primary={true} label="Sign In" style={{marginTop: "5px", marginRight: "5px"}}/></Link>
     return (
       <div>
         <AppBar
           title={LOGO}
           zDepth={0}
           onTitleTouchTap={this.go_home.bind(this)}
+          iconElementRight={right_icon}
           onLeftIconButtonTouchTap={this.handle_toggle_leftnav.bind(this)} />
 
         <Drawer docked={false} width={300} open={this.state.ln_open} onRequestChange={this.handle_leftnav_change.bind(this)}>

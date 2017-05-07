@@ -5,6 +5,7 @@ import connectToStores from 'alt-utils/lib/connectToStores';
 var api = require('utils/api');
 var util = require('utils/util');
 import {Paper} from 'material-ui';
+var UserStore = require('stores/UserStore');
 import {changeHandler} from 'utils/component-utils';
 var moment = require('moment')
 var Select = require('react-select');
@@ -274,7 +275,8 @@ export default class AnalysisSnapshot extends React.Component {
         }
         let seg_name = util.capitalize(form.segment_by);
         let content;
-        if (user.level == 2) {
+        let snapshot_enabled = UserStore.admin() || UserStore.plugin_enabled('snapshots');
+        if (snapshot_enabled) {
             content = (
                 <div>
                     <Paper style={{padding: 10, marginBottom: 20, marginTop: 20}}>
