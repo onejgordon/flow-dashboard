@@ -41,7 +41,7 @@ def role(role=None):
                                     # Interpret as User ID
                                     user = User.get_by_id(int(_user_id))
                                 elif '@' in _user_id:
-                                    # Interpret as user amil
+                                    # Interpret as user email
                                     user = User.GetByEmail(_user_id)
                                 if user and not user.checkPass(_pass):
                                     user = None
