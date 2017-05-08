@@ -386,6 +386,7 @@ export default class MiniJournalWidget extends React.Component {
         <div>
           <h3>Daily Journal</h3>
           { _status }
+          <div>See <Link to="/app/journal/history">journal history</Link>.</div>
         </div>
       </div>
     )

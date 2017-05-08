@@ -10,6 +10,7 @@ var Auth = require('components/Auth');
 var Manage = require('components/Manage');
 var Analysis = require('components/Analysis');
 var Reading = require('components/Reading');
+var JournalHistory = require('components/JournalHistory');
 var Integrations = require('components/Integrations');
 var Reports = require('components/Reports');
 var Feedback = require('components/Feedback');
@@ -46,6 +47,7 @@ module.exports = (
       <Route path="integrations/:action" component={Integrations} />
       <Route path="exports" component={Reports} />
       <Route path="reading" component={Reading} />
+      <Route path="journal/history" component={JournalHistory} />
       <Route path="feedback" component={Feedback} />
       <Route path="admin/agent" component={AdminAgent} />
       <Route path="analysis" component={Analysis}>
