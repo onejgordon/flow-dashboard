@@ -1204,7 +1204,9 @@ class Readable(UserSearchable):
         if title:
             slug = tools.strip_symbols(title).upper()
             if author:
-                slug += " (%s)" % tools.parse_last_name(tools.strip_symbols(author)).upper()
+                last_name = tools.parse_last_name(tools.strip_symbols(author))
+                if last_name:
+                    slug += " (%s)" % last_name.upper()
             return slug
 
     def generate_slug(self):
