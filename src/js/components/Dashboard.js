@@ -37,7 +37,7 @@ export default class Dashboard extends React.Component {
         let in_input = tag == 'input' || tag == 'textarea';
         if (in_input) return true;
         if (keyCode == 84) { // t
-            this.refs.taskwidget.show_new_box();
+            if (this.refs.taskwidget) this.refs.taskwidget.show_new_box();
             document.getElementById('TaskWidget').scrollIntoView();
             e.preventDefault();
             return false;
