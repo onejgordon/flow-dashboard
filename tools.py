@@ -199,13 +199,13 @@ def dt_from_ts(ms):
     Convert timestamp in ms to datetime
 
     >>> dt_from_ts(1494269497212)
-    datetime.datetime(2017, 5, 8, 21, 51, 37, 212000)
+    datetime.datetime(2017, 5, 8, 18, 51, 37, 212000)
 
     '''
     if ms == 0:
         return None
     else:
-        return datetime.fromtimestamp(float(ms) / 1000)
+        return datetime.utcfromtimestamp(float(ms) / 1000)
 
 
 def safe_add_task(callable, *args, **kwargs):
