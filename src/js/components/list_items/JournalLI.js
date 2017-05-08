@@ -40,7 +40,7 @@ export default class JournalLI extends React.Component {
       );
     });
     return (
-      <Paper style={{padding: "10px"}}>
+      <Paper style={{padding: "10px", marginTop: "8px"}}>
         <h3 style={{paddingTop: "0px", marginTop: "0px"}}>{ journal.iso_date }</h3>
         <div className="row">
           { responses }

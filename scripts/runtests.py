@@ -2,6 +2,7 @@
 import optparse
 import sys
 import unittest
+import doctest
 from os.path import dirname, abspath
 
 USAGE = """%prog SDK_PATH TEST_PATH
@@ -26,6 +27,9 @@ def main(sdk_path, test_path, module=None):
         suite = unittest.loader.TestLoader().discover(test_path, pattern=module)
     else:
         suite = unittest.loader.TestLoader().discover(test_path)
+    doctest_modules = ["tools"]
+    for mod in doctest_modules:
+        suite.addTests(doctest.DocTestSuite(mod))
     test_result = unittest.TextTestRunner(verbosity=2).run(suite)
     sys.exit(0 if test_result.wasSuccessful() else 1)
 
