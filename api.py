@@ -637,8 +637,11 @@ class JournalAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def list(self, d):
         days = self.request.get_range('days', default=4)
-        today = datetime.today()
-        cursor = today
+        before_date = datetime.today()
+        _before_date = self.request.get('before_date')
+        if _before_date:
+            before_date = tools.fromISODate(_before_date)
+        cursor = before_date
         journal_keys = []
         for i in range(days):
             iso_date = tools.iso_date(cursor)

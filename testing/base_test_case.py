@@ -87,8 +87,8 @@ class BaseTestCase(unittest.TestCase):
         # Setup task queue stub
         taskqueue_stub = self.get_task_queue_stub()
         # Ensure dev appserver task queue knows where to find queue.yaml
-        taskqueue_stub._root_path = os.path.dirname(
-            os.path.dirname(queue_yaml_path))
+        rp = os.path.dirname(os.path.dirname(__file__))
+        taskqueue_stub._root_path = rp
 
     def get_task_queue_stub(self):
         """Get task queue stub"""
@@ -109,6 +109,9 @@ class BaseTestCase(unittest.TestCase):
     def init_memcache_stub(self):
         self.testbed.init_memcache_stub()
 
+    def init_app_identity_stub(self):
+        self.testbed.init_app_identity_stub()
+
     def init_datastore_stub(self, probability=1):
         """Initialize datastore stub
 
@@ -119,10 +122,13 @@ class BaseTestCase(unittest.TestCase):
         self.testbed.init_datastore_v3_stub(consistency_policy=ds_policy)
 
     def init_standard_stubs(self):
+        self.init_blobstore_stub()
         self.init_datastore_stub()
+        self.init_urlfetch_stub()
         self.init_memcache_stub()
         self.init_taskqueue_stub()
         self.init_mail_stub()
+        self.init_app_identity_stub()
         self.register_search_api_stub()
 
     def init_app_basics(self, n_users=1):

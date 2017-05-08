@@ -48,7 +48,6 @@ class APITestCase(BaseTestCase):
         self.assertEqual(u.get('birthday'), DOB)
         self.assertEqual(u.get('timezone'), TZ)
 
-
     def test_habit_calls(self):
         # List
         response = self.get_json("/api/habit", {}, headers=self.api_headers)

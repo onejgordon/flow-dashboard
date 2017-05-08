@@ -63,6 +63,23 @@ class UtilTestCase(BaseTestCase):
             out = tools.safe_number(_in)
             self.assertEqual(out, _expect)
 
+    def testSafeIsDigit(self):
+        volley = [
+            ("1", True),
+            ("4", True),
+            ("0", True),
+            (5, True),
+            (529291910101000, True),
+            ('a', False),
+            (None, False),
+            ('', False)
+        ]
+
+        for v in volley:
+            _in, _expect = v
+            out = tools.safeIsDigit(_in)
+            self.assertEqual(out, _expect)
+
     def testPluralize(self):
         volley = [
             ("item", 1, "item"),

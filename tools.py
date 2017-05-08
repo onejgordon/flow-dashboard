@@ -18,6 +18,10 @@ def GenPasswd(length=8, chars=string.letters.upper()):
 
 
 def remove_html_tags(raw_html):
+    '''
+    >>> remove_html_tags("<pre>hello</pre>")
+    'hello'
+    '''
     cleanr = re.compile('<.*?>')
     cleantext = re.sub(cleanr, '', raw_html)
     return cleantext
@@ -109,6 +113,16 @@ def variable_replacement(text, repl_dict, parens="[]"):
 
 
 def partition(seq, key):
+    '''
+
+    Args:
+        seq: Sequence to partition
+        key: Key function
+
+    >>> partition(['apple', 'able', 'bella', 'alice'], lambda x : x[0]).get('a')
+    ['apple', 'able', 'alice']
+
+    '''
     d = defaultdict(list)
     for x in seq:
         d[key(x)].append(x)
@@ -150,6 +164,14 @@ def unixtime(dt=None, ms=True):
 
 
 def sdatetime(date, fmt="%Y-%m-%d %H:%M %Z", tz=None):
+    '''
+    Print date in standard format
+
+    from datetime import datetime
+    >>> sdatetime(datetime(2017, 5, 2, 14, 25, 0))
+    '2017-05-02 14:25 UTC'
+
+    '''
     if date:
         if isinstance(tz, basestring):
             _tz = pytz.timezone(tz)
@@ -165,10 +187,6 @@ def iso_date(date):
     return datetime.strftime(date, "%Y-%m-%d") if date else None
 
 
-def total_seconds(td):
-    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
-
-
 def get_first_day(dt, d_years=0, d_months=0):
     # d_years, d_months are "deltas" to apply to dt
     y, m = dt.year + d_years, dt.month + d_months
@@ -177,10 +195,17 @@ def get_first_day(dt, d_years=0, d_months=0):
 
 
 def dt_from_ts(ms):
+    '''
+    Convert timestamp in ms to datetime
+
+    >>> dt_from_ts(1494269497212)
+    datetime.datetime(2017, 5, 8, 18, 51, 37, 212000)
+
+    '''
     if ms == 0:
         return None
     else:
-        return datetime.fromtimestamp(float(ms) / 1000)
+        return datetime.utcfromtimestamp(float(ms) / 1000)
 
 
 def safe_add_task(callable, *args, **kwargs):
@@ -199,11 +224,10 @@ def safe_add_task(callable, *args, **kwargs):
     """
     task_add_retries = kwargs.pop("task_add_retries", 0)
     TASK_BATCH_SIZE = 100
-    from constants import BACKGROUND_SERVICE
     success = True
 
     try:
-        if isinstance(callable, basestring): # a url string
+        if isinstance(callable, basestring):  # a url string
             task_dict = dict(kwargs)
             task_dict['url'] = callable
             kwargs = {
@@ -212,7 +236,7 @@ def safe_add_task(callable, *args, **kwargs):
             task_dict['eta'] = task_dict.pop("eta", None)
             callable = [task_dict]
 
-        if isinstance(callable, list): # a list of tasks
+        if isinstance(callable, list):  # a list of tasks
             # create a list of taskqueue.Task Objects from the list of dicts
             task_list = []
             for task_dict in callable:
@@ -276,36 +300,6 @@ def total_minutes(td):
 def strip_symbols(s, repl=''):
     s = re.sub(r'[^\w ]', repl, s)
     return s
-
-
-# Some mobile browsers which look like desktop browsers.
-RE_MOBILE = re.compile(r"(iphone|ipod|blackberry|android|palm|windows\s+ce)", re.I)
-RE_DESKTOP = re.compile(r"(windows|linux|os\s+[x9]|solaris|bsd)", re.I)
-RE_BOT = re.compile(r"(spider|crawl|slurp|bot)", re.I)
-
-def is_desktop(user_agent):
-   """
-   Anything that looks like a phone isn't a desktop.
-   Anything that looks like a desktop probably is.
-   Anything that looks like a bot should default to desktop.
-
-   """
-   return not bool(RE_MOBILE.search(user_agent)) and \
-    bool(RE_DESKTOP.search(user_agent)) or \
-    bool(RE_BOT.search(user_agent))
-
-def get_user_agent(request):
-   return str(request.headers['User-Agent'])
-  # Some mobile browsers put the User-Agent in a HTTP-X header
-  # return request.headers.get('HTTP_X_OPERAMINI_PHONE_UA') or \
-  #       request.headers.get('HTTP_X_SKYFIRE_PHONE') or \
-  #       request.headers.get('HTTP_USER_AGENT', '')
-
-
-def is_mobile_browser(request):
-   user_agent = get_user_agent(request)
-   return not is_desktop(user_agent)
-
 
 
 def trunc_chars(text, n=120):
@@ -402,6 +396,10 @@ def getSHA(pw, salt=None):
 def validJson(raw, default=None):
     '''
     Returns string of dumped json, if valid
+
+    >>> validJson('{"foo": "bar", "foo2": ["baz"]}')
+    '{"foo": "bar", "foo2": ["baz"]}'
+
     '''
     j = getJson(raw)
     if j is None:

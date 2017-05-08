@@ -1,6 +1,6 @@
 var React = require('react');
 var api = require('utils/api');
-import {RefreshIndicator, IconButton, List, ListItem, FlatButton, TextField} from 'material-ui';
+import {IconButton, List, ListItem, FlatButton, TextField} from 'material-ui';
 import {clone} from 'lodash';
 var util = require('utils/util');
 import {changeHandler} from 'utils/component-utils';
@@ -192,7 +192,6 @@ export default class FetchedList extends React.Component {
       );
     return (
       <div>
-        <RefreshIndicator status={ristatus} size={50} top={50} left={50} />
         { _search_box }
         <IconButton iconClassName="material-icons" onClick={this.refresh.bind(this)}>refresh</IconButton>
         { _list }

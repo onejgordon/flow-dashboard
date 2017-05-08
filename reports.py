@@ -106,8 +106,7 @@ class GCSReportWorker(object):
 
     def writeHeaders(self):
         if self.report.ftype == REPORT.CSV:
-            string = tools.normalize_to_ascii('"'+'","'.join(self.headers)+'"\n')
-            self.gcs_file.write(string)
+            csv.writer(self.gcs_file).writerow(tools.normalize_list_to_ascii(self.headers))
 
     def writeData(self):
         total_i = self.counters['run']

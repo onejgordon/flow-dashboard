@@ -1387,7 +1387,7 @@ class Report(UserAccessible):
 
     def get_duration(self):
         if self.dt_created and self.dt_generated:
-            return tools.total_seconds(self.dt_generated - self.dt_created)
+            return (self.dt_generated - self.dt_created).total_seconds()
         return 0
 
     def get_specs(self):
