@@ -58,6 +58,7 @@ handlers:
 
 - url: /.*
   script: flow.app
+  secure: always
 
 builtins:
 - deferred: on

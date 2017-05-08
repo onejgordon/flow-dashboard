@@ -554,8 +554,9 @@ class QuoteAPI(handlers.JsonRequestHandler):
             quote = Quote.Create(self.user, **params)
             self.message = "Quote saved!" if quote else "Couldn't create quote"
             self.success = quote is not None
-        quote.Update(**params)
-        quote.put()
+        if quote:
+            quote.Update(**params)
+            quote.put()
         self.set_response({
             'quote': quote.json() if quote else None
         })
