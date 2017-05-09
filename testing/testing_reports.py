@@ -34,7 +34,8 @@ class ReportsTestCases(BaseTestCase):
         self.assertTrue(report.get_duration() > 0)
 
     def test_task_report(self):
-        task = Task.Create(self.u, "New task")
+        due_date = datetime(2017, 10, 2, 12, 0)
+        task = Task.Create(self.u, "New task", due=due_date)
         task.put()
 
         self._test_report(
@@ -43,7 +44,7 @@ class ReportsTestCases(BaseTestCase):
                 'Date Created,Date Due,Date Done,Title,Done,Archived',
                 ",".join([
                     tools.sdatetime(task.dt_created, fmt=DATE_FMT),
-                    "2017-05-09 22:00:00 UTC",
+                    "2017-10-02 12:00:00 UTC",
                     "N/A",
                     "New task",
                     "0",
