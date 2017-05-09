@@ -99,9 +99,11 @@ class UserSearchable(UserAccessible):
         sds = []
         if items:
             index = items[0].get_index()
-            for i in items:
-                sds.append(i.generate_sd())
-            if sds:
+            # Batches of 50 to avoid 'ValueError: too many documents to index'
+            for batch in tools.chunks(items, 50):
+                sds = []
+                for i in batch:
+                    sds.append(i.generate_sd())
                 index.put(sds)
 
     @classmethod
