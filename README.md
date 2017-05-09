@@ -4,7 +4,7 @@
 [![Code Climate](https://lima.codeclimate.com/github/onejgordon/flow-dashboard/badges/gpa.svg)](https://lima.codeclimate.com/github/onejgordon/flow-dashboard)
 [![Coverage Status](https://coveralls.io/repos/github/onejgordon/flow-dashboard/badge.svg?branch=master)](https://coveralls.io/github/onejgordon/flow-dashboard?branch=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://jeremy.mit-license.org)
-
+[![Gitter chat](https://badges.gitter.im/onejgordon/flow-dashboard.png)](https://gitter.im/flow-dashboard)
 
 ## Purpose
 
