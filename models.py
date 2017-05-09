@@ -454,8 +454,14 @@ class Task(UserAccessible):
             same_day_hour = int(task_prefs.get('same_day_hour', 16))
             due_hour = int(task_prefs.get('due_hour', 22))
             schedule_for_same_day = local_now.hour < same_day_hour
+            dt_due = local_now
+            if due_hour > 23:
+                due_hour = 0
+                dt_due += timedelta(days=1)
+            if due_hour < 0:
+                due_hour = 0
             time_due = time(due_hour, 0)
-            due = datetime.combine(local_now.date(), time_due)
+            due = datetime.combine(dt_due.date(), time_due)
             if not schedule_for_same_day:
                 due += timedelta(days=1)
             if due:
