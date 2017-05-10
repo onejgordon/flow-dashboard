@@ -24,7 +24,8 @@ a:hover {
 }
 
 a.muted:link, a.muted:visited, a.muted:active {
-  color: #92B4C5;
+  color: gray;
+  text-decoration: underline;
 }
 
 a.muted:hover {
