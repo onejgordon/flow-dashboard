@@ -23,6 +23,37 @@ securityDefinitions:
 security:
 - basicAuth: []
 paths:
+  /tracking:
+    post:
+      summary: Submit arbitrary tracking data for a particular date
+      operationId: submitTracking
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      parameters:
+      - in: formData
+        name: date
+        description: Date (YYYY-MM-DD)
+        type: string
+      - in: formData
+        name: data
+        description: Stringified simple JSON object (keys and values as strings) Will be merged if any existing data has been posted.
+        type: string
+      responses:
+        200:
+          description: successful update
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              message:
+                type: string
+                example: "OK"
+              tracking_day:
+                $ref: '#/definitions/tracking_day'
   /snapshot:
     post:
       summary: Submit a snapshot
@@ -56,7 +87,7 @@ paths:
         type: array
         collectionFormat: csv
         items:
-            type: string        
+            type: string
         required: true
       - in: formData
         name: metrics
@@ -78,12 +109,12 @@ paths:
               snapshot:
                 $ref: '#/definitions/snapshot'
 definitions:
-  snapshot: 
+  snapshot:
     type: object
     properties:
       id:
         type: integer
-      ts: 
+      ts:
         type: integer
       iso_date:
         type: string
@@ -94,7 +125,17 @@ definitions:
         type: string
       activity:
         type: string
-      lat: 
+      lat:
         type: string
-      lon: 
+      lon:
         type: string
+  tracking_day:
+    type: object
+    properties:
+      id:
+        type: integer
+      iso_date:
+        type: string
+        pattern: '^(\d\d\d\d\-\d\d\-\d\d)$'
+      data:
+        type: object
