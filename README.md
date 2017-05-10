@@ -14,6 +14,10 @@ If you just want look around or get started with Flow, you can create a free acc
 
 To spin up your own instance, or start contributing to this repo, see below.
 
+## API Documentation
+
+The docs are still a work in progress. Check out the current docs at http://docs.flowdash.apiary.io/#
+
 ## Setup
 
 To deploy a new instance of Flow, use the following instructions.
