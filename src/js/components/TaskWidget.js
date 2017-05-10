@@ -92,7 +92,6 @@ export default class TaskWidget extends React.Component {
       if (res.archived_ids) {
         let tasks = removeItemsById(this.state.tasks, res.archived_ids, 'id');
         this.setState({tasks});
-        res.archive_all_done
       }
     })
   }
@@ -167,22 +166,31 @@ export default class TaskWidget extends React.Component {
       <IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.show_new_box.bind(this)} tooltip="Add Task (T)">add</IconButton>,
       <span key="archive_all" className="pull-right" style={{marginRight: '20px'}}><IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.archive_all_done.bind(this)} tooltip="Archive Complete">archive</IconButton></span>,
     ]
+    let morning = now.getHours() <= 12;
+    let exclamation = morning ? "Set the top two or three tasks for today." : "All clear!"
+    let _no_tasks_cta = <span>{ exclamation } <a href="javascript:void(0)" onClick={this.show_new_box.bind(this)}>Add a task</a>.</span>
+
     return (
       <div className="TaskWidget" id="TaskWidget">
 
         <h3 onClick={this.fetch_recent.bind(this)}>Top Tasks for {util.printDateObj(new Date(), "UTC", {format: "dddd, MMMM DD"})} { _buttons }</h3>
         <ProgressLine value={current_mins} total={total_mins} />
         { visible_tasks.length > 0 ?
-        <List>
-          { visible_tasks.sort((a, b) => { return b.wip - a.wip;}).map((t) => {
-            return <TaskLI key={t.id} task={t}
-                      onUpdateWIP={this.set_task_wip.bind(this)}
-                      onUpdateStatus={this.update_status.bind(this)}
-                      onDelete={this.delete_task.bind(this)}
-                      onArchive={this.archive.bind(this)} />;
-          }) }
-        </List>
-        : <div className="empty">All clear! <a href="javascript:void(0)" onClick={this.show_new_box.bind(this)}>Add a task</a>.</div> }
+          <List>
+            { visible_tasks.sort((a, b) => { return b.wip - a.wip;}).map((t) => {
+              return <TaskLI key={t.id} task={t}
+                        onUpdateWIP={this.set_task_wip.bind(this)}
+                        onUpdateStatus={this.update_status.bind(this)}
+                        onDelete={this.delete_task.bind(this)}
+                        onArchive={this.archive.bind(this)} />;
+            }) }
+          </List>
+        : (
+            <div className="empty">
+              { _no_tasks_cta }
+            </div>
+          )
+        }
         <div hidden={!show_task_progressbar}>
           <ProgressLine value={tasks_done} total={tasks_total} color={this.TASK_COLOR} />
         </div>

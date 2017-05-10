@@ -289,7 +289,9 @@ export default class HabitWidget extends React.Component {
 
   render_icon_chooser() {
     return this.SHOW_MATERIAL_ICONS.map((ic) => {
-      return <IconButton iconClassName="material-icons" onClick={this.set_new_habit_icon.bind(this, ic)}>{ic}</IconButton>
+      return <IconButton iconClassName="material-icons"
+                         key={ic}
+                         onClick={this.set_new_habit_icon.bind(this, ic)}>{ic}</IconButton>
     })
   }
 
