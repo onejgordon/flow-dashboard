@@ -9,7 +9,7 @@ var AppConstants = {
     JOURNAL_START_HOUR: 21, // Default
     JOURNAL_END_HOUR: 4, // Default
     USER_ADMIN: 2,
-    SECURE_BASE: "https://genzai-app.appspot.com",
+    SECURE_BASE: "https://flowdash.co",
     TAGLINE: "Flow is a habit tracker and personal data analytics app that lets you keep focus on what matters. Flow owns none of your data. That's yours.",
     INTEGRATIONS: [
         { value: 'pocket', label: "Pocket" },

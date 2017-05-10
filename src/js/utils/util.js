@@ -185,6 +185,10 @@ var util = {
         return dt;
     },
 
+    date_from_iso(iso_str) {
+        return new Date(iso_str + 'T00:00:00'); // Force interpretation as local timezone
+    },
+
     timestamp: function() {
         // Seconds
         return parseInt(new Date().getTime() / 1000);

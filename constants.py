@@ -4,7 +4,7 @@ AUTHOR_NAME = "Jeremy Gordon"
 SITENAME = "Flow"
 EMAIL_PREFIX = "[ Flow ] "
 TAGLINE = "A personal dashboard to focus on what matters"
-SECURE_BASE = "https://genzai-app.appspot.com"
+SECURE_BASE = "https://flowdash.co"
 
 # Emails
 APP_OWNER = "onejgordon@gmail.com"

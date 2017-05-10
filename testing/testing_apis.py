@@ -253,6 +253,10 @@ class APITestCase(BaseTestCase):
         self.assertEqual(td.get('iso_date'), DATE)
         self.assertEqual(td.get('data', {}).get('foo'), 'bar')
 
+        # Malformed request with no date
+        response = self.post_json("/api/tracking", {'data': json.dumps({'foo': 'bar'})}, headers=self.api_headers)
+        self.assertFalse(response.get('success'))
+
     def test_flowapp_agent_api(self):
         response = self.post_json("/api/agent/flowapp/request", {'message': "hi"}, headers=self.api_headers)
         reply = response.get('reply')

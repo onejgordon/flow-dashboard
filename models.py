@@ -99,9 +99,11 @@ class UserSearchable(UserAccessible):
         sds = []
         if items:
             index = items[0].get_index()
-            for i in items:
-                sds.append(i.generate_sd())
-            if sds:
+            # Batches of 50 to avoid 'ValueError: too many documents to index'
+            for batch in tools.chunks(items, 50):
+                sds = []
+                for i in batch:
+                    sds.append(i.generate_sd())
                 index.put(sds)
 
     @classmethod
@@ -452,8 +454,14 @@ class Task(UserAccessible):
             same_day_hour = int(task_prefs.get('same_day_hour', 16))
             due_hour = int(task_prefs.get('due_hour', 22))
             schedule_for_same_day = local_now.hour < same_day_hour
+            dt_due = local_now
+            if due_hour > 23:
+                due_hour = 0
+                dt_due += timedelta(days=1)
+            if due_hour < 0:
+                due_hour = 0
             time_due = time(due_hour, 0)
-            due = datetime.combine(local_now.date(), time_due)
+            due = datetime.combine(dt_due.date(), time_due)
             if not schedule_for_same_day:
                 due += timedelta(days=1)
             if due:

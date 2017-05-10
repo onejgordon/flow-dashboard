@@ -67,7 +67,8 @@ def paging_params(request, limit_param="max", limit_default=30, page_default=0):
     page = request.get_range('page', default=page_default)
     if page:
         offset = max * page
-    else: offset = 0
+    else:
+        offset = 0
     if offset > MAX_OFFSET:
         from api.api import APIError
         raise APIError("Maximum offset exceeded (%d)" % MAX_OFFSET)
@@ -75,7 +76,11 @@ def paging_params(request, limit_param="max", limit_default=30, page_default=0):
 
 
 def chunks(l, n):
-    """ Yield successive n-sized chunks from l.
+    """
+    Yield successive n-sized chunks from l.
+
+    >>> list(chunks([1,2,3,4,5,6,7], 3))
+    [[1, 2, 3], [4, 5, 6], [7]]
     """
     for i in xrange(0, len(l), n):
         yield l[i:i+n]

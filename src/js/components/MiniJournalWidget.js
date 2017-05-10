@@ -71,6 +71,7 @@ export default class MiniJournalWidget extends React.Component {
   notify_check() {
     if (this.should_notify()) {
       util.notify("Flow Reminder", "Submit your daily journal", "jrnl_remind");
+      this.open_journal_dialog();
     }
   }
 

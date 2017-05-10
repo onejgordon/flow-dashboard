@@ -361,8 +361,8 @@ export default class Integrations extends React.Component {
                             This keyword will also be used as the tracking variable name.
                             For each variable, the day's total activity duration (in seconds) will be stored.</p>
 
-                        <b>Current Activity Keywords:</b> <ul>{ gfit_activities.map((act) => {
-                            return <li>{ act }</li>
+                        <b>Current Activity Keywords:</b> <ul>{ gfit_activities.map((act, i) => {
+                            return <li key={i}>{ act }</li>
                         }) }</ul><br/>
                         <TextField name="gfit_activities" placeholder="Fit Activity Keywords (comma separated)" value={form.gfit_activities||''} onChange={this.changeHandler.bind(this, 'form', 'gfit_activities')} fullWidth /><br/>
 

@@ -77,7 +77,7 @@ export default class AnalysisJournals extends React.Component {
         });
         let data = {}
         journals.forEach((jrnl) => {
-            labels.push(new Date(jrnl.iso_date));
+            labels.push(util.date_from_iso(jrnl.iso_date));
             chart_questions.forEach((q) => {
                 if (!data[q.name]) data[q.name] = [];
                 data[q.name].push(jrnl.data[q.name]);

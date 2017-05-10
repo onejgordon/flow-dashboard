@@ -738,16 +738,19 @@ class TrackingAPI(handlers.JsonRequestHandler):
         Update a single TrackingDay() object with properties
         defined via JSON key(str) -> value(str)
         '''
-        date = None
+        date = td = None
         _date = self.request.get('date')
         if _date:
             date = tools.fromISODate(_date)
         data_json = tools.getJson(self.request.get('data'))  # JSON
-        td = TrackingDay.Create(self.user, date)  # Get or create
-        if data_json:
-            td.set_properties(data_json)
-            td.put()
-        self.success = True
+        if date:
+            td = TrackingDay.Create(self.user, date)  # Get or create
+            if data_json:
+                td.set_properties(data_json)
+                td.put()
+            self.success = True
+        else:
+            self.message = "YYYY-MM-DD formatted date param is required"
         self.set_response({
             'tracking_day': td.json() if td else None
         })
