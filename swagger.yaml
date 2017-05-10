@@ -1,0 +1,100 @@
+swagger: '2.0'
+info:
+  description: |
+    Flow Dashboard APIs
+    [http://flowdash.co](http://flowdash.co)
+  version: "1.2"
+  title: Flow Dashboard
+  contact:
+    name: Jeremy Gordon
+    url: http://jgordon.io
+    email: onejgordon@gmail.com
+  license:
+    name: MIT
+    url: https://jeremy.mit-license.org/
+host: flowdash.co
+basePath: /api
+schemes:
+- https
+securityDefinitions:
+  basicAuth:
+    description: base64 encode user_email:user_api_password
+    type: basic
+security:
+- basicAuth: []
+paths:
+  /snapshot:
+    post:
+      summary: Submit a snapshot
+      operationId: submitSnapshot
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      parameters:
+      - in: formData
+        name: lat
+        description: Latitude
+        type: string
+      - in: formData
+        name: lon
+        description: Latitude
+        type: string
+      - in: formData
+        name: place
+        description: Place
+        type: string
+        required: true
+      - in: formData
+        name: activity
+        description: Activity
+        type: string
+        required: true
+      - in: formData
+        name: people
+        description: People (comma separated)
+        type: array
+        collectionFormat: csv
+        items:
+            type: string        
+        required: true
+      - in: formData
+        name: metrics
+        description: Stringified JSON object of metrics (keys - metric names, values - integer)
+        type: string
+        required: true
+      responses:
+        200:
+          description: successful submission
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              message:
+                type: string
+                example: "OK"
+              snapshot:
+                $ref: '#/definitions/snapshot'
+definitions:
+  snapshot: 
+    type: object
+    properties:
+      id:
+        type: integer
+      ts: 
+        type: integer
+      iso_date:
+        type: string
+        pattern: '^(\d\d\d\d\-\d\d\-\d\d)$'
+      people:
+        type: array
+      place:
+        type: string
+      activity:
+        type: string
+      lat: 
+        type: string
+      lon: 
+        type: string
