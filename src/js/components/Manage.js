@@ -26,7 +26,7 @@ export default class Manage extends React.Component {
         let settings = {};
         if (user) {
             form.timezone = user.timezone;
-            form.birthday = user.birthday ? new Date(user.birthday) : null;
+            form.birthday = user.birthday ? util.date_from_iso(user.birthday) : null;
             settings = user.settings;
         }
         this.state = {

@@ -120,19 +120,25 @@ class Timeline extends React.Component {
 
     render() {
         let {form} = this.state;
+        let {user} = this.props;
+        if (!user) return <div></div>
         let DOB = this.props.user.birthday;
         let today = new Date();
         if (!DOB) return (
-            <div className="empty">
-                To populate your timeline, first enter your birthday.
+            <div>
+                <div className="empty">
+                    To populate your timeline, first enter your birthday.
 
-                <DatePicker autoOk={true}
-                    floatingLabelText="Birthday"
-                    formatDate={util.printDateObj}
-                    maxDate={today}
-                    value={form.birthday} onChange={this.changeHandlerNilVal.bind(this, 'form', 'birthday')}/>
+                    <DatePicker autoOk={true}
+                        floatingLabelText="Birthday"
+                        formatDate={util.printDateObj}
+                        maxDate={today}
+                        value={form.birthday} onChange={this.changeHandlerNilVal.bind(this, 'form', 'birthday')}/>
 
-                <RaisedButton primary={true} label="Save Birthday" onClick={this.save_birthday.bind(this)} disabled={form.birthday == null} />
+                </div>
+                <div className="text-center">
+                    <RaisedButton primary={true} label="Save Birthday" onClick={this.save_birthday.bind(this)} disabled={form.birthday == null} />
+                </div>
             </div>
         );
         let events = this.state.events;
@@ -174,7 +180,7 @@ class Timeline extends React.Component {
                 <ReactLifeTimeline
                     ref="rlt"
                     events={events}
-                    birthday={new Date(DOB)} />
+                    birthday={util.date_from_iso(DOB)} />
 
             </div>
         );
