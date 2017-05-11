@@ -177,10 +177,12 @@ export default class Reading extends React.Component {
                 <h1>Reading</h1>
 
                 <p className="lead">
-                    View all saved reading material here. You can integrate Flow with Goodreads and Pocket to capture
+                    View all saved reading material here. Currently, you can integrate Flow with Goodreads and Pocket to capture
                     books and articles from the web. You can also integrate with Evernote to capture saved excerpts & quotes.
                     Set up <Link to="/app/integrations">integrations</Link>.
                 </p>
+
+                <p><small>Want to capture quotes via Kindle highlights and notes? There's <a href="https://github.com/onejgordon/kindle-clippings-to-gdrive" target="_blank">a script</a> for that.</small></p>
 
                 <div className="pull-right">
                     <FlatButton label="Random Quote" onClick={this.get_random.bind(this, 'quote')} />

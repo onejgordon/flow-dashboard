@@ -11,7 +11,7 @@ var UserStore = require('stores/UserStore');
 import connectToStores from 'alt-utils/lib/connectToStores';
 import {G_OAUTH_CLIENT_ID, GOOGLE_API_KEY} from 'constants/client_secrets';
 var api = require('utils/api');
-// import gapi from 'gapi-client';
+var toastr = require('toastr');
 
 @connectToStores
 export default class Private extends React.Component {
@@ -49,6 +49,9 @@ export default class Private extends React.Component {
     }).then(() => {
       gapi.auth2.getAuthInstance().isSignedIn.listen(this.signinChanged.bind(this));
       gapi.auth2.getAuthInstance().currentUser.listen(this.userChanged.bind(this));
+    }, (err) => {
+      console.log(err);
+      toastr.error("Failed to initialize Google Client -- Check that 'block third-party cookies and site data' is not enabled.")
     })
   }
 
@@ -147,9 +150,10 @@ export default class Private extends React.Component {
         <div id="container" className="container">
 
           <div className="app-content row">
-            { React.cloneElement(this.props.children, { user: user }) }
+            { React.cloneElement(this.props.children, { user: user, signing_in: this.state.signing_in }) }
           </div>
         </div>
+
       </div>
     )
   }

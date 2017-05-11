@@ -92,7 +92,7 @@ export default class About extends React.Component {
                             </div>
                             <div className="col-sm-6">
                                 <h3>Flow is Open Source</h3>
-                                <p className="lead" style={{fontSize: "1.45em"}}>Spin up your own instance, or contribute.</p>
+                                <p className="lead" style={{fontSize: "1.45em"}}>Spin up your own instance, or contribute. Also see the <a href="http://docs.flowdash.apiary.io/" target="_blank">API documentation</a>.</p>
                                 <a href="https://github.com/onejgordon/flow-dashboard" target="_blank"><RaisedButton label="Source on Github" /></a>
                             </div>
                         </div>

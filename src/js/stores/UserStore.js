@@ -12,6 +12,7 @@ class UserStore {
         this.exportPublicMethods({
             get_user: this.get_user,
             admin: this.admin,
+            plugin_enabled: this.plugin_enabled,
             request_scopes: this.request_scopes
         });
     }
@@ -83,7 +84,7 @@ class UserStore {
         }
     }
 
-    // Automatic
+    // Public
 
     get_user(uid) {
         var u = this.getState().users[uid];

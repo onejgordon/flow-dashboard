@@ -2,11 +2,13 @@ var React = require('react');
 var AppConstants = require('constants/AppConstants');
 import {Link} from 'react-router';
 import GoogleLogin from 'react-google-login';
-import {RaisedButton} from 'material-ui';
+import {RaisedButton, Snackbar} from 'material-ui';
 var client_secrets = require('constants/client_secrets');
 
 export default class Splash extends React.Component {
-    static defaultProps = {}
+    static defaultProps = {
+        signing_in: false
+    }
     constructor(props) {
         super(props);
         this.state = {
@@ -22,7 +24,8 @@ export default class Splash extends React.Component {
 
     render() {
         let SITENAME = AppConstants.SITENAME;
-        let {user} = this.props;
+        let {user, signing_in} = this.props;
+        let snack_message = "Signing you in...";
         let cta = user ? `Welcome back to ${SITENAME}` : `Welcome to ${SITENAME}`;
         return (
             <div>
@@ -45,6 +48,10 @@ export default class Splash extends React.Component {
                             scope="profile email"
                             onSuccess={this.success.bind(this)}
                             onFailure={this.fail.bind(this)} />
+
+                    <Snackbar message={snack_message}
+                        open={signing_in}
+                        autoHideDuration={4000} />
 
                     </div>
 
