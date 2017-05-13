@@ -1056,6 +1056,7 @@ class TrackingDay(UserAccessible):
             self.data = json.dumps(params.get('data'))
 
     def set_properties(self, property_dict):
+        '''Merge properties with existing, if set'''
         data = tools.getJson(self.data, default={})
         data.update(property_dict)
         self.data = json.dumps(data)

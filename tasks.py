@@ -36,33 +36,36 @@ class SyncReadables(handlers.BaseRequestHandler):
 
 
 class SyncGithub(handlers.BaseRequestHandler):
+    GH_COMMIT_OVERLAP = 3  # Days back to capture late-pushed commits
+
     def get(self):
         from services.github import GithubClient
-        date = self.request.get('date')
-        if date:
-            date = tools.fromISODate(date).date()
+        last_date = self.request.get('date')
+        if last_date:
+            last_date = tools.fromISODate(last_date)
         else:
-            date = (datetime.today() - timedelta(days=1)).date()
+            last_date = (datetime.today() - timedelta(days=1))
         users = User.SyncActive('github')
         res = {}
         td_put = []
         for user in users:
             gh_client = GithubClient(user)
-            logging.debug("Running SyncGithub cron for %s on %s..." % (user, date))
             if gh_client._can_run():
-                commits = gh_client.get_contributions_on_day(date)
-                if commits is not None:
-                    td = TrackingDay.Create(user, date)
-                    td.set_properties({
-                        'commits': commits
-                    })
-                    td_put.append(td)
-                    res = td.json()
+                date_range = [(last_date - timedelta(days=x)).date() for x in range(self.GH_COMMIT_OVERLAP)]
+                logging.debug("Running SyncGithub cron for %s on %s..." % (user, date_range))
+                commits_dict = gh_client.get_contributions_on_date_range(date_range)
+                if commits_dict is not None:
+                    for date, n_commits in commits_dict.items():
+                        td = TrackingDay.Create(user, date)
+                        td.set_properties({
+                            'commits': n_commits
+                        })
+                        td_put.append(td)
             else:
                 logging.debug("Github updater can't run")
         if td_put:
             ndb.put_multi(td_put)
-        self.json_out(res, debug=True)
+        self.json_out(res)
 
 
 class SyncFromGoogleFit(handlers.BaseRequestHandler):
