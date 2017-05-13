@@ -103,9 +103,9 @@ export default class Private extends React.Component {
     if (user) {
       menu = menu.concat([
         <MenuItem key="dash" onClick={this.goto_page.bind(this, "/app/dashboard")} leftIcon={<FontIcon className="material-icons">dashboard</FontIcon>}>Dashboard</MenuItem>,
+        <MenuItem key="mng" onClick={this.goto_page.bind(this, "/app/manage")} leftIcon={<FontIcon className="material-icons">settings</FontIcon>}>Settings</MenuItem>,
         <MenuItem key="time" onClick={this.goto_page.bind(this, "/app/timeline")} leftIcon={<FontIcon className="material-icons">timeline</FontIcon>}>Timeline</MenuItem>,
         <MenuItem key="ana" onClick={this.goto_page.bind(this, "/app/analysis")} leftIcon={<FontIcon className="material-icons">bubble_chart</FontIcon>}>Analysis</MenuItem>,
-        <MenuItem key="mng" onClick={this.goto_page.bind(this, "/app/manage")} leftIcon={<FontIcon className="material-icons">settings</FontIcon>}>Manage</MenuItem>,
         <MenuItem key="int" onClick={this.goto_page.bind(this, "/app/integrations")} leftIcon={<FontIcon className="material-icons">share</FontIcon>}>Integrations</MenuItem>,
         <MenuItem key="read" onClick={this.goto_page.bind(this, "/app/reading")} leftIcon={<FontIcon className="material-icons">book</FontIcon>}>Reading</MenuItem>,
         <MenuItem key="rep" onClick={this.goto_page.bind(this, "/app/exports")} leftIcon={<FontIcon className="material-icons">file_download</FontIcon>}>Exports</MenuItem>,

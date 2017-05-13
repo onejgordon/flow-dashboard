@@ -510,6 +510,8 @@ class ConversationAgent(object):
                 (r'(?:how do|tell me about|more info|learn about|help on|help with|what are) (?:journals|journaling|daily journals)', 'input.help_journals'),
                 (r'(?:how do|tell me about|more info|learn about|help on|help with) (?:goals|monthly goals|goal tracking)', 'input.help_goals'),
                 (r'(?:mark|set) [HABIT_OR_TASK_PATTERN] as (?:done|complete|finished)', 'input.habit_or_task_report'),
+                (r'(?:mark|set) [HABIT_OR_TASK_PATTERN] (?:done|complete|finished)', 'input.habit_or_task_report'),
+                (r'(?:habit|task)(?: done| complete| finished):? [HABIT_OR_TASK_PATTERN]', 'input.habit_or_task_report'),
                 (r'(?:i finished|just finished|completed|task done|habit done) [HABIT_OR_TASK_PATTERN]', 'input.habit_or_task_report'),
                 (r'(?:add habit|new habit|create habit)[:-]? [HABIT_PATTERN]', 'input.habit_add'),
                 (r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)', 'input.habit_commit'),

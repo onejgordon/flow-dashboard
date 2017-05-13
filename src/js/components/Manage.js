@@ -386,7 +386,7 @@ export default class Manage extends React.Component {
         return (
             <div>
 
-                <h2>Manage</h2>
+                <h2>Settings</h2>
 
                 <ul className="nav nav-pills">
                     { _tabs }

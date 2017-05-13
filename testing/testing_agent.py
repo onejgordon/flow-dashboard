@@ -105,10 +105,13 @@ class AgentTestCase(BaseTestCase):
 
             # Habit reports
             ('mark run as complete', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
+            ('mark run complete', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
             ('mark run as done', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
             ('mark meditate as finished', 'input.habit_or_task_report', {'habit_or_task': 'meditate'}),
             ('i finished meditate', 'input.habit_or_task_report', {'habit_or_task': 'meditate'}),
             ('set run as complete', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
+            ('habit complete: run', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
+            ('habit done run', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
 
             # Habit commitments
             ('i will run tonight', 'input.habit_commit', {'habit': 'run'}),
@@ -134,6 +137,7 @@ class AgentTestCase(BaseTestCase):
             # Task reports
             ('mark go to the pool as done', 'input.habit_or_task_report', {'habit_or_task': 'go to the pool'}),
             ('i completed feed the cat', 'input.habit_or_task_report', {'habit_or_task': 'feed the cat'}),
+            ('task done feed the cat', 'input.habit_or_task_report', {'habit_or_task': 'feed the cat'}),
 
             # Help
             ('what can i do', 'input.help', None),
