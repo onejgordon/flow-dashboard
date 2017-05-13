@@ -104,9 +104,13 @@ export default class Reports extends React.Component {
 
                 <h1>Exports</h1>
 
-                <FetchedList ref="list" url="/api/report" listStyle="mui" listProp="reports" renderItem={this.render_report.bind(this)} autofetch={true}/>
+                <p className="lead">Flow stores exports for 30 days, but they can be re-generated at any time.</p>
 
-                <h2>Export Data</h2>
+                <Paper>
+                    <FetchedList ref="list" url="/api/report" listStyle="mui" listProp="reports" renderItem={this.render_report.bind(this)} autofetch={true}/>
+                </Paper>
+
+                <h2>Generate Export</h2>
 
                 <Tabs>
 

@@ -126,7 +126,7 @@ export default class MiniJournalWidget extends React.Component {
           if(failure.message.indexOf("Only secure origins are allowed") == 0) {
             // Secure Origin issue
             toastr.error(`Geolocation disabled? Try secure domain: ${AppConstants.SECURE_BASE}.`);
-          }
+          } else console.error(failure);
         });
       } else toastr.error(`Browser doesn't support geolocation`);
     }

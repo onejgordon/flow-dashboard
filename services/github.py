@@ -46,15 +46,18 @@ class GithubClient(object):
             logging.debug(response.content)
         return (response, None)
 
-    def get_contributions_on_day(self, date):
+    def get_contributions_on_date_range(self, date_range):
         '''
         Currently scraping Github public overview page (no API yet)
         '''
-        iso_date = tools.iso_date(date)
         response = urlfetch.fetch("https://github.com/%s?tab=overview" % self.github_username, deadline=30)
         if response.status_code == 200:
             bs = BeautifulSoup(response.content, "html.parser")
-            commits_on_day = bs.find('rect', {'data-date': iso_date}).get('data-count', 0)
-            return commits_on_day
+            commits_dict = {}
+            for date in date_range:
+                iso_date = tools.iso_date(date)
+                commits_on_day = bs.find('rect', {'data-date': iso_date}).get('data-count', 0)
+                commits_dict[date] = commits_on_day
+            return commits_dict
         else:
             logging.error("Error getting contributions")
