@@ -53,7 +53,6 @@ export default class ReactJSONEditor extends React.Component {
       raw = form.raw;
       form = JSON5.parse(raw);
     }
-    console.log(changeCallbackType)
     if (changeCallbackType == 'json') this.props.onChange(editing_index, form);
     else if (changeCallbackType == 'full_string') this.props.onChange(raw);
     this.close_editor();
