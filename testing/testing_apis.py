@@ -5,7 +5,7 @@ from datetime import datetime
 from base_test_case import BaseTestCase
 from models import Goal
 from flow import app as tst_app
-from constants import USER
+from constants import USER, TASK
 from models import Habit, Task, Project, Event, Readable, Quote, Snapshot
 from services.agent import ConversationAgent
 import json
@@ -98,9 +98,21 @@ class APITestCase(BaseTestCase):
         self.assertEqual(h.get('title'), "Dont forget the milk")
 
         # Update
-        response = self.post_json("/api/task", {'id': h.get('id'), 'title': 'Dont forget the sugar'}, headers=self.api_headers)
+        response = self.post_json("/api/task", {'id': h.get('id'), 'title': 'Dont forget the sugar', 'status': TASK.DONE}, headers=self.api_headers)
         task = response.get('task')
+        task_id = task.get('id')
         self.assertEqual(task.get('title'), 'Dont forget the sugar')
+        self.assertEqual(task.get('status'), TASK.DONE)
+
+        # Archive complete
+        response = self.post_json("/api/task/action", {'action': 'archive_complete'}, headers=self.api_headers)
+        task = self.u.get(Task, id=task_id)
+        self.assertTrue(task.archived)
+
+        # Delete
+        response = self.post_json("/api/task/delete", {'id': h.get('id')}, headers=self.api_headers)
+        task = self.u.get(Task, id=task.key.id())
+        self.assertIsNone(task)  # Confirm deletion
 
     def test_project_calls(self):
         p = Project.Create(self.u)

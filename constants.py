@@ -180,8 +180,6 @@ class REPORT():
     # Ftypes
     CSV = 1
 
-    XLS_ROW_LIMIT = 65000
-
     TYPE_LABELS = {
         HABIT_REPORT: "Habit Report",
         TASK_REPORT: "Task Report",

@@ -677,7 +677,7 @@ class JournalAPI(handlers.JsonRequestHandler):
             json=['data'],
             lists=['tags']
         )
-        logging.debug(params)
+        jrnl = None
         if params.get('data'):
             if not params.get('tags'):
                 params['tags'] = []
@@ -696,7 +696,8 @@ class JournalAPI(handlers.JsonRequestHandler):
                 ndb.put_multi(tasks)
             self.success = True
             self.message = "Journal submitted!"
-
+        else:
+            self.message = "Malformed request - data param required"
         self.set_response({
             'journal': jrnl.json() if jrnl else None
         })
