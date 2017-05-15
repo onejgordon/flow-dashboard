@@ -73,6 +73,8 @@ export default class AnalysisGoals extends React.Component {
 
                 <h4>Goal Assessments ({today.getFullYear()})</h4>
 
+                <p className="lead">Goal assessments (self-assessments of performance towards stated goals on a 1-5 scale) are submitted at the end of each month, from the goals widget on the dashboard.</p>
+
                 { content }
 
             </div>
