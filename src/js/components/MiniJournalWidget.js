@@ -52,11 +52,9 @@ export default class MiniJournalWidget extends React.Component {
   }
 
   componentDidMount() {
-    let {tags_loading, tags_loaded} = this.state;
     if (this.in_journal_window()) {
       this.check_if_not_submitted();
     }
-    if (!tags_loading && !tags_loaded) this.fetch_tags();
     this.notify_checker_id = setInterval(() => {
       this.notify_check();
     }, this.NOTIFY_CHECK_MINS*60*1000);
