@@ -126,11 +126,6 @@ class GCSReportWorker(object):
                         continue
                     if self.report.ftype == REPORT.CSV:
                         csv.writer(self.gcs_file).writerow(tools.normalize_list_to_ascii(ed))
-                    elif self.report.ftype == REPORT.XLS:
-                        self.gcs_file.write(json.dumps(ed)+"\n")
-                        if total_i > REPORT.XLS_ROW_LIMIT:
-                            self.setProgress({'error': "XLS row limit (%d) exceeded!" % REPORT.XLS_ROW_LIMIT, 'status': REPORT.ERROR})
-                            return
                     self.gcs_file.flush()
 
                     total_i += 1

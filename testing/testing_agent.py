@@ -4,11 +4,12 @@
 from datetime import datetime, timedelta
 from base_test_case import BaseTestCase
 from models import JournalTag, Goal, MiniJournal
-from constants import JOURNAL
+from constants import JOURNAL, HABIT, JOURNAL, TASK, GOAL
 from flow import app as tst_app
 from services.agent import ConversationAgent
 from models import Habit, Task
 import tools
+
 
 class AgentTestCase(BaseTestCase):
 
@@ -86,6 +87,22 @@ class AgentTestCase(BaseTestCase):
         speech, data, end_convo = self.ca.respond_to_action('input.status_request')
         self.assertEqual("To get started with Flow, please link your account with Flow", speech)
 
+    def test_help(self):
+        speech, data, end_convo = self.ca.respond_to_action('input.help')
+        self.assertEqual("With the Flow agent, you can track top tasks each day, habits to build, and monthly and annual goals. You can also submit daily journals at the end of each day to track anything you want. I'm still in beta, so please visit http://flowdash.co to get set up and see everything you can do.", speech)
+
+        speech, data, end_convo = self.ca.respond_to_action('input.help_habits')
+        self.assertTrue(HABIT.HELP in speech)
+
+        speech, data, end_convo = self.ca.respond_to_action('input.help_journals')
+        self.assertTrue(JOURNAL.HELP in speech)
+
+        speech, data, end_convo = self.ca.respond_to_action('input.help_tasks')
+        self.assertTrue(TASK.HELP in speech)
+
+        speech, data, end_convo = self.ca.respond_to_action('input.help_goals')
+        self.assertTrue(GOAL.HELP in speech)
+
     def test_parsing(self):
         volley = [
             # Hello
@@ -105,10 +122,13 @@ class AgentTestCase(BaseTestCase):
 
             # Habit reports
             ('mark run as complete', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
+            ('mark run complete', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
             ('mark run as done', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
             ('mark meditate as finished', 'input.habit_or_task_report', {'habit_or_task': 'meditate'}),
             ('i finished meditate', 'input.habit_or_task_report', {'habit_or_task': 'meditate'}),
             ('set run as complete', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
+            ('habit complete: run', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
+            ('habit done run', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
 
             # Habit commitments
             ('i will run tonight', 'input.habit_commit', {'habit': 'run'}),
@@ -134,6 +154,7 @@ class AgentTestCase(BaseTestCase):
             # Task reports
             ('mark go to the pool as done', 'input.habit_or_task_report', {'habit_or_task': 'go to the pool'}),
             ('i completed feed the cat', 'input.habit_or_task_report', {'habit_or_task': 'feed the cat'}),
+            ('task done feed the cat', 'input.habit_or_task_report', {'habit_or_task': 'feed the cat'}),
 
             # Help
             ('what can i do', 'input.help', None),

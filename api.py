@@ -397,15 +397,18 @@ class EventAPI(handlers.JsonRequestHandler):
             self.message = "Malformed JSON"
             events = []
         dbp = []
-        for e in events:
-            if 'date_start' in e and isinstance(e['date_start'], basestring):
-                e['date_start'] = tools.fromISODate(e['date_start'])
-            if 'date_end' in e and isinstance(e['date_end'], basestring):
-                e['date_end'] = tools.fromISODate(e['date_end']) if e.get('date_end') else e.get('date_start')
-            if not e.get('date_end'):
-                e['date_end'] = e.get('date_start')
-            e = Event.Create(self.user, **e)
-            dbp.append(e)
+        if isinstance(events, list):
+            for e in events:
+                if 'date_start' in e and isinstance(e['date_start'], basestring):
+                    e['date_start'] = tools.fromISODate(e['date_start'])
+                if 'date_end' in e and isinstance(e['date_end'], basestring):
+                    e['date_end'] = tools.fromISODate(e['date_end']) if e.get('date_end') else e.get('date_start')
+                if not e.get('date_end'):
+                    e['date_end'] = e.get('date_start')
+                e = Event.Create(self.user, **e)
+                dbp.append(e)
+        else:
+            self.message = "Malformed, `events` must be an array"
         if dbp:
             ndb.put_multi(dbp)
             self.success = True
@@ -663,6 +666,29 @@ class JournalAPI(handlers.JsonRequestHandler):
         }, success=True)
 
     @authorized.role('user')
+    def update(self, d):
+        '''
+        '''
+        id = self.request.get('id')
+        params = tools.gets(self,
+            strings=['tags_from_text'],
+            json=['data']
+        )
+        jrnl = None
+        if id:
+            jrnl = MiniJournal.get_by_id(id, parent=self.user.key)
+            jrnl.Update(**params)
+            jrnl.parse_tags()
+            jrnl.put()
+            self.success = True
+            self.message = "Journal updated"
+        else:
+            self.message = "Malformed request - id required"
+        self.set_response({
+            'journal': jrnl.json() if jrnl else None
+        })
+
+    @authorized.role('user')
     def submit(self, d):
         '''
         Submit today's journal (yesterday if 00:00 - 04:00)
@@ -677,7 +703,7 @@ class JournalAPI(handlers.JsonRequestHandler):
             json=['data'],
             lists=['tags']
         )
-        logging.debug(params)
+        jrnl = None
         if params.get('data'):
             if not params.get('tags'):
                 params['tags'] = []
@@ -696,7 +722,8 @@ class JournalAPI(handlers.JsonRequestHandler):
                 ndb.put_multi(tasks)
             self.success = True
             self.message = "Journal submitted!"
-
+        else:
+            self.message = "Malformed request - data param required"
         self.set_response({
             'journal': jrnl.json() if jrnl else None
         })

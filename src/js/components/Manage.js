@@ -121,34 +121,10 @@ export default class Manage extends React.Component {
                 ],
                 'fetch_params': {},
                 'unique_key': 'id',
-                'disableDelete': true,
+                'disableDelete': false,
                 'max': 50,
                 getListFromJSON: function(data) { return data.habits; },
                 getObjectFromJSON: function(data) { return data.habit; }
-            }
-        } else if (tab == "goals") {
-
-            props = {
-                'url': "/api/goal",
-                'id': 'sa',
-                'entity_name': "Goals",
-                'attributes': [
-                    { name: 'id', label: "ID", editable: true, fixed: true },
-                    { name: 'text1', label: "Goal 1", editable: true, showInList: true },
-                    { name: 'text2', label: "Goal 2", editable: true, showInList: false },
-                    { name: 'text3', label: "Goal 3", editable: true, showInList: false },
-                    { name: 'text4', label: "Goal 4", editable: true, showInList: false },
-                    { name: 'assessment', label: "Assessment (1-5)", editable: true, showInList: false }
-                ],
-                'fetch_params': {},
-                'unique_key': 'id',
-                'max': 50,
-                getListFromJSON: function(data) {
-                    return data.goals.map((g) => {
-                        return util.spread_array(g, 'text', 'text', 4);
-                    });
-                },
-                getObjectFromJSON: function(data) { return util.spread_array(data.goal, 'text', 'text', 4); }
             }
         } else if (tab == "events") {
 
@@ -386,7 +362,7 @@ export default class Manage extends React.Component {
         return (
             <div>
 
-                <h2>Manage</h2>
+                <h2>Settings</h2>
 
                 <ul className="nav nav-pills">
                     { _tabs }
