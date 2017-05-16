@@ -220,15 +220,27 @@ class APITestCase(BaseTestCase):
         self.assertEqual(len(quotes), 1)
 
     def test_journal_calls(self):
-        # Create
+        # Create / Submit
         params = {
             'data': json.dumps({
                 'metric1': 10
             })
         }
+        response = self.post_json("/api/journal/submit", params, headers=self.api_headers)
+        jrnl = response.get('journal')
+        self.assertIsNotNone(jrnl)
+
+        # Update
+        params = {
+            'id': jrnl.get('id'),
+            'data': json.dumps({
+                'metric1': 20
+            })
+        }
         response = self.post_json("/api/journal", params, headers=self.api_headers)
         jrnl = response.get('journal')
         self.assertIsNotNone(jrnl)
+        self.assertEqual(jrnl.get('data').get('metric1'), 20)
 
         # Today
         response = self.get_json("/api/journal/today", {}, headers=self.api_headers)

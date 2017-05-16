@@ -1,6 +1,5 @@
 var React = require('react');
-import {Paper, TextField,
-  RaisedButton, FlatButton} from 'material-ui';
+import {Paper, IconMenu, IconButton, MenuItem, FontIcon} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 var ProgressLine = require('components/common/ProgressLine');
 
@@ -9,10 +8,12 @@ var ProgressLine = require('components/common/ProgressLine');
 export default class JournalLI extends React.Component {
   static propTypes = {
     journal: React.PropTypes.object,
-    questions: []
+    questions: React.PropTypes.array,
+    onEditClick: React.PropTypes.func
   }
 
   static defaultProps = {
+    questions: [],
     journal: null,
   }
 
@@ -21,10 +22,14 @@ export default class JournalLI extends React.Component {
     this.state = {}
   }
 
+  handle_edit_click() {
+    this.props.onEditClick();
+  }
+
   render() {
     let {journal, questions} = this.props;
     let data = journal.data;
-    let responses = questions.map((q) => {
+    let responses = questions.map((q, i) => {
       let q_response = data[q.name];
       let q_response_rendered = "N/A";
       let rt = q.response_type;
@@ -33,7 +38,7 @@ export default class JournalLI extends React.Component {
         else if (rt == 'number' || rt == 'slider') q_response_rendered = <ProgressLine value={parseFloat(q_response)} total={10} />
       }
       return (
-        <div className="col-sm-4">
+        <div className="col-sm-4" key={i}>
           <label>{ q.text }</label>
           {q_response_rendered}
         </div>
@@ -41,7 +46,12 @@ export default class JournalLI extends React.Component {
     });
     return (
       <Paper style={{padding: "10px", marginTop: "8px"}}>
-        <h3 style={{paddingTop: "0px", marginTop: "0px"}}>{ journal.iso_date }</h3>
+
+        <h3 style={{paddingTop: "0px", marginTop: "0px", display: 'inline-block'}}>{ journal.iso_date }</h3>
+        <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
+          <MenuItem key="edit" primaryText="Edit" onClick={this.handle_edit_click.bind(this)} leftIcon={<FontIcon className="material-icons">edit</FontIcon>} />
+        </IconMenu>
+
         <div className="row">
           { responses }
         </div>

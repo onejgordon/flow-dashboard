@@ -208,9 +208,9 @@ export default class ReactJSONEditor extends React.Component {
     let {array, editButtonLabel, addButtonLabel, enableRawJSONEditing} = this.props;
     let buttons = [];
     if (array) {
-      buttons.push(<FlatButton key="add" label={addButtonLabel} onClick={this.new_item.bind(this)} />);
+      buttons.push(<RaisedButton primary={true} key="add" label={addButtonLabel} onClick={this.new_item.bind(this)} />);
     } else {
-      buttons.push(<FlatButton key="edit" label={editButtonLabel} onClick={this.open_editor.bind(this, null)} />);
+      buttons.push(<RaisedButton primary={true}  key="edit" label={editButtonLabel} onClick={this.open_editor.bind(this, null)} />);
     }
     if (enableRawJSONEditing) buttons.push(<FlatButton key="raw" icon={<FontIcon className="material-icons">code</FontIcon>} label="Edit Raw JSON" onClick={this.open_raw_editor.bind(this)} />);
     return <div>{buttons}</div>;

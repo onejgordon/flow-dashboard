@@ -3,12 +3,14 @@ import {Link} from 'react-router';
 var AppConstants = require('constants/AppConstants');
 import { Dialog, TextField, Slider,
   FlatButton, RaisedButton, IconButton, List,
-  ListItem, Paper, DropDownMenu,
+  DropDownMenu,
   MenuItem } from 'material-ui';
 var util = require('utils/util');
 import {changeHandler} from 'utils/component-utils';
+var JournalEditor = require('components/JournalEditor');
 var api = require('utils/api');
 var toastr = require('toastr');
+import {clone, merge} from 'lodash';
 
 @changeHandler
 export default class MiniJournalWidget extends React.Component {
@@ -38,10 +40,6 @@ export default class MiniJournalWidget extends React.Component {
         open: false,
         all_activities: [],
         selected_activities: [],
-        // Tags
-        tags: [],
-        tags_loading: false,
-        tags_loaded: false,
         historical: false,
         historical_date: null,
         historical_incomplete_dates: [],
@@ -66,6 +64,10 @@ export default class MiniJournalWidget extends React.Component {
 
   componentWillUnmount() {
     if (this.notify_checker_id) clearInterval(this.notify_checker_id);
+  }
+
+  journal_form_change(form_data) {
+    this.setState({form: form_data});
   }
 
   notify_check() {
@@ -134,7 +136,6 @@ export default class MiniJournalWidget extends React.Component {
   }
 
   got_location(position) {
-    console.log(position);
     let lat = position.coords.latitude;
     let lon = position.coords.longitude;
     let pos = {lat: lat, lon: lon};
@@ -142,98 +143,26 @@ export default class MiniJournalWidget extends React.Component {
   }
 
   submit() {
-    let {questions} = this.props;
-    let {form, position, tasks, historical, historical_date} = this.state;
-    let form_data = JSON.stringify(form);
-    let params = {};
-    params.data = form_data;
+    let {position, tasks, historical, historical_date} = this.state;
+    let _form = this.state.form;
+    let form = clone(_form);
+    let params = this.refs.je.get_params();
+    merge(params, form);
     if (position) {
       params.lat = position.lat;
       params.lon = position.lon;
     }
     if (historical && historical_date != null) params.date = historical_date;
-    questions.forEach((q) => {
-      if (q.parse_tags) params.tags_from_text = form[q.name];
-    });
     if (tasks) {
       params.tasks = JSON.stringify(tasks)
     }
-    api.post("/api/journal", params, (res) => {
+    api.post("/api/journal/submit", params, (res) => {
       this.setState({submitted: true, open: false})
     });
   }
 
   dismiss() {
     this.setState({open: false});
-  }
-
-  fetch_tags() {
-    api.get("/api/journaltag", {}, (res) => {
-      this.setState({tags: res.tags});
-    })
-  }
-
-  handle_tag_add(tag, qname) {
-    let {form} = this.state;
-    let val = form[qname];
-    let idx = val.lastIndexOf(tag.type == 1 ? '@' : '#');
-    if (idx > -1) {
-      form[qname] = form[qname].slice(0, idx) + tag.id + ' ';
-    }
-    this.setState({form}, () => {
-      this.refs[qname].focus();
-    });
-  }
-
-  filtered_tags(search) {
-    let {tags} = this.state;
-    let person = search.startsWith('@');
-    let stripped = search.slice(1); // Without prefix
-    let type = person ? 1 : 2;
-    return tags.filter((tag) => {
-      return tag.name.toLowerCase().indexOf(stripped.toLowerCase()) > -1 && tag.type == type;
-    });
-  }
-
-  render_tag_suggest(str, qname) {
-    let {tags_loading} = this.state;
-    let entering_tag = false;
-    let _content, _selector;
-    let last_space = str.lastIndexOf(' ');
-    let last_word = "";
-    if (last_space > -1) {
-      last_word = str.slice(last_space + 1);
-    } else {
-      last_word = str;
-    }
-    if (last_word.startsWith('#') || last_word.startsWith('@')) {
-      entering_tag = true;
-    }
-    if (entering_tag) {
-      if (tags_loading) _content = "Loading";
-      else {
-        let lis = this.filtered_tags(last_word).map((tag) => {
-          return <ListItem primaryText={tag.name} onClick={this.handle_tag_add.bind(this, tag, qname)} />
-        })
-        if (lis.length == 0) _content = <div className="empty">No suggestions</div>
-        else _content = (
-          <List>
-            { lis }
-          </List>
-        );
-      }
-      _selector = (
-        <Paper style={{maxHeight: "400px"}}>
-          { _content }
-        </Paper>
-      );
-
-    }
-    return (
-      <div>
-        { _selector }
-      </div>
-    );
   }
 
   render_location() {
@@ -252,7 +181,7 @@ export default class MiniJournalWidget extends React.Component {
   }
 
   toggle_historical() {
-    let N_DAYS = 4;
+    let N_DAYS = 7;
     let {historical_incomplete_dates} = this.state;
     let setting_historical = !this.state.historical;
     this.setState({historical: !this.state.historical}, () => {
@@ -266,7 +195,6 @@ export default class MiniJournalWidget extends React.Component {
           }
           if (res.journals) {
             res.journals.forEach((jrnl) => {
-              let iso_date = jrnl.iso_date;
               let idx = possible_dates.indexOf(jrnl.iso_date);
               if (idx > -1) possible_dates.splice(idx, 1);
             });
@@ -308,31 +236,6 @@ export default class MiniJournalWidget extends React.Component {
       )
   }
 
-  render_questions() {
-    let {questions} = this.props;
-    let {form} = this.state;
-    return questions.map((q, i) => {
-      let _response;
-      let _tags;
-      let _hint;
-      let val = form[q.name];
-      if (q.parse_tags) {
-        _tags = this.render_tag_suggest(val || "", q.name);
-        _hint = <small>You can @mention and #activity tag</small>
-      }
-      if (!q.response_type || q.response_type == 'text') _response = <TextField name={q.name} ref={q.name} value={val} onChange={this.changeHandler.bind(this, 'form', q.name)} fullWidth={true} />
-      else if (q.response_type == 'slider' || q.response_type == 'number') _response = <Slider name={q.name} value={val} onChange={this.changeHandlerSlider.bind(this, 'form', q.name)} max={10} min={1} defaultValue={5} step={1} />
-      return (
-        <div key={i}>
-          <p className="lead">{ q.text }</p>
-          { _hint }
-          { _response }
-          { _tags }
-        </div>
-      )
-    });
-  }
-
   render_tasks() {
     let {tomorrow_top_tasks} = this.props;
     let {form, tasks} = this.state;
@@ -360,6 +263,7 @@ export default class MiniJournalWidget extends React.Component {
 
   render() {
     let {form, open, submitted} = this.state;
+    let {questions} = this.props;
     let in_window = this.in_journal_window();
     let actions = [
       <RaisedButton label="Submit" primary={true} onClick={this.submit.bind(this)} />,
@@ -378,7 +282,9 @@ export default class MiniJournalWidget extends React.Component {
           actions={actions}>
           <div style={{padding: "10px"}}>
             { this.render_history_section() }
-            { this.render_questions() }
+
+            <JournalEditor ref="je" form={form} onChange={this.journal_form_change.bind(this)} questions={questions} />
+
             { this.render_tasks() }
             { this.render_location() }
           </div>
