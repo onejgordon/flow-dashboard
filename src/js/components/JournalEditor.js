@@ -1,8 +1,6 @@
 var React = require('react');
 import {Paper, TextField, List, ListItem, Slider} from 'material-ui';
-import {changeHandler} from 'utils/component-utils';
 var api = require('utils/api');
-import {clone} from 'lodash';
 
 export default class JournalEditor extends React.Component {
   static propTypes = {
@@ -19,10 +17,15 @@ export default class JournalEditor extends React.Component {
     super(props);
     this.state = {
       // Tags
-      tags_loading: false,
       tags: [],
+      tags_loading: false,
       tags_loaded: false,
     }
+  }
+
+  componentDidMount() {
+    let {tags_loading, tags_loaded} = this.state;
+    if (!tags_loading && !tags_loaded) this.fetch_tags();
   }
 
   changeHanderVal(key, val) {
@@ -88,7 +91,7 @@ export default class JournalEditor extends React.Component {
     } else {
       last_word = str;
     }
-    if (last_word.startsWith('#') || last_word.startsWith('@')) {
+    if ((last_word.startsWith('#') || last_word.startsWith('@')) && !last_word.endsWith('.')) {
       entering_tag = true;
     }
     if (entering_tag) {
