@@ -1,11 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf8 -*-
 
-from datetime import datetime, timedelta
 from base_test_case import BaseTestCase
-from models import Readable, Quote, User
+from models import Readable, Quote
 from flow import app as tst_app
-from mock import patch, MagicMock
+from mock import patch
 
 CRONY_TITLE = "Crony Beliefs"
 CRONY_AUTHOR = "Kevin Simler"
