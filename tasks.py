@@ -10,6 +10,9 @@ class WarmupHandler(handlers.BaseRequestHandler):
     def get(self):
         logging.info("Warmup Request")
 
+    def post(self):
+        logging.info("Warmup Request")
+
 
 class SyncReadables(handlers.BaseRequestHandler):
     def get(self):

@@ -193,7 +193,13 @@ def iso_date(date):
 
 
 def get_first_day(dt, d_years=0, d_months=0):
-    # d_years, d_months are "deltas" to apply to dt
+    '''
+    d_years, d_months are "deltas" to apply to dt
+
+    from datetime import datetime
+    >>> get_first_day(datetime(2017, 5, 17))
+    datetime.date(2017, 5, 1)
+    '''
     y, m = dt.year + d_years, dt.month + d_months
     a, m = divmod(m-1, 12)
     return date(y+a, m+1, 1)

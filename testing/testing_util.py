@@ -99,6 +99,7 @@ class UtilTestCase(BaseTestCase):
             ('‘Hello’', 'Hello'),
             (int(10), '10'),
             (False, 'False'),
+            (None, None),
             (long(20), '20'),
             (u'‘Hello’', 'Hello'),
             (u'‘Hello\nHi’', 'Hello\nHi'),
@@ -203,3 +204,21 @@ class UtilTestCase(BaseTestCase):
             arr, expected = v
             res = tools.english_list(arr, quote="'")
             self.assertEqual(res, expected)
+
+    def testSafeAddTask(self):
+        # Using warmup handler as dummy task
+        tools.safe_add_task("/_ah/warmup")
+        self.assertTasksInQueue(n=1, queue_names=['default'])
+        self.execute_tasks_until_empty()
+
+        tools.safe_add_task(
+                            [
+                                {'url': "/_ah/warmup", 'params': {'foo': 'bar'}},
+                                {'url': "/_ah/warmup", 'params': {'foo': 'baz'}}
+                            ],
+                            queue_name='report-queue')
+
+        self.assertTasksInQueue(n=2, queue_names=['report-queue'])
+        self.execute_tasks_until_empty()
+        self.assertTasksInQueue(n=0)
+
