@@ -96,6 +96,7 @@ export default class JournalHistory extends React.Component {
                     title={dialog_title}
                     open={editing_journal != null}
                     onRequestClose={this.open_editor.bind(this, null)}
+                    autoDetectWindowHeight={true} autoScrollBodyContent={true}
                     actions={journal_editor_actions}>
 
                     <JournalEditor ref="je"

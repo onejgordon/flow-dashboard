@@ -35,7 +35,7 @@ export default class JournalLI extends React.Component {
       let rt = q.response_type;
       if (q_response != null) {
         if (rt == 'text') q_response_rendered = <div style={{fontFamily: 'monospace'}}>{q_response}</div>;
-        else if (rt == 'number' || rt == 'slider') q_response_rendered = <ProgressLine value={parseFloat(q_response)} total={10} />
+        else if (rt == 'number' || rt == 'slider') q_response_rendered = <ProgressLine value={parseFloat(q_response)} total={10} min_color="#FC004E" />
       }
       return (
         <div className="col-sm-4" key={i}>

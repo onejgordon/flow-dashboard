@@ -8,6 +8,7 @@ import { FontIcon, MenuItem, RaisedButton,
 var AppConstants = require('constants/AppConstants');
 var UserActions = require('actions/UserActions');
 var UserStore = require('stores/UserStore');
+var ReactTooltip = require('react-tooltip');
 import connectToStores from 'alt-utils/lib/connectToStores';
 import {G_OAUTH_CLIENT_ID, GOOGLE_API_KEY} from 'constants/client_secrets';
 var api = require('utils/api');
@@ -153,6 +154,8 @@ export default class Private extends React.Component {
             { React.cloneElement(this.props.children, { user: user, signing_in: this.state.signing_in }) }
           </div>
         </div>
+
+        <ReactTooltip place="top" effect="solid" />
 
       </div>
     )

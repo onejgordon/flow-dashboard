@@ -174,7 +174,7 @@ export default class TaskWidget extends React.Component {
       <div className="TaskWidget" id="TaskWidget">
 
         <h3 onClick={this.fetch_recent.bind(this)}>Top Tasks for {util.printDateObj(new Date(), "UTC", {format: "dddd, MMMM DD"})} { _buttons }</h3>
-        <ProgressLine value={current_mins} total={total_mins} />
+        <ProgressLine value={current_mins} total={total_mins} tooltip={util.printTime(now)} />
         { visible_tasks.length > 0 ?
           <List>
             { visible_tasks.sort((a, b) => { return b.wip - a.wip;}).map((t) => {
@@ -192,7 +192,7 @@ export default class TaskWidget extends React.Component {
           )
         }
         <div hidden={!show_task_progressbar}>
-          <ProgressLine value={tasks_done} total={tasks_total} color={this.TASK_COLOR} />
+          <ProgressLine value={tasks_done} total={tasks_total} color={this.TASK_COLOR} tooltip="Progress on today's tasks" />
         </div>
 
         <div hidden={!new_showing}>

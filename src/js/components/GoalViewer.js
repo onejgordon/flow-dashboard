@@ -25,6 +25,7 @@ export default class GoalViewer extends React.Component {
       this.ASSESS_LABELS = ["Very Poorly", "Poorly", "OK", "Well", "Very Well"];
       this.ASSESSMENT_DAY = 26;
       this.GOAL_M_FORMAT = "YYYY-MM";
+      this.GOAL_M_LABEL_FORMAT = "MMM YYYY";
   }
 
   componentDidMount() {
@@ -59,7 +60,7 @@ export default class GoalViewer extends React.Component {
   }
 
   dismiss() {
-    this.setState({set_goal_form: null});
+    this.setState({set_goal_form: null, set_goal_label: null});
   }
 
   in_assessment_window() {
@@ -76,7 +77,7 @@ export default class GoalViewer extends React.Component {
 
   show_longterm() {
     if (this.state.longterm) this.show_goal_dialog(this.state.longterm, 'longterm');
-    else this.setState({set_goal_form: 'longterm', form: {}});
+    else this.setState({set_goal_form: 'longterm', set_goal_label: 'long term', form: {}});
   }
 
   show_goal_dialog(g, type) {
@@ -85,13 +86,18 @@ export default class GoalViewer extends React.Component {
       if (g) {
         form = util.spread_array(g, 'text', 'text', 4);
       }
-      let id;
+      let id, label;
       if (type == 'annual') id = today.getFullYear();
-      else if (type == 'monthly') id = util.printDate(today.getTime(), this.GOAL_M_FORMAT);
+      else if (type == 'monthly') {
+        let time = today.getTime();
+        id = util.printDate(time, this.GOAL_M_FORMAT);
+        label = util.printDate(time, this.GOAL_M_LABEL_FORMAT);
+      }
       else if (type == 'longterm') id = 'longterm';
       let st = {
         form: form,
-        set_goal_form: id
+        set_goal_form: id,
+        set_goal_label: label == null ? id : label
       };
       this.setState(st);
   }
@@ -101,7 +107,10 @@ export default class GoalViewer extends React.Component {
     if (set_goal_form) {
       let _inputs = [1,2,3,4].map((idx) => {
         let key = 'text' + (idx);
-        return <TextField key={key} name={key} placeholder={`Goal ${idx}`} value={form[key] || ''} onChange={this.changeHandler.bind(this, 'form', key)} fullWidth />
+        return <TextField key={key} name={key}
+                          placeholder={`Goal ${idx}`} value={form[key] || ''}
+                          onChange={this.changeHandler.bind(this, 'form', key)}
+                          fullWidth autoFocus={idx == 1} />
       });
       return (
         <div>
@@ -162,9 +171,9 @@ export default class GoalViewer extends React.Component {
   }
 
   render() {
-    let {annual, monthly, set_goal_form} = this.state;
+    let {annual, monthly, set_goal_form, set_goal_label} = this.state;
     let goal_label;
-    if (set_goal_form) goal_label = util.capitalize(set_goal_form.toString());
+    if (set_goal_label) goal_label = set_goal_label;
     let _goals = (
       <div className="row">
         { this.render_goal(monthly, 'monthly') }
@@ -188,7 +197,7 @@ export default class GoalViewer extends React.Component {
 
         { _goals }
 
-        <Dialog open={set_goal_form != null} title={`Set goals for ${goal_label}`} actions={actions} onRequestClose={this.dismiss.bind(this)}>
+        <Dialog open={set_goal_form != null} title={`Set ${goal_label} goals`} actions={actions} onRequestClose={this.dismiss.bind(this)}>
           { this.render_set_goal_form() }
         </Dialog>
       </div>
