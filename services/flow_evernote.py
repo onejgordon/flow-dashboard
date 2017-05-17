@@ -94,6 +94,7 @@ def get_note(user, note_id):
             logging.debug(note)
             content = extract_clipping_content(note.content)
             title = note.title
+            uid = note.guid
             for sw in STRIP_WORDS:
                 if sw in title:
                     title = title.replace(sw, '')
@@ -105,7 +106,7 @@ def get_note(user, note_id):
             logging.debug("Note not found")
     else:
         logging.warning("Access token not available")
-    return (title, content, url)
+    return (uid, title, content, url)
 
 if __name__ == "__main__":
     pass
