@@ -61,7 +61,7 @@ var util = {
         if (value < min) value = min;
         if (value > max) value = max;
         var ratio = 0.0;
-        if (min!=null && max!=null && value!=null) {
+        if (opts.value!=null) {
             ratio = (value - min) / (max - min);
         } else if (opts.ratio) {
             ratio = opts.ratio;
@@ -141,6 +141,11 @@ var util = {
         let format = _format == null ? "YYYY-MM-DD" : _format;
         var dt = moment(parseInt(ms));
         return dt.format(format);
+    },
+
+    printTime: function(date_object) {
+        var dt = moment(date_object);
+        return dt.format("HH:mm");
     },
 
     daysInMonth: function(month,year) {

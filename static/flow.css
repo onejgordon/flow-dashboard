@@ -162,7 +162,12 @@ div.section {
   color: #F9D23D;
 }
 
-.dateProgressBar {
+.progressBarHolder {
+  display: block;
+  height: 20px;
+}
+
+.progressBar {
     display: block;
     height: 2px;
     background: #444;
@@ -170,7 +175,7 @@ div.section {
     margin: 5px 0;
 }
 
-.dateProgressBar .progress {
+.progressBar .progress {
     position: absolute;
     background: #4FECF9;
     left: 0px;
