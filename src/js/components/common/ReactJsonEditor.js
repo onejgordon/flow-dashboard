@@ -1,7 +1,7 @@
 var React = require('react');
 import { FontIcon, TextField, DropDownMenu, ListItem, List,
   MenuItem, Toggle, FlatButton, RaisedButton, Dialog,
-  IconMenu, IconButton } from 'material-ui';
+  IconMenu, IconButton, Paper } from 'material-ui';
 import {clone} from 'lodash';
 var JSON5 = require('json5');
 
@@ -17,6 +17,7 @@ export default class ReactJSONEditor extends React.Component {
     editButtonLabel: "Edit Object",
     addButtonLabel: "New Item",
     enableRawJSONEditing: true,
+    icon: null,
     changeCallbackType: "json"
   }
 
@@ -101,8 +102,10 @@ export default class ReactJSONEditor extends React.Component {
   }
 
   render_data() {
-    let {data, array, primaryProp, secondaryProp, attributes} = this.props;
+    let {data, array, primaryProp, secondaryProp, attributes, icon} = this.props;
     if (array) {
+      let _icon;
+      if (icon) _icon = <FontIcon className="material-icons">{icon}</FontIcon>
       let _items = data.map((item, i) => {
         let rightIconMenu = (
             <IconMenu iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
@@ -111,15 +114,19 @@ export default class ReactJSONEditor extends React.Component {
           );
           return <ListItem
                     key={i}
+                    leftIcon={_icon}
                     primaryText={item[primaryProp] || "New Item"}
                     secondaryText={item[secondaryProp] || "--" }
                     rightIconButton={rightIconMenu}
                     onTouchTap={this.open_editor.bind(this, i)} />
           })
+      if (_items.length == 0) _items = <div className="empty">Nothing yet.</div>
       return (
-        <List>
-          { _items }
-        </List>
+        <Paper>
+          <List>
+            { _items }
+          </List>
+        </Paper>
         );
     } else {
       // Render all props of item
@@ -127,7 +134,7 @@ export default class ReactJSONEditor extends React.Component {
         let show_value = data[att.name] == null ? att.default_value : data[att.name];
         return (
           <li key={i}>
-            <b>{att.title}:</b> { show_value.toString() }
+            <b>{att.title}:</b> <span className="label label-default">{ show_value.toString() }</span>
           </li>
           );
       });
@@ -143,7 +150,7 @@ export default class ReactJSONEditor extends React.Component {
     let {editing_index} = this.state;
      let form_value = val == null ? att.default_value : val;
     if (att.type == 'text' || att.type == 'number') {
-      return <TextField name={att.name} value={form_value} onChange={this.handleTargetChange.bind(this, att.name)} placeholder={att.title} fullWidth />
+      return <TextField type={att.type} name={att.name} value={form_value} onChange={this.handleTargetChange.bind(this, att.name)} placeholder={att.title} fullWidth />
     } else if (att.type == 'checkbox') {
       return <Toggle name={att.name} toggled={form_value} onToggle={this.handleToggleChange.bind(this, att.name)} label={att.title} labelPosition="right" />
     } else if (att.type == 'dropdown') {
@@ -208,9 +215,9 @@ export default class ReactJSONEditor extends React.Component {
     let {array, editButtonLabel, addButtonLabel, enableRawJSONEditing} = this.props;
     let buttons = [];
     if (array) {
-      buttons.push(<RaisedButton primary={true} key="add" label={addButtonLabel} onClick={this.new_item.bind(this)} />);
+      buttons.push(<FlatButton primary={true} key="add" label={addButtonLabel} onClick={this.new_item.bind(this)} />);
     } else {
-      buttons.push(<RaisedButton primary={true}  key="edit" label={editButtonLabel} onClick={this.open_editor.bind(this, null)} />);
+      buttons.push(<FlatButton primary={true}  key="edit" label={editButtonLabel} onClick={this.open_editor.bind(this, null)} />);
     }
     if (enableRawJSONEditing) buttons.push(<FlatButton key="raw" icon={<FontIcon className="material-icons">code</FontIcon>} label="Edit Raw JSON" onClick={this.open_raw_editor.bind(this)} />);
     return <div>{buttons}</div>;

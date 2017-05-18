@@ -451,8 +451,8 @@ class Task(UserAccessible):
             tz = user.get_timezone()
             local_now = tools.local_time(tz)
             task_prefs = user.get_setting_prop(['tasks', 'preferences'], {})
-            same_day_hour = int(task_prefs.get('same_day_hour', 16))
-            due_hour = int(task_prefs.get('due_hour', 22))
+            same_day_hour = tools.safe_number(task_prefs.get('same_day_hour', 16), default=16, integer=True)
+            due_hour = tools.safe_number(task_prefs.get('due_hour', 22), default=22, integer=True)
             schedule_for_same_day = local_now.hour < same_day_hour
             dt_due = local_now
             if due_hour > 23:

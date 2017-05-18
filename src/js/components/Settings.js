@@ -17,7 +17,7 @@ import connectToStores from 'alt-utils/lib/connectToStores';
 
 @connectToStores
 @changeHandler
-export default class Manage extends React.Component {
+export default class Settings extends React.Component {
     static defaultProps = {};
     constructor(props) {
         super(props);
@@ -47,7 +47,7 @@ export default class Manage extends React.Component {
     }
 
     componentDidMount() {
-        util.set_title("Manage");
+        util.set_title("Settings");
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -281,6 +281,7 @@ export default class Manage extends React.Component {
                                     <ReactJsonEditor title="Daily Journal Questions"
                                         array={true} data={get(settings, ['journals', 'questions'], [])}
                                         attributes={question_atts}
+                                        icon="question_answer"
                                         onChange={this.handle_settings_change.bind(this, ['journals', 'questions'])}
                                         addButtonLabel="Add Question"
                                         primaryProp="text" secondaryProp="name" />
@@ -309,6 +310,7 @@ export default class Manage extends React.Component {
                             <ReactJsonEditor title="Tracking Chart Variables"
                                 array={true} data={get(settings, ['tracking', 'chart_vars'], [])}
                                 attributes={tracking_var_atts}
+                                icon="show_chart"
                                 onChange={this.handle_settings_change.bind(this, ['tracking', 'chart_vars'])}
                                 addButtonLabel="Add Variable"
                                 primaryProp="label" secondaryProp="name" />
@@ -330,6 +332,7 @@ export default class Manage extends React.Component {
                                 attributes={flashcard_atts}
                                 onChange={this.handle_settings_change.bind(this, ['flashcards'])}
                                 addButtonLabel="Add Flashcard"
+                                icon="help_outline"
                                 primaryProp="card_title" secondaryProp="id" />
 
                             <h3>Configure Static Links</h3>
@@ -337,6 +340,7 @@ export default class Manage extends React.Component {
                             <ReactJsonEditor title="Static Links"
                                 array={true} data={get(settings, ['links'], [])}
                                 attributes={static_link_atts}
+                                icon="link"
                                 onChange={this.handle_settings_change.bind(this, ['links'])}
                                 addButtonLabel="Add Link"
                                 primaryProp="label" secondaryProp="url" />
@@ -348,7 +352,9 @@ export default class Manage extends React.Component {
 
                     </Tabs>
 
-                    <AsyncActionButton working={this.state.saving} enabled={unsaved} onClick={this.save_user_settings.bind(this)} />
+                    <div className="clearfix">
+                        <AsyncActionButton working={this.state.saving} enabled={unsaved} onClick={this.save_user_settings.bind(this)} />
+                    </div>
 
                 </Paper>
                 )
@@ -377,4 +383,4 @@ export default class Manage extends React.Component {
     }
 };
 
-module.exports = Manage;
+module.exports = Settings;
