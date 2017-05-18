@@ -71,6 +71,8 @@ To avoid conflicts sometimes seen with gcloud and google.cloud python libs it is
 
 Make sure dev_appserver.py is in your path, and run `./scripts/server.sh` to start the dev server locally, and `gulp` in another terminal to build JS etc.
 
+Visit localhost:8080 to run the app, and localhost:8000 to view the local dev server console.
+
 ### Deploy
 
 `./scripts/deploy.sh 0-1` to deploy a new version 0-1 and set is as default

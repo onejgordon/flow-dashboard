@@ -176,7 +176,7 @@ export default class TaskWidget extends React.Component {
         <h3 onClick={this.fetch_recent.bind(this)}>Top Tasks for {util.printDateObj(new Date(), "UTC", {format: "dddd, MMMM DD"})} { _buttons }</h3>
         <ProgressLine value={current_mins} total={total_mins} tooltip={util.printTime(now)} />
         { visible_tasks.length > 0 ?
-          <List>
+          <List className="taskList">
             { visible_tasks.sort((a, b) => { return b.wip - a.wip;}).map((t) => {
               return <TaskLI key={t.id} task={t}
                         onUpdateWIP={this.set_task_wip.bind(this)}
