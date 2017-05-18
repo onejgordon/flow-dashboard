@@ -1100,6 +1100,7 @@ class Readable(UserSearchable):
             'image_url': self.image_url,
             'url': self.url,  # Original url
             'source_url': self.get_source_url(),
+            'excerpt': self.excerpt,
             'type': self.type,
             'source': self.source,
             'notes': self.notes,
@@ -1333,14 +1334,14 @@ class Quote(UserSearchable):
                         r = readables[0]
                         self.readable = r.key
                         return r
-            else:
-                # Lookup via slug query
-                slug = self.source_slug()
-                if slug:
-                    r = Readable.GetBySlug(user, slug)
-                    if r:
-                        self.readable = r.key
-                        return r
+            # else:
+            #     # Lookup via slug query
+            #     slug = self.source_slug()
+            #     if slug:
+            #         r = Readable.GetBySlug(user, slug)
+            #         if r:
+            #             self.readable = r.key
+            #             return r
 
 
 class Report(UserAccessible):

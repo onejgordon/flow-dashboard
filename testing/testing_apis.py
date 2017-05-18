@@ -147,9 +147,19 @@ class APITestCase(BaseTestCase):
         self.assertEqual(e.title, "New Event")
         self.assertEqual(e.details, "Details")
 
+        # Batch create
+        params = {'events': json.dumps([
+            {'title': "Batch event 1", 'date_start': '2017-01-01', 'date_end': '2017-02-01'},
+            {'title': "Batch event 2", 'date_start': '2017-04-04', 'date_end': '2017-04-06'},
+            {'title': "Batch event 3", 'date_start': '2017-05-01', 'date_end': '2017-05-20'}
+        ])}
+        response = self.post_json("/api/event/batch", params, headers=self.api_headers)
+        message = response.get('message')
+        self.assertEqual(message, "Creating 3 event(s)")
+
         # List
         response = self.get_json("/api/event", {}, headers=self.api_headers)
-        h = response.get('events')[0]
+        h = response.get('events')[-1]
         self.assertEqual(h.get('title'), "New Event")
 
         # Update
@@ -176,13 +186,20 @@ class APITestCase(BaseTestCase):
         self.assertEqual(r.get('title'), "An Article")
 
         # Update
-        response = self.post_json("/api/readable", {
+        params = {
             'id': r.get('id'),
             'title': 'New Article Name',
-            'author': "Andy Clark"}, headers=self.api_headers)
+            'author': "Andy Clark",
+            'source': "New Source",
+            'excerpt': "Excerpt...",
+            'notes': "Notes...",
+            'word_count': 1850,
+            'url': 'http://www.example.com'
+        }
+        response = self.post_json("/api/readable", params, headers=self.api_headers)
         r = response.get('readable')
-        self.assertEqual(r.get('title'), 'New Article Name')
-        self.assertEqual(r.get('author'), 'Andy Clark')
+        for key, val in params.items():
+            self.assertEqual(r.get(key), val)
 
         # Search
         response = self.get_json("/api/readable/search", {'term': "clark"}, headers=self.api_headers)
@@ -208,11 +225,21 @@ class APITestCase(BaseTestCase):
         self.assertEqual(q.get('content'), "I think therefore I am")
 
         # Update
-        response = self.post_json("/api/quote", {
+        params = {
             'id': q.get('id'),
-            'source': 'Somewhere else'}, headers=self.api_headers)
+            'source': 'Somewhere else',
+            'content': "I think therefore I'm not",
+            'link': 'http://www.example.com',
+            'location': 'Location 100 of 1200',
+            'tags': 'tag1,tag2'
+        }
+        response = self.post_json("/api/quote", params, headers=self.api_headers)
         q = response.get('quote')
-        self.assertEqual(q.get('source'), 'Somewhere else')
+        for key, val in params.items():
+            if key == 'tags':
+                self.assertEqual(q.get(key), val.split(','))
+            else:
+                self.assertEqual(q.get(key), val)
 
         # Search
         response = self.get_json("/api/quote/search", {'term': "think"}, headers=self.api_headers)

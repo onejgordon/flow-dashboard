@@ -447,8 +447,8 @@ class ReadableAPI(handlers.JsonRequestHandler):
     def update(self, d):
         id = self.request.get('id')
         params = tools.gets(self,
-            integers=['type'],
-            strings=['notes', 'title', 'url', 'author', 'source'],
+            integers=['type', 'word_count'],
+            strings=['notes', 'title', 'url', 'author', 'source', 'excerpt'],
             booleans=['read', 'favorite'],
             lists=['tags'])
         if id:
