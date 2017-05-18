@@ -18,7 +18,8 @@ export default class QuoteLI extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      expanded: false
+      expanded: false,
+      deleted: false
     };
   }
 
@@ -31,9 +32,17 @@ export default class QuoteLI extends React.Component {
     api.post("/api/quote/action", {action: 'link_readable', id: quote.id});
   }
 
+  delete_quote() {
+    let {quote} = this.props;
+    api.post("/api/quote/delete", {id: quote.id}, (res) => {
+      this.setState({deleted: true});
+    });
+  }
+
   render() {
     let {quote} = this.props;
-    let {expanded} = this.state;
+    let {expanded, deleted} = this.state;
+    if (deleted) return <div></div>;
     let icon = expanded ? 'expand_less' : 'expand_more';
     let linked_readable = quote.readable != null;
     let src = quote.source;
@@ -46,6 +55,7 @@ export default class QuoteLI extends React.Component {
       <IconMenu iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
         <MenuItem leftIcon={<FontIcon className="material-icons">{icon}</FontIcon>} key="toggle" onClick={this.toggle_expanded.bind(this)}>Toggle expanded</MenuItem>
         <MenuItem leftIcon={<FontIcon className="material-icons">search</FontIcon>} key="lookup" onClick={this.link_readable.bind(this)}>Lookup and link readable</MenuItem>
+        <MenuItem leftIcon={<FontIcon className="material-icons">delete</FontIcon>} key="delete" onClick={this.delete_quote.bind(this)}>Delete quote</MenuItem>
       </IconMenu>
     );
     return (

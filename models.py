@@ -270,7 +270,10 @@ class User(ndb.Model):
     def get_integration_prop(self, prop, default=None):
         integrations = tools.getJson(self.integrations)
         if integrations:
-            return integrations.get(prop, default)
+            val = integrations.get(prop, default)
+            if val is None:
+                val = default
+            return val
         return default
 
     def get_setting_prop(self, path, default=None):

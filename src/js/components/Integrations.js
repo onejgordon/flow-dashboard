@@ -245,7 +245,7 @@ export default class Integrations extends React.Component {
         let {form} = this.state;
         let {user} = this.props;
         if (!user) return <div></div>;
-        let gr_user_id, gh_user, gh_pat, en_notebook_ids, evernote_connected;
+        let gr_user_id, gh_user, gh_pat, en_notebook_ids, evernote_connected, en_evernote_max_quote_length;
         let ints = {};
         let gfit_activities = [];
         if (user && user.integrations) {
@@ -254,6 +254,7 @@ export default class Integrations extends React.Component {
             gh_user = ints.github_username;
             gh_pat = ints.github_pat;
             en_notebook_ids = ints.evernote_notebook_ids;
+            en_evernote_max_quote_length = ints.evernote_max_quote_length;
             evernote_connected = ints.evernote_access_token != null;
             if (ints.gfit_activities) gfit_activities = ints.gfit_activities.split(',');
         }
@@ -305,7 +306,7 @@ export default class Integrations extends React.Component {
                             <FlatButton label="Disconnect" onClick={this.disconnect_evernote.bind(this)} /><br/>
 
                             <b>Evernote User ID:</b> <span>{ user.evernote_id || "--" }</span><br/>
-
+                            <b>Max content length for quote (default 1200 characters, if longer, save as article):</b> <span>{ en_evernote_max_quote_length || "--" }</span><br/>
                             <b>Capture Notebook IDs:</b> <span>{ en_notebook_ids || "--" }</span><br/>
 
                             <p>
@@ -313,9 +314,16 @@ export default class Integrations extends React.Component {
                                 For example, if part of the URL looks like this <code>#b=XXX-XX-XXXXX&ses=4&sh=1</code>, the notebook ID is <code>XXX-XX-XXXXX</code>.
                             </p>
 
-                            <TextField name="user_id" placeholder="Evernote Notebook IDs (comma separated)" value={form.evernote_notebook_ids || ''} onChange={this.changeHandler.bind(this, 'form', 'evernote_notebook_ids')} fullWidth /><br/>
+                            <TextField placeholder="Evernote Notebook IDs (comma separated)"
+                                       value={form.evernote_notebook_ids || ''}
+                                       onChange={this.changeHandler.bind(this, 'form', 'evernote_notebook_ids')}
+                                       fullWidth /><br/>
+                            <TextField placeholder="Evernote max quote length (number)"
+                                       value={form.evernote_max_quote_length || ''}
+                                       onChange={this.changeHandler.bind(this, 'form', 'evernote_max_quote_length')}
+                                       fullWidth /><br/>
 
-                            <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['evernote_notebook_ids'])} />
+                            <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['evernote_notebook_ids', 'evernote_max_quote_length'])} />
 
                         </div>
                     </Tab>
