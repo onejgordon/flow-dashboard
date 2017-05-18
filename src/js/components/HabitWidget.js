@@ -371,7 +371,9 @@ export default class HabitWidget extends React.Component {
           <div className="text-center empty">None yet, <a href="javascript:void(0)" onClick={this.show_creator.bind(this)}>create</a> your first habit!</div>
         </div>
 
-        { this.render_commitment_message() }
+        <div hidden={no_habits}>
+          { this.render_commitment_message() }
+        </div>
 
         { _commit_bar }
 

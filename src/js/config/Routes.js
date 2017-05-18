@@ -7,7 +7,7 @@ var Timeline = require('components/Timeline');
 var Splash = require('components/Splash');
 var About = require('components/About');
 var Auth = require('components/Auth');
-var Manage = require('components/Manage');
+var Settings = require('components/Settings');
 var Analysis = require('components/Analysis');
 var Reading = require('components/Reading');
 var JournalHistory = require('components/JournalHistory');
@@ -42,7 +42,7 @@ module.exports = (
       <Route path="about" component={About} />
       <Route path="dashboard" component={Dashboard} />
       <Route path="timeline" component={Timeline} />
-      <Route path="manage" component={Manage} />
+      <Route path="settings" component={Settings} />
       <Route path="integrations" component={Integrations} />
       <Route path="integrations/:action" component={Integrations} />
       <Route path="exports" component={Reports} />

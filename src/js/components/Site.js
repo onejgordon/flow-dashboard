@@ -13,9 +13,7 @@ var toastr = require('toastr');
 var pace = require('pace-js');
 
 import {
-  pinkA400,
-  cyan700, pinkA100,
-  pinkA200,
+  amber500, cyan700, amber400, amber700,
   grey600, fullWhite, white
 } from 'material-ui/styles/colors';
 
@@ -25,9 +23,9 @@ const muiTheme = getMuiTheme({
     primary1Color: "#43C7D5",
     primary2Color: cyan700,
     primary3Color: grey600,
-    accent1Color: pinkA200,
-    accent2Color: pinkA400,
-    accent3Color: pinkA100,
+    accent1Color: amber700,
+    accent2Color: amber500,
+    accent3Color: amber400,
     textColor: fullWhite,
     secondaryTextColor: fade(fullWhite, 0.7),
     alternateTextColor: '#303030',

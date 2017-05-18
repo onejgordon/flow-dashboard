@@ -72,7 +72,10 @@ export default class TaskLI extends React.Component {
     }
     let primaryText;
     if (t.wip) primaryText = <div className="wip">[ WIP ] {t.title}</div>;
-    else primaryText = t.title;
+    else {
+      let cls = t.done ? 'task done' : 'task';
+      primaryText = <div className={cls}>{t.title}</div>;
+    }
     return (
       <ListItem key={t.id}
         primaryText={ primaryText }
