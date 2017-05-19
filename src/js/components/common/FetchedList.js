@@ -167,7 +167,7 @@ export default class FetchedList extends React.Component {
         <List hidden={empty}>
           { _items }
         </List>
-        )
+      )
     }
     var n_fetched = this.state.items.length;
     var load_more_section = (

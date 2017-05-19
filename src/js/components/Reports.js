@@ -2,7 +2,7 @@ var React = require('react');
 
 var UserStore = require('stores/UserStore');
 import {RaisedButton, Tabs, Tab, FontIcon, DatePicker,
-    IconMenu, ListItem, MenuItem, List, IconButton} from 'material-ui';
+    IconMenu, ListItem, MenuItem, IconButton} from 'material-ui';
 var api = require('utils/api');
 var util = require('utils/util');
 import connectToStores from 'alt-utils/lib/connectToStores';
@@ -106,9 +106,7 @@ export default class Reports extends React.Component {
 
                 <p className="lead">Flow stores exports for 30 days, but they can be re-generated at any time.</p>
 
-                <Paper>
-                    <FetchedList ref="list" url="/api/report" listStyle="mui" listProp="reports" renderItem={this.render_report.bind(this)} autofetch={true}/>
-                </Paper>
+                <FetchedList ref="list" url="/api/report" listStyle="mui" listProp="reports" renderItem={this.render_report.bind(this)} autofetch={true}/>
 
                 <h2>Generate Export</h2>
 

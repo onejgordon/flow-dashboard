@@ -1,17 +1,15 @@
 var gulp = require('gulp');
-var htmlreplace = require('gulp-html-replace');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var browserify = require('browserify');
 var watchify = require('watchify');
 var babelify = require('babelify');
-var streamify = require('gulp-streamify');
+var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
 var gutil = require('gulp-util');
 var resolutions = require('browserify-resolutions');
 var hash_src = require("gulp-hash-src");
 var assign = require('lodash.assign');
-var shell = require('gulp-shell');
 
 var path = {
   HTML: ['src/{*.html,*.xml}'],
@@ -49,7 +47,7 @@ var b = browserify(bopts)
 );
 
 gulp.task('watch', function() {
-  w = watchify(b);
+  var w = watchify(b);
   w.on('update', bundle); // on any dep update, runs the bundler
   w.on('log', gutil.log); // output build logs to terminal
 
@@ -64,15 +62,23 @@ function bundle() {
   var now = new Date();
   gutil.log(now + ' - built bundle');
 
-  return b.bundle().on('error', function(err){
+  var stream = b.bundle().on('error', function(err){
       console.log(err.message);
       this.emit('end');
     })
     .pipe(source(path.OUT))
     .pipe(buffer())
-    .pipe(sourcemaps.init({ loadMaps: true }))
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(path.DEST_SRC));
+    .pipe(sourcemaps.init({ loadMaps: true }));
+
+    if (process.env.NODE_ENV === 'production') {
+        stream = stream.pipe(uglify());
+    }
+
+    return (
+      stream
+      .pipe(sourcemaps.write('./'))
+      .pipe(gulp.dest(path.DEST_SRC))
+    );
 }
 
 gulp.task('build_html', function(){
@@ -94,7 +100,16 @@ gulp.task('build_html', function(){
     .pipe(gulp.dest(path.DEST));
 });
 
+gulp.task('apply-prod-environment', function() {
+    process.stdout.write("Setting NODE_ENV to 'production'" + "\n");
+    process.env.NODE_ENV = 'production';
+    if (process.env.NODE_ENV != 'production') {
+        throw new Error("Failed to set NODE_ENV to production!!!!");
+    } else {
+        process.stdout.write("Successfully set NODE_ENV to production" + "\n");
+    }
+});
 
-gulp.task('production', ['build_html', 'build_bundle']);
+gulp.task('production', ['apply-prod-environment', 'build_html', 'build_bundle']);
 
 gulp.task('default', ['build_bundle', 'watch']);

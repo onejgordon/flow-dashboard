@@ -107,7 +107,8 @@ class JOURNAL():
 
     NUMERIC_RESPONSES = ['number', 'slider']
 
-    INVALID_REPLY = "I couldn't understand your answer, please try again"
+    INVALID_REPLY = "I couldn't understand your answer."
+    INVALID_SUFFIX_NUMERIC = "I'm expecting a number between 1 and 10."
     INVALID_TASK = "That didn't look like a task, please try again"
     TOP_TASK_PROMPT = "Enter a top task for tomorrow (or you can say 'done')"
     TOP_TASK_PROMPT_ADDTL = "Enter another top task for tomorrow (you can say 'done')"
