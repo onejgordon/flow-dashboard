@@ -4,6 +4,7 @@ import { Dialog, RaisedButton, FlatButton, TextField,
 var api = require('utils/api');
 var util = require('utils/util');
 import {clone} from 'lodash';
+var Styles = require('constants/Styles');
 var ProgressLine = require('components/common/ProgressLine');
 import {changeHandler} from 'utils/component-utils';
 
@@ -197,7 +198,11 @@ export default class GoalViewer extends React.Component {
 
         { _goals }
 
-        <Dialog open={set_goal_form != null} title={`Set ${goal_label} goals`} actions={actions} onRequestClose={this.dismiss.bind(this)}>
+        <Dialog open={set_goal_form != null}
+                title={`Set ${goal_label} goals`}
+                actions={actions}
+                onRequestClose={this.dismiss.bind(this)}
+                {...Styles.Dialog} >
           { this.render_set_goal_form() }
         </Dialog>
       </div>

@@ -1,6 +1,7 @@
 var React = require('react');
 import {Link} from 'react-router';
 var AppConstants = require('constants/AppConstants');
+var Styles = require('constants/Styles');
 import { Dialog, TextField, Slider,
   FlatButton, RaisedButton, IconButton, List,
   DropDownMenu,
@@ -277,6 +278,7 @@ export default class MiniJournalWidget extends React.Component {
         <Dialog title="Submit Daily Journal"
           open={open} onRequestClose={this.dismiss.bind(this)}
           autoDetectWindowHeight={true} autoScrollBodyContent={true}
+          {...Styles.Dialog}
           actions={actions}>
           <div style={{padding: "10px"}}>
             { this.render_history_section() }
