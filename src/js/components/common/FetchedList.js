@@ -1,6 +1,6 @@
 var React = require('react');
 var api = require('utils/api');
-import {IconButton, List, ListItem, FlatButton, TextField, Paper} from 'material-ui';
+import {IconButton, List, ListItem, FlatButton, TextField} from 'material-ui';
 import {clone} from 'lodash';
 var util = require('utils/util');
 import {changeHandler} from 'utils/component-utils';
@@ -164,12 +164,10 @@ export default class FetchedList extends React.Component {
         )
     } else if (this.props.listStyle == 'mui') {
       _list = (
-        <Paper>
-          <List hidden={empty}>
-            { _items }
-          </List>
-        </Paper>
-        )
+        <List hidden={empty}>
+          { _items }
+        </List>
+      )
     }
     var n_fetched = this.state.items.length;
     var load_more_section = (

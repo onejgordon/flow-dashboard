@@ -41,10 +41,14 @@ export default class ProjectLI extends React.Component {
     window.open(url, "_blank");
   }
 
+  progress_enabled() {
+    let {project} = this.props;
+    return project.progress > -1;
+  }
+
   toggle_progress() {
     let {project} = this.props;
-    let progress_enabled = project.progress > -1;
-    let enabled = !progress_enabled;
+    let enabled = !this.progress_enabled();
     let progress = enabled ? 0 : -1;
     this.set_progress(progress);
   }
@@ -136,6 +140,7 @@ export default class ProjectLI extends React.Component {
     subhead = <h3 style={this.SUBHEAD}>{ subheads }</h3>
     let st = {padding: "10px", marginBottom: "10px"};
     if (project.archived) st.opacity = 0.3;
+    let progress_action_label = this.progress_enabled() ? "Clear progress and disable" : "Enable progress tracking";
     return (
       <Paper rounded={true} style={st} key={project.id}>
         <div className="row">
@@ -143,7 +148,7 @@ export default class ProjectLI extends React.Component {
             <div className="pull-right">
               <IconMenu iconButtonElement={<IconButton><FontIcon className="material-icons">more_vert</FontIcon></IconButton>}>
                 <MenuItem primaryText="Edit" leftIcon={<FontIcon className="material-icons">mode_edit</FontIcon>} onClick={this.handle_edit_click.bind(this, project)} />
-                <MenuItem primaryText="Toggle progress tracking" leftIcon={<FontIcon className="material-icons">view_week</FontIcon>} onClick={this.toggle_progress.bind(this)} />
+                <MenuItem primaryText={progress_action_label} leftIcon={<FontIcon className="material-icons">view_week</FontIcon>} onClick={this.toggle_progress.bind(this)} />
                 <MenuItem primaryText="Archive project" leftIcon={<FontIcon className="material-icons">archive</FontIcon>} onClick={this.archive.bind(this)} />
                 <MenuItem primaryText="Chart Progress (Burn Up)" leftIcon={<FontIcon className="material-icons">show_chart</FontIcon>} onClick={this.show_analysis.bind(this)} />
               </IconMenu>

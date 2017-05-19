@@ -114,30 +114,40 @@ export default class ProjectViewer extends React.Component {
   }
 
   open_editor(p) {
-    let form = clone(p);
-    if (p.urls) {
-      form.url1 = p.urls[0] || '';
-      form.url2 = p.urls[1] || '';
-    }
-    if (p.due) {
-      form.due = new Date(form.due);
+    let form = {};
+    if (p) {
+      form = clone(p);
+      if (p.urls) {
+        form.url1 = p.urls[0] || '';
+        form.url2 = p.urls[1] || '';
+      }
+      if (p.due) {
+        form.due = new Date(form.due);
+      }
     }
     this.setState({project_dialog_open: true, form: form});
+  }
+
+  dismiss_editor() {
+    this.setState({project_dialog_open: false});
   }
 
   render_dialog() {
     let {project_dialog_open, form, updating} = this.state;
     let editing = form.id != null;
-    let actions = [<RaisedButton primary={true} label={editing ? "Update" : "Create"} onClick={this.update_project.bind(this)} disabled={updating} />]
+    let actions = [
+      <RaisedButton primary={true} label={editing ? "Update" : "Create"} onClick={this.update_project.bind(this)} disabled={updating} />,
+      <FlatButton label="Dismiss" onClick={this.dismiss_editor.bind(this)} />
+    ]
     let due_date = form.due != null ? new Date(form.due) : null;
     return (
       <Dialog
         open={project_dialog_open}
-        onRequestClose={this.setState.bind(this, {project_dialog_open: false})}
+        onRequestClose={this.dismiss_editor.bind(this)}
         title={editing ? "Update Project" : "New Project"}
         actions={actions}>
 
-        <TextField name="title" placeholder="Project title" value={form.title} onChange={this.changeHandler.bind(this, 'form', 'title')} fullWidth />
+        <TextField name="title" placeholder="Project title" value={form.title} onChange={this.changeHandler.bind(this, 'form', 'title')} fullWidth autoFocus />
         <TextField name="subhead" placeholder="Project subhead (optional)" value={form.subhead} onChange={this.changeHandler.bind(this, 'form', 'subhead')} fullWidth />
         <TextField name="url1" placeholder="Project URL 1 (optional)" value={form.url1 || ''} onChange={this.changeHandler.bind(this, 'form', 'url1')} fullWidth />
         <TextField name="url2" placeholder="Project URL 2 (optional)" value={form.url2 || ''} onChange={this.changeHandler.bind(this, 'form', 'url2')} fullWidth />
@@ -169,6 +179,7 @@ export default class ProjectViewer extends React.Component {
             <div className="pull-right">
               <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
                 <MenuItem key="gr" primaryText="Refresh" onClick={this.fetch_projects.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
+                <MenuItem key="new" primaryText="New Project" onClick={this.open_editor.bind(this, null)} leftIcon={<FontIcon className="material-icons">add</FontIcon>} />
               </IconMenu>
             </div>
           </div>
@@ -189,11 +200,7 @@ export default class ProjectViewer extends React.Component {
         </div>
 
         <div hidden={!empty}>
-          <div className="text-center empty">None yet, <a href="javascript:void(0)" onClick={this.setState.bind(this, {project_dialog_open: true})}>create</a> your first project!</div>
-        </div>
-
-        <div hidden={empty}>
-          <RaisedButton label="New Project" onClick={this.setState.bind(this, {project_dialog_open: true})} />
+          <div className="text-center empty">None yet, <a href="javascript:void(0)" onClick={this.open_editor.bind(this, null)}>create</a> your first project!</div>
         </div>
 
       </div>
