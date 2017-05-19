@@ -624,6 +624,18 @@ class QuoteAPI(handlers.JsonRequestHandler):
             'quote': quote.json() if quote else None
         })
 
+    @authorized.role('user')
+    def delete(self, d):
+        id = self.request.get('id')
+        quote = self.user.get(Quote, id=id)
+        if quote:
+            quote.key.delete()
+            self.success = True
+            self.message = "Quote deleted"
+        else:
+            self.message = "Quote not found"
+        self.set_response()
+
 
 class JournalTagAPI(handlers.JsonRequestHandler):
 
@@ -1145,17 +1157,26 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
             if user:
                 config_notebook_ids = user.get_integration_prop('evernote_notebook_ids', default='').split(',')  # Comma sep
                 if not config_notebook_ids or notebook_guid in config_notebook_ids:
-                    title, content, url = flow_evernote.get_note(user, note_guid)
+                    uid, title, content, url = flow_evernote.get_note(user, note_guid)
                     if title and content:
+                        max_quote_length = user.get_integration_prop('evernote_max_quote_length', 1200)
                         # TODO: Tags (come in as guids)
-                        q = Quote.Create(user, source=title, content=content)
-                        q.Update(link=url)
-                        q.put()
-                        self.success = True
+                        is_article = len(content) > max_quote_length or title in content
+                        if is_article:
+                            # Treat as article
+                            r = Readable.CreateOrUpdate(user, uid, source='evernote', url=url, title=title)
+                            r.put()
+                            self.success = True
+                        else:
+                            # Treat as quote/excerpt
+                            q = Quote.Create(user, source=title, content=content)
+                            q.Update(link=url)
+                            q.put()
+                            self.success = True
                     else:
                         self.message = "Failed to parse note"
                 else:
-                    logging.warning("Note from ignored notebook or user not found")
+                    logging.warning("Note from ignored notebook")
             else:
                 logging.warning("User not found")
         else:

@@ -93,6 +93,7 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/quote/random', handler=api.QuoteAPI, handler_method="random_batch", methods=["GET"]),
         webapp2.Route('/api/quote/search', handler=api.QuoteAPI, handler_method="search", methods=["GET"]),
         webapp2.Route('/api/quote/action', handler=api.QuoteAPI, handler_method="action", methods=["POST"]),
+        webapp2.Route('/api/quote/delete', handler=api.QuoteAPI, handler_method="delete", methods=["POST"]),
         webapp2.Route('/api/analysis', handler=api.AnalysisAPI, handler_method="get", methods=["GET"]),
         webapp2.Route('/api/journaltag', handler=api.JournalTagAPI, handler_method="list", methods=["GET"]),
         webapp2.Route('/api/report', handler=api.ReportAPI, handler_method="list", methods=["GET"]),
