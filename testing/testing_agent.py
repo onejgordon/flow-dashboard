@@ -187,7 +187,7 @@ class AgentTestCase(BaseTestCase):
             # (User message, Flow reply)
             ("daily report", "A few words on your day?", False),  # narrative
             (NARR, "How was the day?", False),  # day_rating
-            ("?", JOURNAL.INVALID_REPLY, False),
+            ("?", JOURNAL.INVALID_REPLY + " " + JOURNAL.INVALID_SUFFIX_NUMERIC, False),
             ("%s" % RATING, JOURNAL.TOP_TASK_PROMPT, False),
             ("Finish hacking the machine", JOURNAL.TOP_TASK_PROMPT_ADDTL, False),
             ("done", "Report submitted!", True)

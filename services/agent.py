@@ -76,6 +76,12 @@ class ConversationState(object):
         self.update_expiration()
         return success
 
+    def invalid_reply(self):
+        suffix = ""
+        if self.store_number:
+            suffix = " " + JOURNAL.INVALID_SUFFIX_NUMERIC
+        return JOURNAL.INVALID_REPLY + suffix
+
     def set_message_to_user(self, to_user):
         self.last_message_to_user = to_user
 
@@ -190,10 +196,7 @@ class ConversationAgent(object):
         MODES = ['questions', 'tasks', 'end']
         settings = tools.getJson(self.user.settings, {})
         questions = settings.get('journals', {}).get('questions', [])
-        # local_time = self.user.local_time()
         end_convo = False
-        # hr = local_time.hour
-        # in_journal_window = hr >= JOURNAL.START_HOUR or hr < JOURNAL.END_HOUR or tools.on_dev_server()
         if questions:
             jrnl = MiniJournal.Get(self.user)
             if jrnl:
@@ -205,6 +208,7 @@ class ConversationAgent(object):
                 mode = self.cs.state.get('mode')
                 mode_finished = False
                 save_response = True
+                last_question = None
                 # Receive user message
                 if mode == 'tasks':
                     is_done = message.lower().strip() in DONE_MESSAGES
@@ -218,7 +222,7 @@ class ConversationAgent(object):
                 if save_response:
                     successful_add = self.cs.add_message_from_user(message)
                     if not successful_add:
-                        reply = JOURNAL.INVALID_REPLY if mode == 'questions' else JOURNAL.INVALID_TASK
+                        reply = self.cs.invalid_reply() if mode == 'questions' else JOURNAL.INVALID_TASK
                         return (reply, False)
                 mode_index = MODES.index(mode)
                 if mode_finished:
