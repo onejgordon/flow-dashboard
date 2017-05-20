@@ -72,12 +72,17 @@ export default class Auth extends React.Component {
 
                     <Link to="/app/about"><RaisedButton label="Learn More about Flow" /></Link>
 
-                    <GoogleLogin
-                        clientId={client_secrets.G_OAUTH_CLIENT_ID}
-                        buttonText="Login"
-                        scope="profile email"
-                        onSuccess={this.success.bind(this)}
-                        onFailure={this.fail.bind(this)} />
+                    <p>Or</p>
+
+                    <div className="vpad">
+                        <GoogleLogin
+                            clientId={client_secrets.G_OAUTH_CLIENT_ID}
+                            buttonText="Login"
+                            scope="profile email"
+                            onSuccess={this.success.bind(this)}
+                            onFailure={this.fail.bind(this)} />
+                    </div>
+
                 </div>
 
             </div>

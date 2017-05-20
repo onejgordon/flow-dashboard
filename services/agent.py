@@ -489,9 +489,9 @@ class ConversationAgent(object):
 
     def _process_pattern(self, pattern):
         return tools.variable_replacement(pattern, {
-            'HABIT_PATTERN': '(?P<habit>[a-zA-Z ]+)',
-            'HABIT_OR_TASK_PATTERN': '(?P<habit_or_task>[a-zA-Z ]+)',
-            'TASK_PATTERN': '(?P<task_name>[a-zA-Z ]{5,50})',
+            'HABIT_PATTERN': '\'?\"?(?P<habit>[a-zA-Z ]+)\'?\"?',
+            'HABIT_OR_TASK_PATTERN': '\'?\"?(?P<habit_or_task>[a-zA-Z ]+)\'?\"?',
+            'TASK_PATTERN': '\'?\"?(?P<task_name>[a-zA-Z ]{5,50})\'?\"?',
             })
 
     def parse_message(self, message):

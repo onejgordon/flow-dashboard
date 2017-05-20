@@ -159,10 +159,18 @@ var util = {
         return Math.floor(diff / oneDay);
     },
 
+    iso_from_date(d) {
+        let year = d.getFullYear();
+        let day = d.getDate();
+        let month = d.getMonth() + 1;
+        if (month < 10) month = '0'+month;
+        return year+'-'+month+'-'+day;
+    },
+
     printDateObj: function(date, _timezone, opts) {
         if (_timezone && moment) {
             // Using moment.js to print local date/times
-            var dt = moment.tz(date.getTime(), _timezone);
+            let dt = moment.tz(date.getTime(), _timezone);
             let format = "YYYY-MM-DD";
             if (opts) {
                 if (opts.format) format = opts.format;
@@ -171,23 +179,15 @@ var util = {
             return dt.format(format);
         } else {
             if (date != null) {
-                var d = date.getDate();
-                var month = date.getMonth() + 1;
-                var day = d<10? '0'+d:''+d;
-                if (month < 10) month = '0'+month;
-                return date.getFullYear()+"-"+month+"-"+day;
+                return util.iso_from_date(date);
             } else return "--";
         }
     },
 
     printISODate: function(ts) {
-        var newDate = new Date();
+        let newDate = new Date();
         newDate.setTime(ts*1000);
-        var year = newDate.getFullYear();
-        var day = newDate.getDate();
-        var month = newDate.getMonth();
-        var dt = year+'-'+(month+1)+'-'+day;
-        return dt;
+        return util.iso_from_date(newDate);
     },
 
     date_from_iso(iso_str) {
