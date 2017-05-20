@@ -1032,14 +1032,11 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         Sync from pocket since last sync
         '''
         from services import pocket
-        TS_KEY = 'pocket_last_timestamp'  # Seconds
+
         access_token = self.user.get_integration_prop('pocket_access_token')
-        init_sync_since = tools.unixtime(datetime.now() - timedelta(days=7), ms=False)
-        last_timestamp = self.user.get_integration_prop(TS_KEY, init_sync_since)
         readables = []
         if access_token:
-            self.success, readables, latest_timestamp = pocket.sync(self.user, access_token, last_timestamp)
-            self.user.set_integration_prop(TS_KEY, latest_timestamp)
+            self.success, readables, latest_timestamp = pocket.sync(self.user, access_token)
             self.user.put()
             self.update_session_user(self.user)
         else:
