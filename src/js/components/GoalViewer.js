@@ -1,6 +1,7 @@
 var React = require('react');
-import { Dialog, RaisedButton, FlatButton, TextField,
+import { RaisedButton, FlatButton, TextField,
   IconButton, Slider } from 'material-ui';
+var MobileDialog = require('components/common/MobileDialog');
 var api = require('utils/api');
 var util = require('utils/util');
 import {clone} from 'lodash';
@@ -198,13 +199,12 @@ export default class GoalViewer extends React.Component {
 
         { _goals }
 
-        <Dialog open={set_goal_form != null}
+        <MobileDialog open={set_goal_form != null}
                 title={`Set ${goal_label} goals`}
                 actions={actions}
-                onRequestClose={this.dismiss.bind(this)}
-                {...Styles.Dialog} >
+                onRequestClose={this.dismiss.bind(this)}>
           { this.render_set_goal_form() }
-        </Dialog>
+        </MobileDialog>
       </div>
     )
   }

@@ -1,4 +1,5 @@
 var Styles = {
+    // Unused currently
     Dialog: {
         contentStyle: {
             width: '100%',

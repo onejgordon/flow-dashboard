@@ -1,9 +1,10 @@
 var React = require('react');
-import { DatePicker, Dialog, RaisedButton, FlatButton, TextField,
+import { DatePicker, RaisedButton, FlatButton, TextField,
   IconMenu, MenuItem, IconButton, FontIcon } from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 import {clone} from 'lodash';
 import {findIndexById} from 'utils/store-utils';
+var MobileDialog = require('components/common/MobileDialog');
 var ProjectLI = require('components/list_items/ProjectLI');
 var api = require('utils/api');
 var ProjectAnalysis = require('components/ProjectAnalysis');
@@ -141,7 +142,7 @@ export default class ProjectViewer extends React.Component {
     ]
     let due_date = form.due != null ? new Date(form.due) : null;
     return (
-      <Dialog
+      <MobileDialog
         open={project_dialog_open}
         onRequestClose={this.dismiss_editor.bind(this)}
         title={editing ? "Update Project" : "New Project"}
@@ -153,7 +154,7 @@ export default class ProjectViewer extends React.Component {
         <TextField name="url2" placeholder="Project URL 2 (optional)" value={form.url2 || ''} onChange={this.changeHandler.bind(this, 'form', 'url2')} fullWidth />
         <DatePicker autoOk={true} floatingLabelText="Due (optional)" formatDate={util.printDateObj} value={due_date} onChange={this.changeHandlerNilVal.bind(this, 'form', 'due')} />
 
-      </Dialog>
+      </MobileDialog>
       )
   }
 

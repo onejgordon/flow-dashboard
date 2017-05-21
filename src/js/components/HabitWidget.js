@@ -160,7 +160,7 @@ export default class HabitWidget extends React.Component {
       habit_rows.push(row);
     })
     let _table = (
-        <table width="100%" style={{backgroundColor: "rgba(0,0,0,0)"}}>
+        <table width="100%">
           <thead>
           <tr>
             <th></th>
