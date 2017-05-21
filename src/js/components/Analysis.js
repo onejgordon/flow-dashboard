@@ -94,8 +94,8 @@ export default class Analysis extends React.Component {
                 <Link to="/app/analysis/journals"><FlatButton label="Journals" /></Link>
                 <Link to="/app/analysis/tasks"><FlatButton label="Tasks" /></Link>
                 <Link to="/app/analysis/habits"><FlatButton label="Habits" /></Link>
-                <Link to="/app/analysis/snapshots"><FlatButton label="Snapshots" /></Link>
                 <Link to="/app/analysis/misc"><FlatButton label="Tracking" /></Link>
+                <Link to="/app/analysis/snapshots"><FlatButton label="Snapshots" /></Link>
 
                 <p className="lead">Note that on all charts clicking on series labels will toggle visibility</p>
 

@@ -8,15 +8,21 @@ var AppConstants = require('constants/AppConstants')
 import {changeHandler} from 'utils/component-utils';
 var HabitAnalysis = require('components/HabitAnalysis');
 var ProgressLine = require('components/common/ProgressLine');
-var ReactTooltip = require('react-tooltip');
 import { SwatchesPicker } from 'react-color';
 
 @changeHandler
 export default class HabitWidget extends React.Component {
+
+  static propTypes = {
+    days: React.PropTypes.number,
+    commitments: React.PropTypes.bool
+  }
+
   static defaultProps = {
     days: 7,
     commitments: true
   }
+
   constructor(props) {
       super(props);
       this.state = {
@@ -187,15 +193,16 @@ export default class HabitWidget extends React.Component {
     let _progress;
     let cursor = new Date();
     let today = new Date();
+    let today_iso = util.iso_from_date(today);
     let res = [];
     let done_in_week = 0;
-    let today_iso = util.printDateObj(new Date());
     var done = false, is_committed = false;
     let n_committed = 0, n_committed_done = 0;
+    let last_run = false;
     cursor.setDate(cursor.getDate() - days + 1);
-    while (cursor <= today) {
-      let iso_day = util.printDateObj(cursor);
-      let is_today = iso_day == today_iso;
+    while (!last_run) {
+      let iso_day = util.iso_from_date(cursor);
+      last_run = iso_day == today_iso;
       let id = this.make_id(h.id, iso_day);
       let in_week = this.day_in_current_habit_week(cursor);
       if (habitdays[id]) {
@@ -240,7 +247,7 @@ export default class HabitWidget extends React.Component {
       }
       if (target_near) {
         cls = "target-near";
-        _icon = <i className="glyphicon glyphicon-flash"></i>
+        _icon = <i className="glyphicon glyphicon-flash" title="One more!"></i>
       }
       _progress = <span className={"target " + cls}>{done_in_week} / {h.tgt_weekly} { _icon }</span>
     }

@@ -5,7 +5,6 @@ import connectToStores from 'alt-utils/lib/connectToStores';
 var api = require('utils/api');
 var util = require('utils/util');
 import {Paper} from 'material-ui';
-var UserStore = require('stores/UserStore');
 import {changeHandler} from 'utils/component-utils';
 var moment = require('moment')
 var Select = require('react-select');
@@ -26,7 +25,8 @@ export default class AnalysisSnapshot extends React.Component {
                 x_axis: 'minute_of_day',
                 metric: 'happiness',
                 drilldown: null
-            }
+            },
+            loading: false
         };
         this.segment_opts = [
             {value: 'activity', label: "Activity"},
@@ -64,15 +64,21 @@ export default class AnalysisSnapshot extends React.Component {
     }
 
     fetch_data() {
-        api.get("/api/snapshot", {}, (res) => {
-            let dimensions = {place: [], activity: []};
-            res.snapshots.forEach((s) => {
-                Object.keys(dimensions).forEach((dk) => {
-                    if (s[dk] && dimensions[dk].indexOf(s[dk]) == -1) dimensions[dk].push(s[dk]);
-                })
-            });
-            this.setState({snapshots: res.snapshots, dimensions: dimensions});
+        this.setState({loading: true}, () => {
+            api.get("/api/snapshot", {}, (res) => {
+                let dimensions = {place: [], activity: []};
+                res.snapshots.forEach((s) => {
+                    Object.keys(dimensions).forEach((dk) => {
+                        if (s[dk] && dimensions[dk].indexOf(s[dk]) == -1) dimensions[dk].push(s[dk]);
+                    })
+                });
+                this.setState({snapshots: res.snapshots, dimensions: dimensions, loading: false});
+            })
         })
+    }
+
+    have_snapshots() {
+        return this.state.snapshots.length > 0;
     }
 
     get_x_coord(snapshot) {
@@ -200,7 +206,7 @@ export default class AnalysisSnapshot extends React.Component {
 
     render() {
         let {user} = this.props;
-        let {snapshots, form, dimensions} = this.state;
+        let {snapshots, form, dimensions, loading} = this.state;
         let data = this.get_data();
         if (data == null) return <div></div>
         let displayFormats = {
@@ -275,66 +281,69 @@ export default class AnalysisSnapshot extends React.Component {
         }
         let seg_name = util.capitalize(form.segment_by);
         let content;
-        let snapshot_enabled = UserStore.admin() || UserStore.plugin_enabled('snapshots');
-        if (snapshot_enabled) {
-            content = (
-                <div>
-                    <Paper style={{padding: 10, marginBottom: 20, marginTop: 20}}>
-                        <div className="row">
-                            <div className="col-sm-4">
-                                <Select onChange={this.changeHandlerVal.bind(this, 'form', 'segment_by')} value={form.segment_by} options={this.segment_opts} simpleValue />
-                            </div>
-                            <div className="col-sm-4">
-                                <Select onChange={this.changeHandlerVal.bind(this, 'form', 'x_axis')} value={form.x_axis} options={this.x_axis_opts} simpleValue />
-                            </div>
-                            <div className="col-sm-4">
-                                <Select onChange={this.changeHandlerVal.bind(this, 'form', 'metric')} value={form.metric} options={this.metric_opts} simpleValue />
-                            </div>
-                        </div>
-                    </Paper>
-
+        let snapshot_enabled = this.have_snapshots();
+        if (loading) content = <div className="empty">Loading...</div>
+        else {
+            if (snapshot_enabled) {
+                content = (
                     <div>
-                        <Line data={data.scatter} options={opts} height={this.CHART_HEIGHT}/>
-                    </div>
+                        <Paper style={{padding: 10, marginBottom: 20, marginTop: 20}}>
+                            <div className="row">
+                                <div className="col-sm-4">
+                                    <Select onChange={this.changeHandlerVal.bind(this, 'form', 'segment_by')} value={form.segment_by} options={this.segment_opts} simpleValue />
+                                </div>
+                                <div className="col-sm-4">
+                                    <Select onChange={this.changeHandlerVal.bind(this, 'form', 'x_axis')} value={form.x_axis} options={this.x_axis_opts} simpleValue />
+                                </div>
+                                <div className="col-sm-4">
+                                    <Select onChange={this.changeHandlerVal.bind(this, 'form', 'metric')} value={form.metric} options={this.metric_opts} simpleValue />
+                                </div>
+                            </div>
+                        </Paper>
 
-                    <div className="row">
-                        <div className="col-sm-6">
-                            <h4>Averages by { seg_name }</h4>
-                            <div style={{height: "400px"}}>
-                                <Bar data={data.averages} options={avgs_opts} height={this.CHART_HEIGHT} />
+                        <div>
+                            <Line data={data.scatter} options={opts} height={this.CHART_HEIGHT}/>
+                        </div>
+
+                        <div className="row">
+                            <div className="col-sm-6">
+                                <h4>Averages by { seg_name }</h4>
+                                <div style={{height: "400px"}}>
+                                    <Bar data={data.averages} options={avgs_opts} height={this.CHART_HEIGHT} />
+                                </div>
+                            </div>
+                            <div className="col-sm-6">
+                                <h4>Frequency by { seg_name }</h4>
+                                <div style={{height: "400px"}}>
+                                    <Doughnut data={data.pie} options={this.DEF_OPTS} height={this.CHART_HEIGHT} />
+                                </div>
                             </div>
                         </div>
-                        <div className="col-sm-6">
-                            <h4>Frequency by { seg_name }</h4>
-                            <div style={{height: "400px"}}>
-                                <Doughnut data={data.pie} options={this.DEF_OPTS} height={this.CHART_HEIGHT} />
+
+                        <br/><br/>
+                        <div className="row">
+                            <p>Showing data from <b>{snapshots.length}</b> snapshots.</p>
+                        </div>
+
+                        <h4>{ seg_name } Filter</h4>
+
+                        <div className="row">
+                            <div className="col-sm-6">
+                                <Select onChange={this.changeHandlerVal.bind(this, 'form', 'drilldown')} value={form.drilldown} options={drilldown_opts} simpleValue />
                             </div>
                         </div>
+
+                        { _drilldown }
                     </div>
-
-                    <br/><br/>
-                    <div className="row">
-                        <p>Showing data from <b>{snapshots.length}</b> snapshots.</p>
+                )
+            } else {
+                content = (
+                    <div className="empty">
+                        <h3>Snapshots are still in beta!</h3>
+                        <small>Snapshots are a simple questionnaire collected at random times throughout the day via your smartphone. The Snapshot Android app is in a limited beta -- Want to be a tester? <Link to="https://play.google.com/apps/testing/co.flowdash.mobile" target="_blank">Join the beta</Link>.<br/><br/>Already have the app? Your data will appear here once you submit your first response.</small>
                     </div>
-
-                    <h4>{ seg_name } Filter</h4>
-
-                    <div className="row">
-                        <div className="col-sm-6">
-                            <Select onChange={this.changeHandlerVal.bind(this, 'form', 'drilldown')} value={form.drilldown} options={drilldown_opts} simpleValue />
-                        </div>
-                    </div>
-
-                    { _drilldown }
-                </div>
-            )
-        } else {
-            content = (
-                <div className="empty">
-                    <h3>Snapshots are still in beta!</h3>
-                    <small>Snapshots are a short questionnaire collected at random times throughout the day via your smartphone. The Snapshot Android app is in a limited beta -- Want to be a tester? <Link to="/app/feedback">Send a message</Link>.</small>
-                </div>
-            );
+                );
+            }
         }
         return (
             <div>

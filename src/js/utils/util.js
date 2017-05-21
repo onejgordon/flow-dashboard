@@ -541,8 +541,8 @@ var util = {
     },
 
     dayDiff: function(firstDate, secondDate) {
-        var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
-        var diffDays = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime())/(oneDay)));
+        let oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
+        let diffDays = Math.round((firstDate.getTime() - secondDate.getTime())/(oneDay));
         return diffDays;
     },
 
