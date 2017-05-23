@@ -56,7 +56,7 @@ npm install
 
 Update the APP_OWNER variable in constants.py. Owner should match the Google account you logged into the console with. This will enable the application to send emails.
 
-Create the following files from the templates. For this step you'll need ot create an oauth 2.0 web client ID from the GCP console, as per the instructions in `secrets_template.py`.
+Create the following files from the templates. For this step you'll need to create an oauth 2.0 web client ID from the GCP console, as per the instructions in `secrets_template.py`.
 
 - **secrets.py** ::
 	`./settings/secrets_template.py => ./settings/secrets.py`
