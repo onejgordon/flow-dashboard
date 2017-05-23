@@ -56,7 +56,14 @@ npm install
 
 Update the APP_OWNER variable in constants.py. Owner should match the Google account you logged into the console with. This will enable the application to send emails.
 
-Create secrets.py, client_secrets.js from the templates.
+Create the following files from the templates 
+
+- **secrets.py** ::
+	`./settings/secrets_template.py => ./settings/secrets.py`
+
+- **client_secrets.js** :: 
+	`./src/js/constants/client_secrets.templates.js => ./src/js/constants/clients_secrets.js`
+
 
 ### Run the dev server locally
 
