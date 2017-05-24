@@ -55,13 +55,17 @@ def get_access_token(user, oauth_token, oauth_verifier):
         sandbox=SANDBOX
     )
     access_token = en_user_id = None
+    access_token_dict = {}
     oauth_token_secret = memcache.get(SECRET_MCK % user.key.id())
     if oauth_token_secret:
-        access_token_dict = client.get_access_token_dict(
-            oauth_token,
-            oauth_token_secret,
-            oauth_verifier
-        )
+        try:
+            access_token_dict = client.get_access_token_dict(
+                oauth_token,
+                oauth_token_secret,
+                oauth_verifier
+            )
+        except KeyError:
+            logging.warning("KeyError getting Evernote access token")
         en_user_id = access_token_dict.get('edam_userId')
         access_token = access_token_dict.get('oauth_token')
     else:

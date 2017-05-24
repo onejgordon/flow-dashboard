@@ -328,7 +328,7 @@ class GoalAPI(handlers.JsonRequestHandler):
             integers=['assessment']
         )
         goal = self.user.get(Goal, id=id)
-        if not goal:
+        if not goal and id:
             goal = Goal.Create(self.user, id=id)
         if goal:
             text = []
