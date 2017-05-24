@@ -5,6 +5,7 @@ import { IconButton, List,
 var util = require('utils/util');
 var api = require('utils/api');
 var TaskLI = require('components/list_items/TaskLI');
+var TaskHUD = require('components/TaskHUD');
 import {findIndexById, removeItemsById} from 'utils/store-utils';
 var ProgressLine = require('components/common/ProgressLine');
 var toastr = require('toastr');
@@ -129,12 +130,16 @@ export default class TaskWidget extends React.Component {
     params.id = task.id;
     api.post("/api/task", params, (res) => {
       if (res.task) {
-        let {tasks} = this.state;
-        let idx = findIndexById(tasks, res.task.id, 'id');
-        if (idx > -1) tasks[idx] = res.task;
-        this.setState({tasks});
+        this.handle_task_changed(res.task);
       }
     });
+  }
+
+  handle_task_changed(task) {
+    let {tasks} = this.state;
+    let idx = findIndexById(tasks, task.id, 'id');
+    if (idx > -1) tasks[idx] = task;
+    this.setState({tasks});
   }
 
   archive(task) {
@@ -152,6 +157,12 @@ export default class TaskWidget extends React.Component {
   set_task_wip(task, is_wip) {
     util.play_audio('commit.mp3');
     this.task_update(task, {wip: is_wip ? 1 : 0});
+  }
+
+  wip_task() {
+    let {tasks} = this.state;
+    let wip_tasks = tasks.filter((t) => { return t.wip });
+    if (wip_tasks.length > 0) return wip_tasks[0];
   }
 
   render() {
@@ -209,6 +220,8 @@ export default class TaskWidget extends React.Component {
             <FlatButton label="Cancel" onClick={this.setState.bind(this, {new_showing: false})} />
           </Paper>
         </div>
+
+        <TaskHUD task={this.wip_task()} onTaskUpdate={this.handle_task_changed.bind(this)} />
       </div>
     )
   }

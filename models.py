@@ -413,6 +413,10 @@ class Task(UserAccessible):
     status = ndb.IntegerProperty(default=TASK.NOT_DONE)
     wip = ndb.BooleanProperty(default=False)
     archived = ndb.BooleanProperty(default=False)
+    timer_last_start = ndb.DateTimeProperty(indexed=False)
+    timer_target_ms = ndb.IntegerProperty(indexed=False, default=0)  # For current timer run
+    timer_pending_ms = ndb.IntegerProperty(indexed=False, default=0)
+    timer_total_ms = ndb.IntegerProperty(indexed=False, default=0)  # Cumulative
 
     def json(self):
         return {
@@ -424,7 +428,11 @@ class Task(UserAccessible):
             'archived': self.archived,
             'wip': self.wip,
             'title': self.title,
-            'done': self.is_done()
+            'done': self.is_done(),
+            'timer_total_ms': self.timer_total_ms,
+            'timer_target_ms': self.timer_target_ms,
+            'timer_pending_ms': self.timer_pending_ms,
+            'timer_last_start': tools.unixtime(self.timer_last_start) if self.timer_last_start else 0
         }
 
     @staticmethod
@@ -489,6 +497,18 @@ class Task(UserAccessible):
                 self.wip = False
         if 'wip' in params:
             self.wip = params.get('wip')
+        if 'timer_total_ms' in params:
+            self.timer_total_ms = params.get('timer_total_ms')
+        if 'timer_pending_ms' in params:
+            self.timer_pending_ms = params.get('timer_pending_ms')
+        if 'timer_last_start' in params:
+            last_start_ms = params.get('timer_last_start')
+            if last_start_ms:
+                self.timer_last_start = tools.dt_from_ts(last_start_ms)
+            else:
+                self.timer_last_start = None
+        if 'timer_target_ms' in params:
+            self.timer_target_ms = params.get('timer_target_ms')
         return message
 
     def mark_done(self):

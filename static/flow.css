@@ -331,6 +331,30 @@ div.section {
   opacity: 1.0;
 }
 
+/* Task HUD */
+
+.taskHUD {
+  background: rgba(0,0,0,0.7);
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  padding: 15px;
+  z-index: 1000;
+}
+
+.taskHUD .hud-label {
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: bold;
+  font-size: 0.6em;
+}
+
+.taskHUD .name {
+  color: #F9D23D;
+  font-size: 1.2em;
+}
+
 .readable .sh {
   margin-right: 5px;
 }

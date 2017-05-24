@@ -55,7 +55,8 @@ export default class TaskLI extends React.Component {
       _icon = <i className="glyphicon glyphicon-time" />;
       if (hours_until < 0) _icon = <i className="glyphicon glyphicon-alert" style={{color: "#FC4750"}} />;
       else if (hours_until <= 3) _icon = <i className="glyphicon glyphicon-hourglass" style={{color: "orange"}} />;
-      secondary = <span>{ _icon }&nbsp;{util.from_now(t.ts_due)}</span>
+      secondary = [<span key="due">{ _icon }&nbsp;{util.from_now(t.ts_due)}</span>]
+      if (t.timer_total_ms > 0) secondary.push(<span key="timed">{`${t.timer_total_ms/1000} second(s) logged`}</span>)
     }
     let rightIcon;
     if (menu.length == 1) {
