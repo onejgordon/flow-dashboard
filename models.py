@@ -429,9 +429,9 @@ class Task(UserAccessible):
             'wip': self.wip,
             'title': self.title,
             'done': self.is_done(),
-            'timer_total_ms': self.timer_total_ms,
-            'timer_target_ms': self.timer_target_ms,
-            'timer_pending_ms': self.timer_pending_ms,
+            'timer_total_ms': self.timer_total_ms or 0,
+            'timer_target_ms': self.timer_target_ms or 0,
+            'timer_pending_ms': self.timer_pending_ms or 0,
             'timer_last_start': tools.unixtime(self.timer_last_start) if self.timer_last_start else 0
         }
 

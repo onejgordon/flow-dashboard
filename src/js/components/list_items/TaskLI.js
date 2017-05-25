@@ -8,14 +8,16 @@ export default class TaskLI extends React.Component {
     onUpdateStatus: React.PropTypes.func,
     onArchive: React.PropTypes.func,
     onDelete: React.PropTypes.func,
-    onUpdateWIP: React.PropTypes.func
+    onUpdateWIP: React.PropTypes.func,
+    canSetWIP: React.PropTypes.bool
   }
 
   static defaultProps = {
     task: null,
     onUpdateStatus: null,
     onArchive: null,
-    onUpdateWIP: null
+    onUpdateWIP: null,
+    canSetWIP: true
   }
 
   constructor(props) {
@@ -33,13 +35,13 @@ export default class TaskLI extends React.Component {
 
   render() {
     let t = this.props.task;
+    let {canSetWIP} = this.props;
     let click = null;
     let menu = [];
     let done = t.status == this.DONE;
     let archived = t.archived;
-    if (!done && !archived) {
-      if (t.wip) menu.push({icon: 'stop', click: this.set_wip.bind(this, false), label: 'Clear WIP'});
-      else menu.push({icon: 'play_for_work', click: this.set_wip.bind(this, true), label: 'On It (Set as WIP)'});
+    if (!done && !archived && !t.wip && canSetWIP) {
+      menu.push({icon: 'play_for_work', click: this.set_wip.bind(this, true), label: 'On It (Start Working)'});
     }
     if (!done) menu.push({icon: 'delete', click: this.props.onDelete.bind(this, t), label: 'Delete'})
     if (!archived) menu.push({icon: 'archive', click: this.props.onArchive.bind(this, t), label: 'Archive'});
@@ -49,15 +51,15 @@ export default class TaskLI extends React.Component {
     let check = <Checkbox iconStyle={st} onCheck={click} checked={done} disabled={archived} />
     let hours_until = util.hours_until(t.ts_due);
     let _icon, secondary;
-    if (done) secondary = "Done";
-    else if (archived) secondary = "Archived";
+    if (done) secondary = [<span>Done</span>]
+    else if (archived) secondary = [<span>Archived</span>];
     else {
       _icon = <i className="glyphicon glyphicon-time" />;
       if (hours_until < 0) _icon = <i className="glyphicon glyphicon-alert" style={{color: "#FC4750"}} />;
       else if (hours_until <= 3) _icon = <i className="glyphicon glyphicon-hourglass" style={{color: "orange"}} />;
       secondary = [<span key="due">{ _icon }&nbsp;{util.from_now(t.ts_due)}</span>]
-      if (t.timer_total_ms > 0) secondary.push(<span key="timed">{`${t.timer_total_ms/1000} second(s) logged`}</span>)
     }
+    if (t.timer_total_ms > 0) secondary.push(<span key="timed">{` (${util.secsToDuration(t.timer_total_ms/1000, {no_seconds: true})} logged)`}</span>)
     let rightIcon;
     if (menu.length == 1) {
       let mi = menu[0];
@@ -72,7 +74,7 @@ export default class TaskLI extends React.Component {
       );
     }
     let primaryText;
-    if (t.wip) primaryText = <div className="wip">[ WIP ] {t.title}</div>;
+    if (t.wip) primaryText = <div className="wip">{t.title}</div>;
     else {
       let cls = t.done ? 'task done' : 'task';
       primaryText = <div className={cls}>{t.title}</div>;

@@ -678,14 +678,18 @@ var util = {
         } : null;
     },
 
-    secsToDuration: function(secs) {
+    secsToDuration: function(secs, opts) {
         let labels = ["hour", "minute", "second"];
         let d = moment.duration(secs, "seconds");
         let hours = parseInt(d.asHours());
         let mins = parseInt(d.minutes());
         let _secs = parseInt(d.seconds());
         let s = [];
-        [hours, mins, _secs].forEach(function(p, i) {
+        let levels = [hours, mins];
+        let no_seconds = opts && opts.no_seconds
+        let zero_text = opts && opts.zero_text;
+        if (!no_seconds) levels.push(_secs);
+        levels.forEach(function(p, i) {
             let label = labels[i];
             if (p > 0) {
                 let piece = p + " " + label;
@@ -694,7 +698,7 @@ var util = {
             }
         });
         if (s.length > 0) return s.join(', ');
-        else return "0 seconds";
+        else return zero_text || "0 seconds";
     }
 
 }

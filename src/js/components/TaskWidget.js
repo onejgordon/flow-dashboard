@@ -181,6 +181,7 @@ export default class TaskWidget extends React.Component {
     ]
     let morning = now.getHours() <= 12;
     let exclamation = morning ? "Set the top two or three tasks for today." : "All clear!"
+    let wip_task = this.wip_task();
     let _no_tasks_cta = <span>{ exclamation } <a href="javascript:void(0)" onClick={this.show_new_box.bind(this)}>Add a task</a>.</span>
     return (
       <div className="TaskWidget" id="TaskWidget">
@@ -191,6 +192,7 @@ export default class TaskWidget extends React.Component {
           <List className="taskList">
             { visible_tasks.sort((a, b) => { return b.wip - a.wip;}).map((t) => {
               return <TaskLI key={t.id} task={t}
+                        canSetWIP={!wip_task}
                         onUpdateWIP={this.set_task_wip.bind(this)}
                         onUpdateStatus={this.update_status.bind(this)}
                         onDelete={this.delete_task.bind(this)}
@@ -221,7 +223,7 @@ export default class TaskWidget extends React.Component {
           </Paper>
         </div>
 
-        <TaskHUD task={this.wip_task()} onTaskUpdate={this.handle_task_changed.bind(this)} />
+        <TaskHUD task={wip_task} onTaskUpdate={this.handle_task_changed.bind(this)} />
       </div>
     )
   }
