@@ -323,10 +323,7 @@ class GoalAPI(handlers.JsonRequestHandler):
         Create or update
         '''
         id = self.request.get('id')
-        self.log_request_params()
-        params = tools.gets(self,
-                            json=['text'],
-                            integers=['assessment'])
+        params = tools.gets(self, json=['text', 'assessments'])
         goal = self.user.get(Goal, id=id)
         if not goal and id:
             goal = Goal.Create(self.user, id=id)
