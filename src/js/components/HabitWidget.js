@@ -57,6 +57,8 @@ export default class HabitWidget extends React.Component {
           new_dialog_open: false,
           creating: false
         });
+      }, (res_err) => {
+        this.setState({creating: false});
       });
     });
   }
@@ -312,8 +314,8 @@ export default class HabitWidget extends React.Component {
     let actions = [<RaisedButton primary={true} label="Create Habit" onClick={this.create_habit.bind(this)} disabled={creating} />]
     if (!no_habits) {
       ({table, target, done, committed, committed_done} = this.generate_habit_table());
-      let target_tooltip = `${util.printPercent(done/target)} of weekly target`;
-      let commit_tooltip = `${util.printPercent(committed_done/committed)} of week's commitments completed`;
+      let target_tooltip = `${util.printPercent(done/target, {default: '0%'})} of weekly target`;
+      let commit_tooltip = `${util.printPercent(committed_done/committed, {default: '0%'})} of week's commitments completed`;
       _commit_bar = <ProgressLine value={committed_done}
                               total={committed}
                               style={{marginTop: '11px'}}

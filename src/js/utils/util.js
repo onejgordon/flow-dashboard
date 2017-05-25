@@ -277,8 +277,11 @@ var util = {
         });
     },
 
-    printPercent: function(dec) {
-        if (dec == Infinity || isNaN(dec)) return "N/A";
+    printPercent: function(dec, opts) {
+        if (dec == Infinity || isNaN(dec)) {
+            if (opts && opts.default) return opts.default;
+            else return "N/A";
+        }
         return parseInt(dec*100) + "%";
     },
 
