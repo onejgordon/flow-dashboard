@@ -2,6 +2,8 @@ var React = require('react');
 var util = require('utils/util');
 var api = require('utils/api');
 import {IconButton} from 'material-ui';
+import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup' // ES6
+
 
 export default class TaskHUD extends React.Component {
   static propTypes = {
@@ -141,46 +143,54 @@ export default class TaskHUD extends React.Component {
 
   render() {
     let t = this.props.task;
-    if (!t) return <span></span>
-    let secs = this.get_seconds();
-    let _playing;
-    let time_cls = "time";
-    let timer_state = "paused";
-    if (this.playing()) {
-      _playing = <span className="playing-orb"></span>
-      time_cls += " playing";
-      timer_state = "running";
-    }
-    let _target, _progress;
-    _progress = secs > 0 ? util.secsToDuration(secs, {no_seconds: true, zero_text: "Less than a minute"}) : "--";
-    let _check;
-    if (t.timer_target_ms > 0) {
-      let target_cls = '';
-      if (this.target_reached()) {
-       target_cls = 'target-reached';
-       _check = <i className="glyphicon glyphicon-ok-circle"></i>
+    let inner;
+    if (!t) inner = <span></span>
+    else {
+      let secs = this.get_seconds();
+      let _playing;
+      let time_cls = "time";
+      let timer_state = "paused";
+      if (this.playing()) {
+        _playing = <span className="playing-orb"></span>
+        time_cls += " playing";
+        timer_state = "running";
       }
-      _target = <span className={target_cls}>Target: { util.secsToDuration(t.timer_target_ms / 1000, {no_seconds: true}) } { _check }</span>
-    }
-    return (
-      <div className="taskHUD">
-        <div className="row">
-          <div className="col-sm-4">
-            <div className="hud-label">work in progress</div>
-            <div className="name">{ t.title }</div>
-          </div>
-          <div className="col-sm-4">
-            { this.render_controls() }
-          </div>
-          <div className="col-sm-4">
-            <div className="hud-label">{`Logging (${timer_state})`} { _target }</div>
-            <div className="timers">
-              <div className={time_cls}>{ _playing }{ _progress }</div>
+      let _target, _progress;
+      _progress = secs > 0 ? util.secsToDuration(secs, {no_seconds: true, zero_text: "Less than a minute"}) : "--";
+      let _check;
+      if (t.timer_target_ms > 0) {
+        let target_cls = '';
+        if (this.target_reached()) {
+         target_cls = 'target-reached';
+         _check = <i className="glyphicon glyphicon-ok-circle"></i>
+        }
+        _target = <span className={target_cls}>Target: { util.secsToDuration(t.timer_target_ms / 1000, {no_seconds: true}) } { _check }</span>
+      }
+      inner = (
+        <div className="taskHUD" key="hud">
+          <div className="row">
+            <div className="col-sm-4">
+              <div className="hud-label">work in progress</div>
+              <div className="name">{ t.title }</div>
+            </div>
+            <div className="col-sm-4">
+              { this.render_controls() }
+            </div>
+            <div className="col-sm-4">
+              <div className="hud-label">{`Logging (${timer_state})`} { _target }</div>
+              <div className="timers">
+                <div className={time_cls}>{ _playing }{ _progress }</div>
+              </div>
             </div>
           </div>
         </div>
+      )
+    }
 
-      </div>
+    return (
+      <CSSTransitionGroup transitionName="fade">
+        { inner }
+      </CSSTransitionGroup>
     );
   }
 }
