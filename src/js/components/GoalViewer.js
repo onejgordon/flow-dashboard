@@ -5,15 +5,20 @@ var MobileDialog = require('components/common/MobileDialog');
 var api = require('utils/api');
 var util = require('utils/util');
 import {clone} from 'lodash';
-var Styles = require('constants/Styles');
+var AppConstants = require('constants/AppConstants');
 var ProgressLine = require('components/common/ProgressLine');
 import {changeHandler} from 'utils/component-utils';
 
 @changeHandler
 export default class GoalViewer extends React.Component {
   static defaultProps = {
-
+    goal_slots: AppConstants.GOAL_DEFAULT_SLOTS
   }
+
+  static propTypes = {
+    goal_slots: React.PropTypes.number
+  }
+
   constructor(props) {
       super(props);
       this.state = {
@@ -34,6 +39,25 @@ export default class GoalViewer extends React.Component {
     this.fetch_current();
   }
 
+  handle_text_change(i, e) {
+    let val = e.currentTarget.value;
+    let {form} = this.state;
+    form.text[i] = val;
+    this.setState({form});
+  }
+
+  add_goal() {
+    let {form} = this.state;
+    form.text.push('');
+    this.setState({form});
+  }
+
+  remove_goal(i) {
+    let {form} = this.state;
+    form.text.splice(i, 1);
+    this.setState({form});
+  }
+
   update_goal(params) {
     api.post("/api/goal", params, (res) => {
       let g = res.goal;
@@ -47,8 +71,9 @@ export default class GoalViewer extends React.Component {
   }
 
   save_goals() {
-    let params = clone(this.state.form);
-    params.id = this.state.set_goal_form;
+    let params = clone(this.state.form)
+    params.id = this.state.set_goal_form
+    params.text = JSON.stringify(params.text)
     this.update_goal(params);
   }
 
@@ -86,7 +111,7 @@ export default class GoalViewer extends React.Component {
       let today = new Date();
       let form = {};
       if (g) {
-        form = util.spread_array(g, 'text', 'text', 4);
+        form = clone(g);
       }
       let id, label;
       if (type == 'annual') id = today.getFullYear();
@@ -106,17 +131,32 @@ export default class GoalViewer extends React.Component {
 
   render_set_goal_form() {
     let {set_goal_form, form} = this.state;
+    let goal_slots = Math.min(this.props.goal_slots, AppConstants.GOAL_MAX_SLOTS)
     if (set_goal_form) {
-      let _inputs = [1,2,3,4].map((idx) => {
-        let key = 'text' + (idx);
-        return <TextField key={key} name={key}
-                          placeholder={`Goal ${idx}`} value={form[key] || ''}
-                          onChange={this.changeHandler.bind(this, 'form', key)}
-                          fullWidth autoFocus={idx == 1} />
-      });
+      let _inputs = form.text.map((t, i) => {
+        return (
+          <div className="row" key={i}>
+            <div className="col-sm-11">
+              <TextField
+                placeholder={`Goal ${i+1}`} value={t || ''} name={"g"+i}
+                onChange={this.handle_text_change.bind(this, i)}
+                fullWidth autoFocus={t == null || t.length == 0} />
+            </div>
+            <div className="col-sm-1">
+              <div className="center-block">
+                <IconButton iconClassName="material-icons" tooltip="Remove Goal" tooltipPosition="bottom-left" onClick={this.remove_goal.bind(this, i)}>cancel</IconButton>
+              </div>
+            </div>
+          </div>
+        )
+      })
+      let can_add = form.text.length < goal_slots;
+      let _add;
+      if (can_add) _add = <FlatButton label="Add Goal" onClick={this.add_goal.bind(this)} />
       return (
         <div>
           { _inputs }
+          { _add }
         </div>
       )
     } else return null;

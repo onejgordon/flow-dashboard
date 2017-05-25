@@ -1001,7 +1001,7 @@ class Goal(UserAccessible):
 
     def Update(self, **params):
         if 'text' in params:
-            self.text = params.get('text')
+            self.text = params.get('text', [])
         if 'assessment' in params:
             a = params.get('assessment')
             if a:

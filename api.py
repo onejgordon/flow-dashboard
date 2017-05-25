@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta, time
 from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
     Readable, TrackingDay, Event, JournalTag, Report, Quote, Snapshot
-from constants import READABLE
+from constants import READABLE, GOAL
 from google.appengine.ext import ndb
 from google.appengine.api import mail
 from oauth2client import client
@@ -323,23 +323,14 @@ class GoalAPI(handlers.JsonRequestHandler):
         Create or update
         '''
         id = self.request.get('id')
+        self.log_request_params()
         params = tools.gets(self,
-            strings=['text1', 'text2', 'text3', 'text4'],
-            integers=['assessment']
-        )
+                            json=['text'],
+                            integers=['assessment'])
         goal = self.user.get(Goal, id=id)
         if not goal and id:
             goal = Goal.Create(self.user, id=id)
         if goal:
-            text = []
-            for i in range(1, 5):
-                key = 'text%d' % i
-                if key in params:
-                    text_i = params.get(key)
-                    if text_i:
-                        text.append(text_i)
-            if text:
-                params['text'] = text
             goal.Update(**params)
             goal.put()
             self.message = "Goal saved"

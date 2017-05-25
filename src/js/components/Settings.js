@@ -232,14 +232,20 @@ export default class Settings extends React.Component {
                 { name: 'same_day_hour', title: 'Hour after which to set new tasks for tomorrow', type: 'number', default_value: 16 },
                 { name: 'due_hour', title: 'Hour at which to set tasks due', type: 'number', default_value: 22 },
             ];
+            let goal_pref_atts = [
+                { name: 'slots', title: 'Maximum number of goals to enter per period', type: 'number', default_value: AppConstants.GOAL_DEFAULT_SLOTS }
+            ];
             _more = (
                 <Paper style={{padding: "10px", marginTop: "10px"}}>
-                    <h2>{ user.email }</h2>
 
                     <Tabs>
                         <Tab label="Basics">
                             <div className="row" style={{padding: '10px'}}>
                                 <div className="col-sm-6">
+                                    <p>
+                                        <label>Email</label>
+                                        <div>{ user.email }</div>
+                                    </p>
                                     <DatePicker autoOk={true} floatingLabelText="Birthday" formatDate={util.printDateObj} value={form.birthday} onChange={this.changeHandlerNilVal.bind(this, 'form', 'birthday')} />
                                 </div>
                                 <div className="col-sm-6">
@@ -297,6 +303,17 @@ export default class Settings extends React.Component {
                                 attributes={task_pref_atts}
                                 onChange={this.handle_settings_change.bind(this, ['tasks', 'preferences'])}
                                 editButtonLabel="Edit Task Preferences"
+                                />
+                        </Tab>
+
+                        <Tab label="Goals">
+                            <h3>Configure Goals</h3>
+
+                            <ReactJsonEditor
+                                array={false} data={get(settings, ['goals', 'preferences'], {})}
+                                attributes={goal_pref_atts}
+                                onChange={this.handle_settings_change.bind(this, ['goals', 'preferences'])}
+                                editButtonLabel="Edit Goal Preferences"
                                 />
                         </Tab>
 
