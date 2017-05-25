@@ -978,6 +978,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         today = datetime.today()
         habitdays = []
         goals = []
+        logging.debug([dt_start, dt_end])
         journals, iso_dates = MiniJournal.Fetch(self.user, dt_start, dt_end)
         if with_habits:
             habits = Habit.Active(self.user)
@@ -987,7 +988,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         if with_goals:
             goals = Goal.Year(self.user, today.year)
         if with_tasks:
-            tasks = Task.DueInRange(self.user, dt_start, dt_end, limit=100)
+            tasks = Task.DueInRange(self.user, dt_start, dt_end + timedelta(days=1), limit=100)
         self.set_response({
             'dates': iso_dates,
             'journals': [j.json() for j in journals if j],
