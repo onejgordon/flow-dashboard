@@ -20,7 +20,7 @@ export default class TaskHUD extends React.Component {
         notified: false
       }
       this.interval_id = null;
-      this.POMODORO_MINS = 2; // 25;
+      this.POMODORO_MINS = 25;
   }
 
   componentWillReceiveProps(nextProps) {
@@ -66,9 +66,18 @@ export default class TaskHUD extends React.Component {
     return task.timer_last_start > 0;
   }
 
+  target_reached() {
+    let {task} = this.props;
+    let target_ms = task.timer_target_ms;
+    if (target_ms > 0) {
+      return this.get_seconds() * 1000 >= target_ms;
+    } else return false;
+  }
+
   timer_update(params) {
     let {task} = this.props;
     params.id = task.id;
+    util.play_audio('complete.mp3');
     api.post("/api/task", params, (res) => {
       if (res.task) this.props.onTaskUpdate(res.task);
     });
@@ -89,12 +98,15 @@ export default class TaskHUD extends React.Component {
 
   stop_timer() {
     let {task} = this.props;
-    this.timer_update({
+    let params = {
       timer_last_start: 0,
       wip: 0,
       timer_total_ms: task.timer_total_ms + this.get_seconds() * 1000,
-      timer_pending_ms: 0
-    });
+      timer_pending_ms: 0,
+      timer_target_ms: 0
+    }
+    if (this.target_reached()) params.timer_complete_sess = task.timer_complete_sess + 1;
+    this.timer_update(params);
   }
 
   reset_timer() {
@@ -141,7 +153,15 @@ export default class TaskHUD extends React.Component {
     }
     let _target, _progress;
     _progress = secs > 0 ? util.secsToDuration(secs, {no_seconds: true, zero_text: "Less than a minute"}) : "--";
-    if (t.timer_target_ms > 0) _target = "Target: " + util.secsToDuration(t.timer_target_ms / 1000, {no_seconds: true})
+    let _check;
+    if (t.timer_target_ms > 0) {
+      let target_cls = '';
+      if (this.target_reached()) {
+       target_cls = 'target-reached';
+       _check = <i className="glyphicon glyphicon-ok-circle"></i>
+      }
+      _target = <span className={target_cls}>Target: { util.secsToDuration(t.timer_target_ms / 1000, {no_seconds: true}) } { _check }</span>
+    }
     return (
       <div className="taskHUD">
         <div className="row">

@@ -17,8 +17,11 @@ export default class Reports extends React.Component {
     static defaultProps = {};
     constructor(props) {
         super(props);
+        let d = new Date();
+        d.setDate(d.getDate() - 7);
         this.state = {
             form: {
+                start: d
             }
         };
         this.REPORT_DONE = 3;

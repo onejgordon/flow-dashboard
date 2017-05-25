@@ -292,7 +292,7 @@ div.section {
     color: #F9D23D;
 }
 
-.HabitWidget span.target.target-reached {
+.HabitWidget span.target.target-reached, .taskHUD span.target-reached {
     color: #22FF7A;
     font-weight: bold;
 }

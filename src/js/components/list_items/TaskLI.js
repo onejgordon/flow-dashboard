@@ -9,6 +9,7 @@ export default class TaskLI extends React.Component {
     onArchive: React.PropTypes.func,
     onDelete: React.PropTypes.func,
     onUpdateWIP: React.PropTypes.func,
+    onClearTimerLogs: React.PropTypes.func,
     canSetWIP: React.PropTypes.bool
   }
 
@@ -17,6 +18,7 @@ export default class TaskLI extends React.Component {
     onUpdateStatus: null,
     onArchive: null,
     onUpdateWIP: null,
+    onClearTimerLogs: null,
     canSetWIP: true
   }
 
@@ -45,6 +47,7 @@ export default class TaskLI extends React.Component {
     }
     if (!done) menu.push({icon: 'delete', click: this.props.onDelete.bind(this, t), label: 'Delete'})
     if (!archived) menu.push({icon: 'archive', click: this.props.onArchive.bind(this, t), label: 'Archive'});
+    if (t.timer_total_ms > 0) menu.push({icon: 'delete_sweep', click: this.props.onClearTimerLogs.bind(this, t), label: 'Clear Timer Logs'});
     if (t.status == this.NOT_DONE) click = this.props.onUpdateStatus.bind(this, t, this.DONE);
     if (done) click = this.props.onUpdateStatus.bind(this, t, this.NOT_DONE);
     let st = { fill: this.TASK_COLOR };

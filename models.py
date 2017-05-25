@@ -417,6 +417,7 @@ class Task(UserAccessible):
     timer_target_ms = ndb.IntegerProperty(indexed=False, default=0)  # For current timer run
     timer_pending_ms = ndb.IntegerProperty(indexed=False, default=0)
     timer_total_ms = ndb.IntegerProperty(indexed=False, default=0)  # Cumulative
+    timer_complete_sess = ndb.IntegerProperty(indexed=False, default=0)
 
     def json(self):
         return {
@@ -432,6 +433,7 @@ class Task(UserAccessible):
             'timer_total_ms': self.timer_total_ms or 0,
             'timer_target_ms': self.timer_target_ms or 0,
             'timer_pending_ms': self.timer_pending_ms or 0,
+            'timer_complete_sess': self.timer_complete_sess or 0,
             'timer_last_start': tools.unixtime(self.timer_last_start) if self.timer_last_start else 0
         }
 
@@ -509,6 +511,8 @@ class Task(UserAccessible):
                 self.timer_last_start = None
         if 'timer_target_ms' in params:
             self.timer_target_ms = params.get('timer_target_ms')
+        if 'timer_complete_sess' in params:
+            self.timer_complete_sess = params.get('timer_complete_sess')
         return message
 
     def mark_done(self):

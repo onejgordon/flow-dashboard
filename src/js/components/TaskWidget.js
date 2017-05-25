@@ -159,6 +159,16 @@ export default class TaskWidget extends React.Component {
     this.task_update(task, {wip: is_wip ? 1 : 0});
   }
 
+  clear_timer_logs(task) {
+    this.task_update(task, {
+      timer_pending_ms: 0,
+      timer_target_ms: 0,
+      timer_last_start: 0,
+      timer_total_ms: 0,
+      timer_complete_sess: 0
+    });
+  }
+
   wip_task() {
     let {tasks} = this.state;
     let wip_tasks = tasks.filter((t) => { return t.wip });
@@ -195,6 +205,7 @@ export default class TaskWidget extends React.Component {
                         canSetWIP={!wip_task}
                         onUpdateWIP={this.set_task_wip.bind(this)}
                         onUpdateStatus={this.update_status.bind(this)}
+                        onClearTimerLogs={this.clear_timer_logs.bind(this)}
                         onDelete={this.delete_task.bind(this)}
                         onArchive={this.archive.bind(this)} />;
             }) }

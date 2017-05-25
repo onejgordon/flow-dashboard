@@ -241,16 +241,22 @@ class TaskReportWorker(GCSReportWorker):
     def __init__(self, rkey):
         super(TaskReportWorker, self).__init__(rkey, start_att="dt_created", title="Task Report")
         self.prefetch_props = ['habit']
-        self.headers = ["Date Created", "Date Due", "Date Done", "Title", "Done", "Archived"]
+        self.headers = [
+            "Date Created", "Date Due", "Date Done", "Title", "Done", "Archived", "Seconds Logged",
+            "Complete Sessions Logged"]
 
     def entityData(self, task):
+        timer_ms = task.timer_total_ms or 0
+        sess = task.timer_complete_sess or 0
         row = [
             tools.sdatetime(task.dt_created, fmt=DATE_FMT),
             tools.sdatetime(task.dt_due, fmt=DATE_FMT),
             tools.sdatetime(task.dt_done, fmt=DATE_FMT),
             task.title,
             "1" if task.is_done() else "0",
-            "1" if task.archived else "0"
+            "1" if task.archived else "0",
+            str(timer_ms / 1000),
+            str(sess)
         ]
         return row
 
