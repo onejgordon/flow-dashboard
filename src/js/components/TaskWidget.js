@@ -1,7 +1,8 @@
 var React = require('react');
 import { IconButton, List,
-  RaisedButton, TextField, Paper,
+  IconMenu, FontIcon, MenuItem, TextField, Paper,
   FlatButton } from 'material-ui';
+import {browserHistory} from 'react-router';
 var util = require('utils/util');
 var api = require('utils/api');
 var TaskLI = require('components/list_items/TaskLI');
@@ -35,7 +36,9 @@ export default class TaskWidget extends React.Component {
       this.IB_ST = {
         padding: 10,
         width: 20,
-        height: 20
+        height: 20,
+        marginLeft: "20px",
+        marginTop: "10px"
       }
       this.TASK_COLOR = "#DF00FF";
   }
@@ -108,6 +111,10 @@ export default class TaskWidget extends React.Component {
     }
   }
 
+  goto_task_history() {
+    browserHistory.push('/app/task/history');
+  }
+
   show_new_box() {
     this.setState({new_showing: true}, () => {
       this.refs.new_task.focus();
@@ -166,7 +173,11 @@ export default class TaskWidget extends React.Component {
     let _buttons = [
       <IconButton key="ref" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.fetch_recent.bind(this)} tooltip="Refresh">refresh</IconButton>,
       <IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.show_new_box.bind(this)} tooltip="Add Task (T)">add</IconButton>,
-      <span key="archive_all" className="pull-right" style={{marginRight: '20px'}}><IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.archive_all_done.bind(this)} tooltip="Archive Complete">archive</IconButton></span>,
+      <IconMenu key="menu" className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
+        <MenuItem key="archive" onClick={this.archive_all_done.bind(this)} leftIcon={<FontIcon className="material-icons">archive</FontIcon>} primaryText="Archive Complete" />
+        <MenuItem key="task_history" onClick={this.goto_task_history.bind(this)} leftIcon={<FontIcon className="material-icons">list</FontIcon>} primaryText="Task History" />
+      </IconMenu>
+
     ]
     let morning = now.getHours() <= 12;
     let exclamation = morning ? "Set the top two or three tasks for today." : "All clear!"

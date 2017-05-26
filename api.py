@@ -92,7 +92,9 @@ class TaskAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        tasks = Task.Recent(self.user)
+        with_archived = self.request.get_range('with_archived') == 1
+        page, limit, offset = tools.paging_params(self.request)
+        tasks = Task.Recent(self.user, with_archived=with_archived, limit=limit, offset=offset)
         self.set_response({
             'tasks': [t.json() for t in tasks]
         }, success=True)

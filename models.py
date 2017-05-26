@@ -437,8 +437,11 @@ class Task(UserAccessible):
         return Task.query(ancestor=user.key).filter(Task.status == TASK.NOT_DONE).order(-Task.dt_created).fetch(limit=limit)
 
     @staticmethod
-    def Recent(user, limit=10):
-        return Task.query(ancestor=user.key).filter(Task.archived == False).order(-Task.dt_created).fetch(limit=limit)
+    def Recent(user, limit=10, with_archived=False, offset=0):
+        q = Task.query(ancestor=user.key).order(-Task.dt_created)
+        if not with_archived:
+            q = q.filter(Task.archived == False)
+        return q.fetch(limit=limit, offset=offset)
 
     @staticmethod
     def DueInRange(user, start, end, limit=100):

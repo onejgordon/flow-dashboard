@@ -29,8 +29,8 @@ export default class JournalHistory extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        let filter_change = prevState.form.reading_filter != this.state.reading_filter;
-        if (filter_change) this.refs.readables.refresh();
+        let filter_change = prevState.form.form != this.state.form;
+        if (filter_change) this.refs.journals.refresh();
     }
 
     open_editor(j) {
