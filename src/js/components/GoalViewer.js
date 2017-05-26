@@ -1,17 +1,24 @@
 var React = require('react');
-import { Dialog, RaisedButton, FlatButton, TextField,
+import { RaisedButton, FlatButton, TextField,
   IconButton, Slider } from 'material-ui';
+var MobileDialog = require('components/common/MobileDialog');
 var api = require('utils/api');
 var util = require('utils/util');
-import {clone} from 'lodash';
+import {clone, cloneDeep} from 'lodash';
+var AppConstants = require('constants/AppConstants');
 var ProgressLine = require('components/common/ProgressLine');
 import {changeHandler} from 'utils/component-utils';
 
 @changeHandler
 export default class GoalViewer extends React.Component {
   static defaultProps = {
-
+    goal_slots: AppConstants.GOAL_DEFAULT_SLOTS
   }
+
+  static propTypes = {
+    goal_slots: React.PropTypes.number
+  }
+
   constructor(props) {
       super(props);
       this.state = {
@@ -20,7 +27,8 @@ export default class GoalViewer extends React.Component {
           longterm: null,
           set_goal_form: null,  // Which goal to show form for (date str or 'longterm')
           form: {},
-          assessment_form: {assessment: 1}
+          assessment_form: [],
+          assessment_showing: false
       };
       this.ASSESS_LABELS = ["Very Poorly", "Poorly", "OK", "Well", "Very Well"];
       this.ASSESSMENT_DAY = 26;
@@ -30,6 +38,25 @@ export default class GoalViewer extends React.Component {
 
   componentDidMount() {
     this.fetch_current();
+  }
+
+  handle_text_change(i, e) {
+    let val = e.currentTarget.value;
+    let {form} = this.state;
+    form.text[i] = val;
+    this.setState({form});
+  }
+
+  add_goal() {
+    let {form} = this.state;
+    form.text.push('');
+    this.setState({form});
+  }
+
+  remove_goal(i) {
+    let {form} = this.state;
+    form.text.splice(i, 1);
+    this.setState({form});
   }
 
   update_goal(params) {
@@ -45,8 +72,9 @@ export default class GoalViewer extends React.Component {
   }
 
   save_goals() {
-    let params = clone(this.state.form);
-    params.id = this.state.set_goal_form;
+    let params = clone(this.state.form)
+    params.id = this.state.set_goal_form
+    params.text = JSON.stringify(params.text)
     this.update_goal(params);
   }
 
@@ -54,9 +82,18 @@ export default class GoalViewer extends React.Component {
     let {assessment_form} = this.state;
     let params = {
       id: g.id,
-      assessment: assessment_form.assessment
+      assessments: JSON.stringify(assessment_form)
     }
     this.update_goal(params);
+  }
+
+  handle_assessment_change(i, e, value) {
+    let {assessment_form} = this.state;
+    while (assessment_form.length <= i) {
+      assessment_form.push(1);
+    }
+    assessment_form[i] = value;
+    this.setState({assessment_form})
   }
 
   dismiss() {
@@ -75,17 +112,22 @@ export default class GoalViewer extends React.Component {
     });
   }
 
+  show_assessment() {
+    this.setState({assessment_showing: true});
+  }
+
   show_longterm() {
     if (this.state.longterm) this.show_goal_dialog(this.state.longterm, 'longterm');
-    else this.setState({set_goal_form: 'longterm', set_goal_label: 'long term', form: {}});
+    else this.setState({set_goal_form: 'longterm', set_goal_label: 'long term', form: {text: ['']}});
   }
 
   show_goal_dialog(g, type) {
       let today = new Date();
       let form = {};
       if (g) {
-        form = util.spread_array(g, 'text', 'text', 4);
+        form = cloneDeep(g);
       }
+      if (!form.text) form.text = [''];
       let id, label;
       if (type == 'annual') id = today.getFullYear();
       else if (type == 'monthly') {
@@ -104,24 +146,40 @@ export default class GoalViewer extends React.Component {
 
   render_set_goal_form() {
     let {set_goal_form, form} = this.state;
+    let goal_slots = Math.min(this.props.goal_slots, AppConstants.GOAL_MAX_SLOTS)
     if (set_goal_form) {
-      let _inputs = [1,2,3,4].map((idx) => {
-        let key = 'text' + (idx);
-        return <TextField key={key} name={key}
-                          placeholder={`Goal ${idx}`} value={form[key] || ''}
-                          onChange={this.changeHandler.bind(this, 'form', key)}
-                          fullWidth autoFocus={idx == 1} />
-      });
+      let _inputs = form.text.map((t, i) => {
+        return (
+          <div className="row" key={i}>
+            <div className="col-sm-11">
+              <TextField
+                placeholder={`Goal ${i+1}`} value={t || ''} name={"g"+i}
+                onChange={this.handle_text_change.bind(this, i)}
+                tabIndex={i+1}
+                fullWidth autoFocus={t == null || t.length == 0} />
+            </div>
+            <div className="col-sm-1">
+              <div className="center-block">
+                <IconButton iconClassName="material-icons" tooltip="Remove Goal" tooltipPosition="bottom-left" onClick={this.remove_goal.bind(this, i)} tabIndex={null}>cancel</IconButton>
+              </div>
+            </div>
+          </div>
+        )
+      })
+      let can_add = form.text.length < goal_slots;
+      let _add;
+      if (can_add) _add = <FlatButton label="Add Goal" onClick={this.add_goal.bind(this)} tabIndex={form.text.length} />
       return (
         <div>
           { _inputs }
+          { _add }
         </div>
       )
     } else return null;
   }
 
   render_goal(g, type) {
-    let {assessment_form} = this.state;
+    let {assessment_form, assessment_showing} = this.state;
     let goal_list, create_prompt;
     let today = new Date();
     let date_printed = "";
@@ -137,13 +195,24 @@ export default class GoalViewer extends React.Component {
       value = today.getDate();
       total = util.daysInMonth(date.getMonth()+1, date.getFullYear());
     }
-    let show_assessment = g && this.in_assessment_window() && !g.annual && !g.assessment;
-    let assess_label = this.ASSESS_LABELS[(assessment_form.assessment-1)];
+    let in_assessment_window = g && this.in_assessment_window() && !g.annual && !g.assessment;
     if (g) {
       goal_list = (
         <ul className="goalList">
           { g.text.map((txt, j) => {
-            return <li key={j}>{txt}</li>
+            let _assessment;
+            let val = assessment_form[j] || 1;
+            if (assessment_showing && in_assessment_window) _assessment = <Slider name='assessment'
+                                                       value={val}
+                                                       onChange={this.handle_assessment_change.bind(this, j)}
+                                                       max={5} min={1} defaultValue={1} step={1} />
+
+            return (
+              <div>
+                <li key={j}>{txt}</li>
+                { _assessment }
+              </div>
+            )
           }) }
         </ul>
       );
@@ -160,11 +229,11 @@ export default class GoalViewer extends React.Component {
         { goal_list }
         { create_prompt }
 
-        <div hidden={!show_assessment}>
-          <p className="lead">The month is almost over - how&apos;d you do?</p>
-
-          <Slider name='assessment' value={assessment_form.assessment} onChange={this.changeHandlerSlider.bind(this, 'assessment_form', 'assessment')} max={5} min={1} defaultValue={1} step={1} />
-          <RaisedButton label={`Submit Assessment (${assess_label})`} onClick={this.save_assessment.bind(this, g)} primary={true} />
+        <div hidden={!in_assessment_window || assessment_showing}>
+          <p className="lead">The month is almost over, how did you do? <FlatButton label="submit assessment" onClick={this.show_assessment.bind(this)} /></p>
+        </div>
+        <div hidden={!assessment_showing || !in_assessment_window}>
+          <RaisedButton label={`Save Assessment`} onClick={this.save_assessment.bind(this, g)} primary={true} />
         </div>
       </div>
     );
@@ -197,9 +266,12 @@ export default class GoalViewer extends React.Component {
 
         { _goals }
 
-        <Dialog open={set_goal_form != null} title={`Set ${goal_label} goals`} actions={actions} onRequestClose={this.dismiss.bind(this)}>
+        <MobileDialog open={set_goal_form != null}
+                title={`Set ${goal_label} goals`}
+                actions={actions}
+                onRequestClose={this.dismiss.bind(this)}>
           { this.render_set_goal_form() }
-        </Dialog>
+        </MobileDialog>
       </div>
     )
   }

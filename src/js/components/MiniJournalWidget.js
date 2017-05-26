@@ -1,6 +1,7 @@
 var React = require('react');
 import {Link} from 'react-router';
 var AppConstants = require('constants/AppConstants');
+var MobileDialog = require('components/common/MobileDialog');
 import { Dialog, TextField, Slider,
   FlatButton, RaisedButton, IconButton, List,
   DropDownMenu,
@@ -274,7 +275,7 @@ export default class MiniJournalWidget extends React.Component {
     )
     return (
       <div>
-        <Dialog title="Submit Daily Journal"
+        <MobileDialog title="Submit Daily Journal"
           open={open} onRequestClose={this.dismiss.bind(this)}
           autoDetectWindowHeight={true} autoScrollBodyContent={true}
           actions={actions}>
@@ -286,7 +287,7 @@ export default class MiniJournalWidget extends React.Component {
             { this.render_tasks() }
             { this.render_location() }
           </div>
-        </Dialog>
+        </MobileDialog>
 
         <div>
           <h3>Daily Journal</h3>

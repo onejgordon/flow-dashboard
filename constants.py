@@ -159,6 +159,7 @@ class GOAL():
     HELP = "You can review your monthly and annual goals. Try saying 'view goals'"
     SET_INFO = "Bear with us as we're still in beta! Please visit flowdash.co to create monthly, annual, and long-term goals."
 
+    DEFAULT_GOAL_SLOTS = 4
 
 class REPORT():
     # Types

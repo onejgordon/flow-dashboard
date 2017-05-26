@@ -98,7 +98,7 @@ export default class JournalEditor extends React.Component {
       if (tags_loading) _content = "Loading";
       else {
         let lis = this.filtered_tags(last_word).map((tag) => {
-          return <ListItem primaryText={tag.name} onClick={this.handle_tag_add.bind(this, tag, qname)} />
+          return <ListItem primaryText={tag.name} onTouchTap={this.handle_tag_add.bind(this, tag, qname)} />
         })
         if (lis.length == 0) _content = <div className="empty">No suggestions</div>
         else _content = (
@@ -133,8 +133,9 @@ export default class JournalEditor extends React.Component {
         _tags = this.render_tag_suggest(val || "", q.name);
         _hint = <small>You can @mention and #activity tag</small>
       }
-      if (!q.response_type || q.response_type == 'text') _response = <TextField name={q.name} ref={q.name} value={val || ''} onChange={this.changeHandler.bind(this, q.name)} fullWidth={true} />
-      else if (q.response_type == 'slider' || q.response_type == 'number') _response = <Slider name={q.name} value={val} onChange={this.changeHandlerSlider.bind(this, q.name)} max={10} min={1} defaultValue={5} step={1} />
+      let focus = i == 0;
+      if (!q.response_type || q.response_type == 'text') _response = <TextField name={q.name} ref={q.name} value={val || ''} onChange={this.changeHandler.bind(this, q.name)} fullWidth={true} autoFocus={focus} />
+      else if (q.response_type == 'slider' || q.response_type == 'number') _response = <Slider name={q.name} value={val} onChange={this.changeHandlerSlider.bind(this, q.name)} max={10} min={1} defaultValue={5} step={1} autoFocus={focus} />
       return (
         <div key={i}>
           <p className="lead">{ q.text }</p>

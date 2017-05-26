@@ -24,7 +24,7 @@ def get_books_on_shelf(user, shelf='currently-reading'):
         })
         params = data
         url = "https://www.goodreads.com/review/list/%s.xml?%s" % (user_id, params)
-        logging.debug(url)
+        logging.debug("Fetching %s for %s" % (url, user))
         res = urlfetch.fetch(
             url=url,
             method=urlfetch.GET,
@@ -52,6 +52,7 @@ def get_books_on_shelf(user, shelf='currently-reading'):
                                             read=False)
                 readables.append(r)
             success = True
+        logging.debug("Putting %d readable(s)" % len(readables))
         ndb.put_multi(readables)
         Readable.put_sd_batch(readables)
     return (success, readables)

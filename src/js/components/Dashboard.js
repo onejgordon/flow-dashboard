@@ -88,11 +88,14 @@ export default class Dashboard extends React.Component {
         let journal_location = false;
         let journal_window_start = AppConstants.JOURNAL_START_HOUR;
         let journal_window_end = AppConstants.JOURNAL_END_HOUR;
+        let goal_slots = AppConstants.GOAL_DEFAULT_SLOTS;
         if (user) {
             journal_qs = get(user, 'settings.journals.questions', []);
             journal_location = get(user, 'settings.journals.preferences.location_capture', false);
             journal_window_start = parseInt(get(user, 'settings.journals.preferences.journal_start_hour', AppConstants.JOURNAL_START_HOUR));
             journal_window_end = parseInt(get(user, 'settings.journals.preferences.journal_end_hour', AppConstants.JOURNAL_END_HOUR));
+            goal_slots = parseInt(get(user, 'settings.goals.preferences.slots', AppConstants.GOAL_DEFAULT_SLOTS));
+
         }
         let _more_options = this.flashcards().map((fc) => {
             return <MenuItem key={fc.id} leftIcon={<FontIcon className="material-icons">{fc.icon}</FontIcon>} onClick={this.show_more.bind(this, fc.id)}>{fc.card_title}</MenuItem>
@@ -103,9 +106,9 @@ export default class Dashboard extends React.Component {
         return (
             <div>
 
-                <TaskWidget ref="taskwidget" />
+                <TaskWidget ref="taskwidget" timezone={user.timezone} />
 
-                <GoalViewer />
+                <GoalViewer goal_slots={goal_slots} />
 
                 <ProjectViewer />
 

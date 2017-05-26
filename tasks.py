@@ -26,8 +26,7 @@ class SyncReadables(handlers.BaseRequestHandler):
             user_changes = False
             access_token = user.get_integration_prop('pocket_access_token')
             if access_token:
-                last_timestamp = user.get_integration_prop(TS_KEY, 0)
-                success, readables, latest_timestamp = pocket.sync(user, access_token, last_timestamp)
+                success, readables, latest_timestamp = pocket.sync(user, access_token)
                 logging.debug("Got %d readables from pocket" % len(readables))
                 user.set_integration_prop(TS_KEY, latest_timestamp)
                 user_changes = True

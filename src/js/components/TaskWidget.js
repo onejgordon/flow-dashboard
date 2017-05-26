@@ -14,10 +14,12 @@ import {changeHandler} from 'utils/component-utils';
 @changeHandler
 export default class TaskWidget extends React.Component {
   static propTypes = {
+    timezone: React.PropTypes.string,
     show_task_progressbar: React.PropTypes.bool
   }
 
   static defaultProps = {
+    timezone: "UTC",
     show_task_progressbar: true
   }
   constructor(props) {
@@ -153,7 +155,7 @@ export default class TaskWidget extends React.Component {
   }
 
   render() {
-    let {show_task_progressbar} = this.props;
+    let {show_task_progressbar, timezone} = this.props;
     let {tasks, new_showing, form, creating} = this.state;
     let now = new Date();
     let total_mins = 24 * 60;
@@ -169,11 +171,10 @@ export default class TaskWidget extends React.Component {
     let morning = now.getHours() <= 12;
     let exclamation = morning ? "Set the top two or three tasks for today." : "All clear!"
     let _no_tasks_cta = <span>{ exclamation } <a href="javascript:void(0)" onClick={this.show_new_box.bind(this)}>Add a task</a>.</span>
-
     return (
       <div className="TaskWidget" id="TaskWidget">
 
-        <h3 onClick={this.fetch_recent.bind(this)}>Top Tasks for {util.printDateObj(new Date(), "UTC", {format: "dddd, MMMM DD"})} { _buttons }</h3>
+        <h3 onClick={this.fetch_recent.bind(this)}>Top Tasks for {util.printDateObj(new Date(), timezone, {format: "dddd, MMMM DD"})} { _buttons }</h3>
         <ProgressLine value={current_mins} total={total_mins} tooltip={util.printTime(now)} />
         { visible_tasks.length > 0 ?
           <List className="taskList">

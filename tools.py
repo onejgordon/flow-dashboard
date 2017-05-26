@@ -86,6 +86,17 @@ def chunks(l, n):
         yield l[i:i+n]
 
 
+def pytz_tz(timezone):
+    '''
+    Safely get pytz timezone
+    '''
+    try:
+        tz = pytz.timezone(timezone)
+    except pytz.UnknownTimeZoneError:
+        tz = pytz.utc
+    return tz
+
+
 def local_time(timezone, dt=None, withTimezone=False):
     '''Takes a UTC datetime and converts it to the given timezone's time'''
     if not dt:
@@ -94,7 +105,7 @@ def local_time(timezone, dt=None, withTimezone=False):
     if _type == "time":
         dt = datetime.combine(datetime.today(), dt)
     if isinstance(timezone, basestring):
-        timezone = pytz.timezone(timezone)
+        timezone = pytz_tz(timezone)
     res = pytz.utc.localize(dt).astimezone(timezone)
     if not withTimezone:
         res = res.replace(tzinfo=None)
@@ -104,7 +115,7 @@ def local_time(timezone, dt=None, withTimezone=False):
 def server_time(timezone, dt):
     '''Takes a datetime of the given timezone and converts it to UTC time.'''
     if isinstance(timezone, basestring):
-        timezone = pytz.timezone(timezone)
+        timezone = pytz_tz(timezone)
     return timezone.localize(dt).astimezone(pytz.utc).replace(tzinfo=None)
 
 

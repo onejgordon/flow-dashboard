@@ -147,12 +147,12 @@ div.section {
     font-size: 1.3em;
 }
 
-.goalList > li {
+.goalList li {
     list-style-type: square;
     transition: .4s linear color;
 }
 
-.goalList > li:hover {
+.goalList li:hover {
   color: white;
 }
 
@@ -257,8 +257,18 @@ div.section {
   opacity: 1.0;
 }
 
-.HabitWidget > table, .HabitWidget tr, .HabitWidget td, .HabitWidget th {
+.HabitWidget tr, .HabitWidget td, .HabitWidget th {
     background-color: none;
+}
+
+.HabitWidget td, .HabitWidget th {
+
+}
+
+.HabitWidget > table {
+  background-color: rgba(0,0,0,0);
+  border-collapse: collapse;
+  border-spacing: 0;
 }
 
 .HabitWidget th, .HabitWidget td {
@@ -364,6 +374,52 @@ div.section {
 /* Timezone Picker */
 
 .timezone-picker .timezone-picker-textfield > input {
+}
+
+/* MobileDialog fix */
+
+.dialog-root {
+  padding: 0 !important;
+}
+
+.dialog-root > div:first-child {
+  height: 100%;
+}
+
+/* Used as wrapper */
+.dialog-root > div:first-child > .dialog-content {
+  transform: none !important;
+
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Actual content */
+.dialog-root > div:first-child > .dialog-content > div {
+  width: 100%;
+  max-width: 800px;
+  max-height: 100%;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-root > div:first-child > .dialog-content > div > .dialog-body {
+  padding: 0 !important;
+  border-top: solid #444 1px;
+  border-bottom: solid #444 1px;
+  display: flex;
+}
+
+.dialog-root > div:first-child > .dialog-content > div > .dialog-body > .dialog-scroll {
+  padding: 0 16px 16px 16px;
+  width: 100%;
+  overflow: auto;
 }
 
 /* Pace */

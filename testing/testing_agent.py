@@ -146,6 +146,8 @@ class AgentTestCase(BaseTestCase):
             # Add task
             ('add task finish report', 'input.task_add', {'task_name': 'finish report'}),
             ('remind me to clean the closet', 'input.task_add', {'task_name': 'clean the closet'}),
+            ('remind me to "mow the lawn"', 'input.task_add', {'task_name': 'mow the lawn'}),
+            ('remind me to "sweep the floor"', 'input.task_add', {'task_name': 'sweep the floor'}),
 
             # View tasks
             ('my tasks', 'input.task_view', None),

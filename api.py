@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta, time
 from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
     Readable, TrackingDay, Event, JournalTag, Report, Quote, Snapshot
-from constants import READABLE
+from constants import READABLE, GOAL
 from google.appengine.ext import ndb
 from google.appengine.api import mail
 from oauth2client import client
@@ -323,23 +323,11 @@ class GoalAPI(handlers.JsonRequestHandler):
         Create or update
         '''
         id = self.request.get('id')
-        params = tools.gets(self,
-            strings=['text1', 'text2', 'text3', 'text4'],
-            integers=['assessment']
-        )
+        params = tools.gets(self, json=['text', 'assessments'])
         goal = self.user.get(Goal, id=id)
-        if not goal:
+        if not goal and id:
             goal = Goal.Create(self.user, id=id)
         if goal:
-            text = []
-            for i in range(1, 5):
-                key = 'text%d' % i
-                if key in params:
-                    text_i = params.get(key)
-                    if text_i:
-                        text.append(text_i)
-            if text:
-                params['text'] = text
             goal.Update(**params)
             goal.put()
             self.message = "Goal saved"
@@ -1032,14 +1020,11 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         Sync from pocket since last sync
         '''
         from services import pocket
-        TS_KEY = 'pocket_last_timestamp'  # Seconds
+
         access_token = self.user.get_integration_prop('pocket_access_token')
-        init_sync_since = tools.unixtime(datetime.now() - timedelta(days=7), ms=False)
-        last_timestamp = self.user.get_integration_prop(TS_KEY, init_sync_since)
         readables = []
         if access_token:
-            self.success, readables, latest_timestamp = pocket.sync(self.user, access_token, last_timestamp)
-            self.user.set_integration_prop(TS_KEY, latest_timestamp)
+            self.success, readables, latest_timestamp = pocket.sync(self.user, access_token)
             self.user.put()
             self.update_session_user(self.user)
         else:

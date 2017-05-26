@@ -8,6 +8,8 @@ var AppConstants = {
     HABIT_WEEK_START: 0, // Sunday (d.getDay())
     JOURNAL_START_HOUR: 21, // Default
     JOURNAL_END_HOUR: 4, // Default
+    GOAL_DEFAULT_SLOTS: 4,
+    GOAL_MAX_SLOTS: 10,
     USER_ADMIN: 2,
     SECURE_BASE: "https://flowdash.co",
     TAGLINE: "Flow is a habit tracker and personal data analytics app that lets you keep focus on what matters. Flow owns none of your data. That's yours.",

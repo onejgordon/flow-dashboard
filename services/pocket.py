@@ -4,6 +4,7 @@ from google.appengine.api import urlfetch
 from google.appengine.ext import ndb
 from models import Readable
 import urllib
+from datetime import datetime, timedelta
 import json
 import tools
 import urlparse
@@ -96,7 +97,7 @@ def update_article(access_token, item_id, action='favorite'):
     return False
 
 
-def sync(user, access_token, since_timestamp=0):
+def sync(user, access_token):
     '''
     Return JSON array {title, author, isbn, image}
 
@@ -105,6 +106,10 @@ def sync(user, access_token, since_timestamp=0):
     {u'resolved_url': u'https://arxiv.org/abs/1701.06538', u'given_title': u'', u'is_article': u'1', u'sort_id': 16, u'word_count': u'221', u'status': u'0', u'has_image': u'0', u'given_url': u'https://arxiv.org/abs/1701.06538', u'favorite': u'0', u'has_video': u'0', u'time_added': u'1485774143', u'time_updated': u'1485774143', u'time_read': u'0', u'excerpt': u'Authors: Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, Jeff Dean  Abstract: The capacity of a neural network to absorb information is limited by its number of parameters.', u'resolved_title': u'Title: Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer', u'authors': {u'32207876': {u'url': u'', u'author_id': u'32207876', u'item_id': u'1576987151', u'name': u'cscs.CLcs.NEstatstat.ML'}}, u'resolved_id': u'1576987151', u'item_id': u'1576987151', u'time_favorited': u'0', u'is_index': u'0'}
     {u'resolved_url': u'http://lens.blogs.nytimes.com/2012/10/09/looking-into-the-eyes-of-made-in-china/', u'given_title': u'http://lens.blogs.nytimes.com/2012/10/09/looking-into-the-eyes-of-made-in-c', u'is_article': u'1', u'sort_id': 99, u'word_count': u'800', u'status': u'1', u'has_image': u'0', u'given_url': u'http://lens.blogs.nytimes.com/2012/10/09/looking-into-the-eyes-of-made-in-china/?partner=rss&emc=rss&smid=tw-nytimes', u'favorite': u'0', u'has_video': u'0', u'time_added': u'1349951324', u'time_updated': u'1482284773', u'time_read': u'1482284772', u'excerpt': u'Your clothes, your child\u2019s toys, even the device you use to read these words may have been made in China. They are among the $100 billion of goods that the United States imports from China each year \u2014 an exchange that has become an important issue in the 2012 presidential campaign.', u'resolved_title': u'Looking Into the Eyes of &#8216;Made in China&#8217;', u'authors': {u'3024958': {u'url': u'', u'author_id': u'3024958', u'item_id': u'233921121', u'name': u'KERRI MACDONALD'}}, u'resolved_id': u'233843309', u'item_id': u'233921121', u'time_favorited': u'0', u'is_index': u'0'}
     '''
+    dt = datetime.now() - timedelta(days=7)
+    init_sync_since = tools.unixtime(dt, ms=False)
+    TS_KEY = 'pocket_last_timestamp'  # Seconds
+    since_timestamp = user.get_integration_prop(TS_KEY, init_sync_since)
     data = urllib.urlencode({
         'access_token': access_token,
         'consumer_key': POCKET_CONSUMER_KEY,
@@ -113,6 +118,7 @@ def sync(user, access_token, since_timestamp=0):
         'state': 'all'
     })
     success = False
+    logging.debug("Syncing pocket for %s since %s" % (user, dt))
     res = urlfetch.fetch(
         url=GET_ENDPOINT,
         payload=data,
@@ -171,6 +177,7 @@ def sync(user, access_token, since_timestamp=0):
                     readables.append(r)
         ndb.put_multi(save)  # Save all
         Readable.put_sd_batch(save)
+        user.set_integration_prop(TS_KEY, latest_timestamp)
         success = True
     else:
         logging.debug(res.headers)
