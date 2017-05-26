@@ -230,7 +230,7 @@ export default class GoalViewer extends React.Component {
         { create_prompt }
 
         <div hidden={!in_assessment_window || assessment_showing}>
-          <p className="lead">The month is almost over. <FlatButton label="submit assessment" onClick={this.show_assessment.bind(this)} /></p>
+          <p className="lead">The month is almost over, how did you do? <FlatButton label="submit assessment" onClick={this.show_assessment.bind(this)} /></p>
         </div>
         <div hidden={!assessment_showing || !in_assessment_window}>
           <RaisedButton label={`Save Assessment`} onClick={this.save_assessment.bind(this, g)} primary={true} />

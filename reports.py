@@ -3,7 +3,7 @@ import tools
 from google.appengine.ext import ndb
 from google.appengine.api import logservice, memcache
 from models import Report, HabitDay, Task, Goal, MiniJournal, Event
-from constants import REPORT, GCS_REPORT_BUCKET
+from constants import REPORT, GCS_REPORT_BUCKET, GOAL
 import cloudstorage as gcs
 from datetime import datetime
 import gc
@@ -261,18 +261,21 @@ class GoalReportWorker(GCSReportWorker):
     def __init__(self, rkey):
         super(GoalReportWorker, self).__init__(rkey, start_att="dt_created", title="Goal Report")
         self.prefetch_props = ['habit']
-        self.headers = ["Date Created", "Text 1", "Text 2", "Text 3", "Text 4", "Assessment"]
+        self.n_slots = int(self.user.get_setting_prop(['goals', 'preferences', 'slots'], default=GOAL.DEFAULT_GOAL_SLOTS))
+        self.headers = ["Goal Period", "Date Created"]
+        for i in range(1, self.n_slots+1):
+            self.headers.append("Text %s" % i)
+        self.headers.extend(["Goal Assessments", "Overall Assessment"])
 
     def entityData(self, goal):
-        texts = len(goal.text) if goal.text else 0
-        row = [
-            tools.sdatetime(goal.dt_created, fmt=DATE_FMT),
-            goal.text[0] if texts > 0 else "",
-            goal.text[1] if texts > 1 else "",
-            goal.text[2] if texts > 2 else "",
-            goal.text[3] if texts > 3 else "",
-            str(goal.assessment) if goal.assessment else ""
-        ]
+        n_texts = len(goal.text) if goal.text else 0
+        logging.debug(goal.text)
+        logging.debug(n_texts)
+        row = [goal.key.id(), tools.sdatetime(goal.dt_created, fmt=DATE_FMT)]
+        slots = [(goal.text[i] if n_texts > i else "") for i in range(self.n_slots)]
+        row += slots
+        row += [','.join([str(a) for a in goal.assessments]) if goal.assessments else ""]
+        row += [str(goal.assessment) if goal.assessment else ""]
         return row
 
 
