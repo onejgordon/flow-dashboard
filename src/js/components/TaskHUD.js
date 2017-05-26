@@ -19,7 +19,8 @@ export default class TaskHUD extends React.Component {
   constructor(props) {
       super(props);
       this.state = {
-        notified: false
+        notified: false,
+        working: false
       }
       this.interval_id = null;
       this.POMODORO_MINS = 25;
@@ -78,11 +79,19 @@ export default class TaskHUD extends React.Component {
 
   timer_update(params) {
     let {task} = this.props;
+    let {working} = this.state;
     params.id = task.id;
-    util.play_audio('complete.mp3');
-    api.post("/api/task", params, (res) => {
-      if (res.task) this.props.onTaskUpdate(res.task);
-    });
+    if (!working) {
+      util.play_audio('complete.mp3');
+      this.setState({working: true}, () => {
+        api.post("/api/task", params, (res) => {
+          if (res.task) this.props.onTaskUpdate(res.task);
+          this.setState({working: false});
+        }, (res_err) => {
+          this.setState({working: false});
+        });
+      })
+    }
   }
 
   start_timer() {
@@ -128,16 +137,16 @@ export default class TaskHUD extends React.Component {
 
   render_controls() {
     let {task} = this.props;
+    let {working} = this.state;
     let playing = this.playing();
     let controls = [];
     if (playing) {
-      controls.push(<IconButton iconClassName="material-icons" onClick={this.pause_timer.bind(this)} tooltipPosition="top-center" tooltip="Pause Logging">pause</IconButton>)
-
+      controls.push(<IconButton iconClassName="material-icons" onClick={this.pause_timer.bind(this)} tooltipPosition="top-center" tooltip="Pause Timer" disabled={working}>pause</IconButton>)
     }
-    else controls.push(<IconButton iconClassName="material-icons" onClick={this.start_timer.bind(this)} tooltipPosition="top-center" tooltip="Start Logging">play_arrow</IconButton>)
-    controls.push(<IconButton iconClassName="material-icons" onClick={this.set_pomodoro.bind(this)} tooltipPosition="top-center" tooltip={`Set Pomodoro Timer (${this.POMODORO_MINS} minutes)`}>timer</IconButton>)
-    controls.push(<IconButton iconClassName="material-icons" onClick={this.stop_timer.bind(this)} tooltipPosition="top-center" tooltip="Stop and Save Logged Time">stop</IconButton>)
-    if (this.get_seconds() > 0) controls.push(<IconButton iconClassName="material-icons" onClick={this.reset_timer.bind(this)} tooltipPosition="top-center" tooltip="Reset Timer">restore</IconButton>)
+    else controls.push(<IconButton iconClassName="material-icons" onClick={this.start_timer.bind(this)} tooltipPosition="top-center" tooltip="Start Timer" disabled={working}>play_arrow</IconButton>)
+    controls.push(<IconButton iconClassName="material-icons" onClick={this.set_pomodoro.bind(this)} tooltipPosition="top-center" tooltip={`Set Pomodoro Timer (${this.POMODORO_MINS} minutes)`} disabled={working}>timer</IconButton>)
+    controls.push(<IconButton iconClassName="material-icons" onClick={this.stop_timer.bind(this)} tooltipPosition="top-center" tooltip="Stop and Save Logged Time" disabled={working}>stop</IconButton>)
+    if (this.get_seconds() > 0) controls.push(<IconButton iconClassName="material-icons" onClick={this.reset_timer.bind(this)} tooltipPosition="top-center" tooltip="Clear & Reset Timer" disabled={working}>restore</IconButton>)
     return controls;
   }
 
@@ -177,7 +186,7 @@ export default class TaskHUD extends React.Component {
               { this.render_controls() }
             </div>
             <div className="col-sm-4">
-              <div className="hud-label">{`Logging (${timer_state})`} { _target }</div>
+              <div className="hud-label">{`Timer (${timer_state})`} { _target }</div>
               <div className="timers">
                 <div className={time_cls}>{ _playing }{ _progress }</div>
               </div>
