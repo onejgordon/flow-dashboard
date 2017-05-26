@@ -947,6 +947,7 @@ class Goal(UserAccessible):
             'iso_date': tools.iso_date(self.date),
             'text': self.text,
             'assessment': self.assessment,
+            'assessments': self.assessments,
             'annual': self.annual(),
             'monthly': self.monthly(),
             'longterm': self.longterm()

@@ -23,7 +23,7 @@ export default class ProgressLine extends React.Component {
   }
 
   componentDidMount() {
-    ReactTooltip.rebuild();
+    if (this.props.tooltip) ReactTooltip.rebuild();
   }
 
   render() {
