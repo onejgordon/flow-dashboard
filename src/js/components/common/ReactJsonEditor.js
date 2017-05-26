@@ -150,7 +150,11 @@ export default class ReactJSONEditor extends React.Component {
     let {editing_index} = this.state;
      let form_value = val == null ? att.default_value : val;
     if (att.type == 'text' || att.type == 'number') {
-      return <TextField type={att.type} name={att.name} value={form_value} onChange={this.handleTargetChange.bind(this, att.name)} placeholder={att.title} fullWidth />
+      let other_atts = att.inputAtts || {};
+      return <TextField type={att.type} name={att.name} value={form_value}
+                        onChange={this.handleTargetChange.bind(this, att.name)}
+                        placeholder={att.title}
+                        fullWidth {...other_atts} />
     } else if (att.type == 'checkbox') {
       return <Toggle name={att.name} toggled={form_value} onToggle={this.handleToggleChange.bind(this, att.name)} label={att.title} labelPosition="right" />
     } else if (att.type == 'dropdown') {

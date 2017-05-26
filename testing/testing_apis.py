@@ -87,7 +87,7 @@ class APITestCase(BaseTestCase):
         self.assertEqual(goal.get('text')[0], "Get it done")
 
         # Update
-        response = self.post_json("/api/goal", {'id': goal.get('id'), 'text1': 'New goal 1', 'text2': u'New goal 2 with unicode. ありがとう'}, headers=self.api_headers)
+        response = self.post_json("/api/goal", {'id': goal.get('id'), 'text': json.dumps(['New goal 1', u'New goal 2 with unicode. ありがとう'])}, headers=self.api_headers)
         goal = response.get('goal')
         self.assertEqual(goal.get('text')[0], 'New goal 1')
         self.assertEqual(goal.get('text')[1], u'New goal 2 with unicode. ありがとう')
