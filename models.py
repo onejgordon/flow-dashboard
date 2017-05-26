@@ -962,7 +962,8 @@ class Goal(UserAccessible):
     date = ndb.DateProperty()  # Date for (first day of month or year)
     dt_created = ndb.DateTimeProperty(auto_now_add=True)
     text = ndb.TextProperty(repeated=True)  # Can have multiple goals for period
-    assessment = ndb.IntegerProperty()  # How'd we do (1-5)
+    assessments = ndb.IntegerProperty(indexed=False, repeated=True)  # 1-5 rating for each goal
+    assessment = ndb.FloatProperty()  # Overall rating (averaged)
 
     def json(self):
         res = {
@@ -970,6 +971,7 @@ class Goal(UserAccessible):
             'iso_date': tools.iso_date(self.date),
             'text': self.text,
             'assessment': self.assessment,
+            'assessments': self.assessments,
             'annual': self.annual(),
             'monthly': self.monthly(),
             'longterm': self.longterm()
@@ -1025,11 +1027,10 @@ class Goal(UserAccessible):
 
     def Update(self, **params):
         if 'text' in params:
-            self.text = params.get('text')
-        if 'assessment' in params:
-            a = params.get('assessment')
-            if a:
-                self.assessment = int(a)
+            self.text = params.get('text', [])
+        if 'assessments' in params:
+            self.assessments = params.get('assessments', [])
+            self.assessment = tools.mean(self.assessments)
 
     def type(self):
         return 'annual' if self.annual() else 'monthly'

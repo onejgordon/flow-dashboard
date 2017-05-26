@@ -82,7 +82,8 @@ export default class Reports extends React.Component {
           <ListItem
             primaryText={r.title}
             secondaryText={status_text}
-            rightIconButton={_menu} />
+            rightIconButton={_menu}
+            onTouchTap={this.download.bind(this, r)} />
           )
     }
 

@@ -147,12 +147,12 @@ div.section {
     font-size: 1.3em;
 }
 
-.goalList > li {
+.goalList li {
     list-style-type: square;
     transition: .4s linear color;
 }
 
-.goalList > li:hover {
+.goalList li:hover {
   color: white;
 }
 
