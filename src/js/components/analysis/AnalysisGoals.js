@@ -82,8 +82,8 @@ export default class AnalysisGoals extends React.Component {
                                             tooltip={`Assessment: ${assess_num}`}
                                             min_color="#FC004E" />
             return (
-                <div>
-                    <li key={i}>{text}</li>
+                <div key={i}>
+                    <li>{text}</li>
                     { assess }
                 </div>
             )
