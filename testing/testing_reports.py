@@ -137,3 +137,13 @@ class ReportsTestCases(BaseTestCase):
                 ]
             ]
         )
+
+    def test_fetch_and_delete(self):
+        self.post_json("/api/report/generate", {'type': REPORT.TASK_REPORT}, headers=self.api_headers)
+        self.execute_tasks_until_empty()
+        reports = Report.Fetch(self.u)
+        self.assertEqual(len(reports), 1)
+        # Delete
+        reports[0].clean_delete()
+        reports = Report.Fetch(self.u)
+        self.assertEqual(len(reports), 0)

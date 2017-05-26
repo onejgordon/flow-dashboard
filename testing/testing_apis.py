@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf8 -*-
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from base_test_case import BaseTestCase
 from models import Goal
 from flow import app as tst_app
@@ -9,6 +9,7 @@ from constants import USER, TASK
 from models import Habit, Task, Project, Event, Readable, Quote, Snapshot
 from services.agent import ConversationAgent
 import json
+import tools
 
 
 class APITestCase(BaseTestCase):
@@ -60,7 +61,8 @@ class APITestCase(BaseTestCase):
         self.assertEqual(h.get('name'), 'Walk')
 
         # Actions
-        DAY = '2017-01-02'
+        today = datetime.now()
+        DAY = tools.iso_date(today - timedelta(days=1))
         hid = h.get('id')
         actions = [
             {'action': 'commit', 'expected_prop': 'committed'},
@@ -75,6 +77,20 @@ class APITestCase(BaseTestCase):
             hd = response.get('habitday')
             prop = act.get('expected_prop')
             self.assertTrue(hd.get(prop))
+
+        # Recent
+        response = self.get_json("/api/habit/recent", {'days': 3}, headers=self.api_headers)
+        habitdays = response.get('habitdays')
+        self.assertTrue(hd.get('id') in habitdays)
+
+        # Recent
+        params = {
+            'start_date': tools.iso_date(today - timedelta(days=2)),
+            'end_date': tools.iso_date(today)
+        }
+        response = self.get_json("/api/habit/range", params, headers=self.api_headers)
+        habitdays = response.get('habitdays')
+        self.assertTrue(hd.get('id') in habitdays)
 
         # Delete
         response = self.post_json("/api/habit/delete", {'id': h.get('id')}, headers=self.api_headers)
