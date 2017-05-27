@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## Version 0-26
+
+### Added
+
+* Task history viewer
+* Task timing (pomodoro sessions)
+* Optional task linking with projects
+* User-definable goal slots (can be increased to 10)
+* Individual goal assessments (averaged to overall assessment)
+* Drill-down on goal analysis to view goal assessments
+
 ## Version 0-25
 
 ### Added
