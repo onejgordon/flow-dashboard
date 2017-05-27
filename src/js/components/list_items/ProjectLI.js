@@ -146,7 +146,7 @@ export default class ProjectLI extends React.Component {
                 <MenuItem primaryText="Edit" leftIcon={<FontIcon className="material-icons">mode_edit</FontIcon>} onClick={this.handle_edit_click.bind(this, project)} />
                 <MenuItem primaryText={progress_action_label} leftIcon={<FontIcon className="material-icons">view_week</FontIcon>} onClick={this.toggle_progress.bind(this)} />
                 <MenuItem primaryText="Archive project" leftIcon={<FontIcon className="material-icons">archive</FontIcon>} onClick={this.archive.bind(this)} />
-                <MenuItem primaryText="Chart Progress (Burn Up)" leftIcon={<FontIcon className="material-icons">show_chart</FontIcon>} onClick={this.show_analysis.bind(this)} />
+                <MenuItem primaryText="Visualize Project" leftIcon={<FontIcon className="material-icons">show_chart</FontIcon>} onClick={this.show_analysis.bind(this)} />
               </IconMenu>
             </div>
             <h2 style={this.H}>

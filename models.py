@@ -439,10 +439,12 @@ class Task(UserAccessible):
         return Task.query(ancestor=user.key).filter(Task.status == TASK.NOT_DONE).order(-Task.dt_created).fetch(limit=limit)
 
     @staticmethod
-    def Recent(user, limit=10, with_archived=False, offset=0):
+    def Recent(user, limit=10, offset=0, with_archived=False, project_id=None):
         q = Task.query(ancestor=user.key).order(-Task.dt_created)
         if not with_archived:
             q = q.filter(Task.archived == False)
+        if project_id:
+            q = q.filter(Task.project == ndb.Key('User', user.key.id(), 'Project', project_id))
         return q.fetch(limit=limit, offset=offset)
 
     @staticmethod
