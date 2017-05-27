@@ -97,9 +97,10 @@ class TaskAPI(handlers.JsonRequestHandler):
         page, limit, offset = tools.paging_params(self.request)
         if project_id:
             with_archived = True
-        tasks = Task.Recent(self.user, with_archived=with_archived, project_id=project_id, limit=limit, offset=offset)
+        tasks = Task.Recent(self.user, with_archived=with_archived, project_id=project_id,
+                            limit=limit, offset=offset, prefetch=['project'])
         self.set_response({
-            'tasks': [t.json() for t in tasks]
+            'tasks': [t.json(references=['project']) for t in tasks]
         }, success=True)
 
     @authorized.role('user')
@@ -111,7 +112,8 @@ class TaskAPI(handlers.JsonRequestHandler):
         params = tools.gets(self,
             strings=['title'],
             booleans=['archived', 'wip'],
-            integers=['status', 'project_id']
+            integers=['status', 'timer_last_start', 'timer_target_ms', 'timer_pending_ms',
+                      'timer_total_ms', 'timer_complete_sess', 'project_id']
         )
         task = None
         if id:
@@ -970,6 +972,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         today = datetime.today()
         habitdays = []
         goals = []
+        logging.debug([dt_start, dt_end])
         journals, iso_dates = MiniJournal.Fetch(self.user, dt_start, dt_end)
         if with_habits:
             habits = Habit.Active(self.user)
@@ -979,7 +982,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         if with_goals:
             goals = Goal.Year(self.user, today.year)
         if with_tasks:
-            tasks = Task.DueInRange(self.user, dt_start, dt_end, limit=100)
+            tasks = Task.DueInRange(self.user, dt_start, dt_end + timedelta(days=1), limit=100)
         self.set_response({
             'dates': iso_dates,
             'journals': [j.json() for j in journals if j],

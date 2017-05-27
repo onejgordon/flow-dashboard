@@ -10,6 +10,7 @@ var util = require('utils/util');
 var api = require('utils/api');
 var TaskLI = require('components/list_items/TaskLI');
 import {findIndexById, findItemById, removeItemsById} from 'utils/store-utils';
+var TaskHUD = require('components/TaskHUD');
 var ProgressLine = require('components/common/ProgressLine');
 var toastr = require('toastr');
 var AsyncActionButton = require('components/common/AsyncActionButton');
@@ -176,12 +177,16 @@ class TaskWidget extends React.Component {
     params.id = task.id;
     api.post("/api/task", params, (res) => {
       if (res.task) {
-        let {tasks} = this.state;
-        let idx = findIndexById(tasks, res.task.id, 'id');
-        if (idx > -1) tasks[idx] = res.task;
-        this.setState({tasks});
+        this.handle_task_changed(res.task);
       }
     });
+  }
+
+  handle_task_changed(task) {
+    let {tasks} = this.state;
+    let idx = findIndexById(tasks, task.id, 'id');
+    if (idx > -1) tasks[idx] = task;
+    this.setState({tasks});
   }
 
   archive(task) {
@@ -203,6 +208,22 @@ class TaskWidget extends React.Component {
 
   show_project_selector() {
     this.setState({project_selector_showing: true})
+  }
+
+  clear_timer_logs(task) {
+    this.task_update(task, {
+      timer_pending_ms: 0,
+      timer_target_ms: 0,
+      timer_last_start: 0,
+      timer_total_ms: 0,
+      timer_complete_sess: 0
+    });
+  }
+
+  wip_task() {
+    let {tasks} = this.state;
+    let wip_tasks = tasks.filter((t) => { return t.wip });
+    if (wip_tasks.length > 0) return wip_tasks[0];
   }
 
   render() {
@@ -257,6 +278,7 @@ class TaskWidget extends React.Component {
       let p = findItemById(this.props.ps.projects, form.project_id, 'id');
       if (p) dialog_actions.splice(0, 0, <span className="transparent" style={{marginRight: "15px"}}>Linking with: { p.title }</span>)
     }
+    let wip_task = this.wip_task();
     return (
       <div className="TaskWidget" id="TaskWidget">
 
@@ -266,8 +288,10 @@ class TaskWidget extends React.Component {
           <List className="taskList">
             { visible_tasks.sort((a, b) => { return b.wip - a.wip;}).map((t) => {
               return <TaskLI key={t.id} task={t}
+                        wip_enabled={!wip_task}
                         onUpdateWIP={this.set_task_wip.bind(this)}
                         onUpdateStatus={this.update_status.bind(this)}
+                        onClearTimerLogs={this.clear_timer_logs.bind(this)}
                         onDelete={this.delete_task.bind(this)}
                         onArchive={this.archive.bind(this)} />;
             }) }
@@ -301,6 +325,7 @@ class TaskWidget extends React.Component {
           </div>
         </Dialog>
 
+        <TaskHUD task={wip_task} onTaskUpdate={this.handle_task_changed.bind(this)} />
       </div>
     )
   }
