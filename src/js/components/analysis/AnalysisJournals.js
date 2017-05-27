@@ -12,9 +12,14 @@ import connectToStores from 'alt-utils/lib/connectToStores';
 
 @connectToStores
 export default class AnalysisJournals extends React.Component {
+    static propTypes = {
+        journals: React.PropTypes.array
+    }
+
     static defaultProps = {
         journals: []
-    };
+    }
+
     constructor(props) {
         super(props);
         let user = props.user;
@@ -69,7 +74,7 @@ export default class AnalysisJournals extends React.Component {
     }
 
     journal_data() {
-        let {chart_enabled_questions, questions} = this.state;
+        let {chart_enabled_questions, questions, journal_tag_segment} = this.state;
         let {journals} = this.props;
         let labels = [];
         let chart_questions = questions.filter((q) => {
@@ -92,6 +97,21 @@ export default class AnalysisJournals extends React.Component {
                 pointBackgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`
             }
         });
+        if (journal_tag_segment) {
+            let tag_data = journals.map((j, i) => {
+                let tagged = j.tags.indexOf(journal_tag_segment.id) > -1
+                return tagged ? 1 : null
+            })
+            datasets.push({
+                label: `Tagged '${journal_tag_segment.name}'`,
+                data: tag_data,
+                pointRadius: 7,
+                pointHoverRadius: 9,
+                backgroundColor: '#3FE0F2',
+                pointBackgroundColor: '#3FE0F2',
+                // showLine: false
+            })
+        }
         return {
             labels: labels,
             datasets: datasets
@@ -113,9 +133,6 @@ export default class AnalysisJournals extends React.Component {
         let {tags, journal_segments, questions} = this.state;
         let {journals} = this.props;
         let tag = tags[index];
-        console.log(tag);
-        let days_without_tag = [];
-        let days_with_tag = [];
         let aggregate = {};
         let variables = questions.filter((q) => {
             return q.tag_segment_chart;
@@ -143,7 +160,6 @@ export default class AnalysisJournals extends React.Component {
         let data_without = [];
         // let labels = [];
         variables.forEach((v) => {
-            // labels = labels.concat([v + ' (with tag)', v + ' (without tag)']);
             data_with.push(util.average(aggregate[v.name].with));
             data_without.push(util.average(aggregate[v.name].without));
         });
@@ -152,7 +168,6 @@ export default class AnalysisJournals extends React.Component {
             data_without_tag: data_without,
             labels: variables.map((v) => { return v.label; })
         }
-        console.log(journal_segments);
         this.setState({journal_tag_segment: tag, journal_segments: journal_segments});
     }
 
@@ -313,13 +328,13 @@ export default class AnalysisJournals extends React.Component {
                       onNewRequest={this.handle_tag_selected.bind(this)}
                       filter={(searchText, key) => searchText !== '' && key.toLowerCase().indexOf(searchText.toLowerCase()) !== -1 }
                       dataSourceConfig={{text: 'id', value: 'id'}}
-                      floatingLabelText="Tag Segment"
+                      floatingLabelText="View Tag"
                       fullWidth={true}
                     />
 
                 { _journals_segmented }
 
-                <div hidden={map_showing}>
+                <div hidden={true}>
                     <FlatButton label="Show Map" onClick={this.show_map.bind(this)} disabled />
                 </div>
 

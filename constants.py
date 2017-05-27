@@ -34,6 +34,7 @@ DEFAULT_USER_SETTINGS = {
                 'text': "How was the day?",
                 'response_type': "number",
                 'chart': True,
+                'chart_default': True,
                 'tag_segment_chart': True,
                 'color': '#dd0000'
             }
