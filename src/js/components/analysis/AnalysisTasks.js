@@ -1,27 +1,22 @@
 var React = require('react');
-
 var util = require('utils/util');
-
-var LoadStatus = require('components/common/LoadStatus');
-import {FontIcon, IconButton, FlatButton, AutoComplete,
-    Checkbox} from 'material-ui';
 import {Bar, Line} from "react-chartjs-2";
-var api = require('utils/api');
-import {get} from 'lodash';
-
+var Select = require('react-select');
+import {changeHandler} from 'utils/component-utils';
 import connectToStores from 'alt-utils/lib/connectToStores';
 
 @connectToStores
+@changeHandler
 export default class AnalysisTasks extends React.Component {
     static defaultProps = {
         goals: {}
     };
     constructor(props) {
         super(props);
-        let today = new Date();
-        let start = new Date();
-        start.setDate(today.getDate() - this.INITIAL_RANGE);
         this.state = {
+            form: {
+                chart_type: 'count'  // ['count', 'sessions', 'time']
+            },
         };
     }
 
@@ -37,9 +32,18 @@ export default class AnalysisTasks extends React.Component {
 
     }
 
+    get_task_value(t) {
+        let {form} = this.state;
+        return {
+            'count': 1,
+            'sessions': t.timer_complete_sess,
+            'time': parseInt(t.timer_total_ms / 1000 / 60)
+        }[form.chart_type];
+    }
+
     task_data() {
+
         let {iso_dates, tasks} = this.props;
-        let datasets = [];
         let completed_on_time = [];
         let completed_late = [];
         let not_completed = [];
@@ -48,22 +52,23 @@ export default class AnalysisTasks extends React.Component {
             let tasks_due_on_day = tasks.filter((t) => {
                 return util.printDate(t.ts_due) == iso_date;
             });
-            let n_on_time = 0;
-            let n_late = 0;
-            let n_incomplete = 0;
+            let on_time_value = 0;
+            let late_value = 0;
+            let incomplete_value = 0;
             tasks_due_on_day.forEach((t) => {
                 let done = t.done;
+                let value = this.get_task_value(t);
                 if (done) {
                     let on_time = t.ts_done <= t.ts_due + DUE_BUFFER;
-                    if (on_time) n_on_time += 1;
-                    else n_late += 1;
+                    if (on_time) on_time_value += value;
+                    else late_value += value;
                 } else {
-                    n_incomplete += 1;
+                    incomplete_value += value;
                 }
             });
-            completed_on_time.push(n_on_time);
-            completed_late.push(n_late);
-            not_completed.push(n_incomplete);
+            completed_on_time.push(on_time_value);
+            completed_late.push(late_value);
+            not_completed.push(incomplete_value);
         })
         let data = {
             labels: iso_dates,
@@ -89,7 +94,7 @@ export default class AnalysisTasks extends React.Component {
     }
 
     render() {
-        let today = new Date();
+        let {form} = this.state;
         let taskData = this.task_data()
         let taskOptions = {
             scales: {
@@ -101,16 +106,30 @@ export default class AnalysisTasks extends React.Component {
                 }]
             }
         }
+        let opts = [
+            {value: 'count', label: "Task Count"},
+            {value: 'sessions', label: "Completed Sessions"},
+            {value: 'time', label: "Logged Time (minutes)"}
+        ]
         return (
             <div>
 
                 <h4>Top Tasks</h4>
+
+                <div className="vpad">
+                    <div className="row">
+                        <div className="col-sm-6 col-sm-offset-6">
+                            <label>Bar Height</label>
+                            <Select options={opts} value={form.chart_type} onChange={this.changeHandlerVal.bind(this, 'form', 'chart_type')} simpleValue clearable={false} />
+                        </div>
+                    </div>
+                </div>
 
                 <Bar data={taskData} options={taskOptions} width={1000} height={450}/>
 
             </div>
         );
     }
-};
+}
 
 module.exports = AnalysisTasks;

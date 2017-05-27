@@ -41,20 +41,23 @@ class ReportsTestCases(BaseTestCase):
         self._test_report(
             {'type': REPORT.TASK_REPORT},
             [
-
                 [
                     'Date Created',
                     'Date Due',
                     'Date Done',
                     'Title',
                     'Done',
-                    'Archived'
+                    'Archived',
+                    'Seconds Logged',
+                    'Complete Sessions Logged'
                 ],
                 [
                     tools.sdatetime(task.dt_created, fmt=DATE_FMT),
                     "2017-10-02 12:00:00 UTC",
                     "N/A",
                     "New task",
+                    "0",
+                    "0",
                     "0",
                     "0"
                 ]
