@@ -264,9 +264,6 @@ class User(ndb.Model):
             return self.name.split(' ')[0]
         return ""
 
-    def checkToken(self, token):
-        return self.session_id_token == token or self.session_id_token == unicode(quopri.decodestring(token), 'iso_8859-2')
-
     def get_integration_prop(self, prop, default=None):
         integrations = tools.getJson(self.integrations)
         if integrations:
@@ -284,7 +281,11 @@ class User(ndb.Model):
                 cursor = cursor.get(pi, {})
                 last = i == len(path) - 1
                 if last:
-                    return cursor if cursor is not None else default
+                    empty = isinstance(cursor, dict) and len(cursor.keys()) == 0
+                    if empty:
+                        return default
+                    else:
+                        return cursor if cursor is not None else default
         return default
 
     def set_integration_prop(self, prop, value):

@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf8 -*-
 
-from datetime import datetime
+from datetime import datetime, date
 from base_test_case import BaseTestCase
-from models import Task, User, Report
+from models import Task, User, Report, Goal, MiniJournal, Habit, HabitDay
 from constants import REPORT
 from flow import app as tst_app
 import tools
@@ -27,7 +27,7 @@ class ReportsTestCases(BaseTestCase):
         response = self.get("/api/report/serve?rkey=%s" % rkey, headers=self.api_headers)
         compare_output = response.body  # Avoid whitespace normalization in normal_body
         compare_output = compare_output.replace('\r\n', '\n').replace('\r', '\n').split('\n')
-        self.assertEqual([x for x in compare_output if x], expected_output)
+        self.assertEqual([x for x in compare_output if x], [','.join(eo) for eo in expected_output])
         self.assertEqual(response.content_type, 'text/csv')
         report = self.u.get(Report, rid)
         self.assertTrue(report.is_done())
@@ -41,8 +41,17 @@ class ReportsTestCases(BaseTestCase):
         self._test_report(
             {'type': REPORT.TASK_REPORT},
             [
-                'Date Created,Date Due,Date Done,Title,Done,Archived,Seconds Logged,Complete Sessions Logged',
-                ",".join([
+                [
+                    'Date Created',
+                    'Date Due',
+                    'Date Done',
+                    'Title',
+                    'Done',
+                    'Archived',
+                    'Seconds Logged',
+                    'Complete Sessions Logged'
+                ],
+                [
                     tools.sdatetime(task.dt_created, fmt=DATE_FMT),
                     "2017-10-02 12:00:00 UTC",
                     "N/A",
@@ -50,6 +59,84 @@ class ReportsTestCases(BaseTestCase):
                     "0",
                     "0",
                     "0",
-                    "0"])
+                    "0"
                 ]
-            )
+            ]
+        )
+
+    def test_goal_report(self):
+        g = Goal.Create(self.u, "2017")
+        g.Update(text=["Goal 1", "Goal 2"], assessments=[3, 4])
+        g.put()
+
+        self._test_report(
+            {'type': REPORT.GOAL_REPORT},
+            [
+
+                [
+                    'Goal Period',
+                    'Date Created',
+                    'Text 1',
+                    'Text 2',
+                    'Text 3',
+                    'Text 4',
+                    'Goal Assessments',
+                    'Overall Assessment'
+                ],
+                [
+                    "2017",
+                    tools.sdatetime(g.dt_created, fmt="%Y-%m-%d %H:%M:%S %Z"),
+                    "Goal 1",
+                    "Goal 2",
+                    "",
+                    "",
+                    "\"3,4\"",
+                    "3.5"
+                ]
+            ]
+        )
+
+    def test_journal_report(self):
+        jrnl = MiniJournal.Create(self.u, date=date(2017, 4, 5))
+        jrnl.Update(lat="-1.289744", lon="36.7694933", tags=[], data={'happiness': 9})
+        jrnl.put()
+
+        self._test_report(
+            {'type': REPORT.JOURNAL_REPORT},
+            [
+
+                [
+                    'Date',
+                    'Tags',
+                    'Location',
+                    'Data'
+                ],
+                [
+                    "2017-04-05",
+                    "",
+                    "\"-1.289744,36.7694933\"",
+                    "\"{\"\"happiness\"\": 9}\""
+                ]
+            ]
+        )
+
+    def test_habit_report(self):
+        habit_run = Habit.Create(self.u)
+        habit_run.Update(name="Run")
+        habit_run.put()
+        marked_done, hd = HabitDay.Toggle(habit_run, datetime.today())
+
+        self._test_report(
+            {'type': REPORT.HABIT_REPORT},
+            [
+                ["Created", "Updated", "Date", "Habit", "Done", "Committed"],
+                [
+                    tools.sdatetime(hd.dt_created, fmt="%Y-%m-%d %H:%M:%S %Z"),
+                    tools.sdatetime(hd.dt_updated, fmt="%Y-%m-%d %H:%M:%S %Z"),
+                    tools.iso_date(datetime.now()),
+                    "Run",
+                    "1",
+                    "0"
+                ]
+            ]
+        )

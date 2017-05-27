@@ -275,8 +275,6 @@ class GoalReportWorker(GCSReportWorker):
 
     def entityData(self, goal):
         n_texts = len(goal.text) if goal.text else 0
-        logging.debug(goal.text)
-        logging.debug(n_texts)
         row = [goal.key.id(), tools.sdatetime(goal.dt_created, fmt=DATE_FMT)]
         slots = [(goal.text[i] if n_texts > i else "") for i in range(self.n_slots)]
         row += slots
