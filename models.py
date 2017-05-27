@@ -414,6 +414,7 @@ class Task(UserAccessible):
     status = ndb.IntegerProperty(default=TASK.NOT_DONE)
     wip = ndb.BooleanProperty(default=False)
     archived = ndb.BooleanProperty(default=False)
+    project = ndb.KeyProperty()
 
     def json(self):
         return {
@@ -425,7 +426,8 @@ class Task(UserAccessible):
             'archived': self.archived,
             'wip': self.wip,
             'title': self.title,
-            'done': self.is_done()
+            'done': self.is_done(),
+            'project_id': self.project.id() if self.project else None
         }
 
     @staticmethod
@@ -493,6 +495,8 @@ class Task(UserAccessible):
                 self.wip = False
         if 'wip' in params:
             self.wip = params.get('wip')
+        if 'project_id' in params:
+            self.project = ndb.Key('User', self.key.parent().id(), 'Project', params.get('project_id'))
         return message
 
     def mark_done(self):

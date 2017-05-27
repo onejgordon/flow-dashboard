@@ -108,7 +108,7 @@ class TaskAPI(handlers.JsonRequestHandler):
         params = tools.gets(self,
             strings=['title'],
             booleans=['archived', 'wip'],
-            integers=['status']
+            integers=['status', 'project_id']
         )
         task = None
         if id:

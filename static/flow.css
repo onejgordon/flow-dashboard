@@ -342,6 +342,10 @@ div.section {
     margin: 40px;
 }
 
+.transparent {
+  opacity: 0.5;
+}
+
 /* Tasks */
 
 .taskList .task.done {

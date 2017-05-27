@@ -3,16 +3,14 @@ import {ListItem, FontIcon, Paper, Chip,
   IconMenu, MenuItem, IconButton, Checkbox} from 'material-ui';
 var util = require('utils/util');
 var DateTime = require('components/common/DateTime');
-var api = require('utils/api');
-var util = require('utils/util');
+var ProjectStore = require('stores/ProjectStore');
 
 
 export default class ProjectLI extends React.Component {
   static defaultProps = {
     project: null,
     onClick: null,
-    with_progress: true,
-    onProjectUpdate: null
+    with_progress: true
   }
 
   constructor(props) {
@@ -55,9 +53,7 @@ export default class ProjectLI extends React.Component {
 
   update(p, data) {
     data.id = p.id;
-    api.post("/api/project", data, (res) => {
-      if (this.props.onProjectUpdate) this.props.onProjectUpdate(res.project);
-    });
+    ProjectStore.updateProject(data)
   }
 
   set_progress(prg) {
