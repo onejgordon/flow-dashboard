@@ -92,9 +92,15 @@ class TaskAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        tasks = Task.Recent(self.user)
+        with_archived = self.request.get_range('with_archived') == 1
+        project_id = self.request.get_range('project_id')
+        page, limit, offset = tools.paging_params(self.request)
+        if project_id:
+            with_archived = True
+        tasks = Task.Recent(self.user, with_archived=with_archived, project_id=project_id,
+                            limit=limit, offset=offset, prefetch=['project'])
         self.set_response({
-            'tasks': [t.json() for t in tasks]
+            'tasks': [t.json(references=['project']) for t in tasks]
         }, success=True)
 
     @authorized.role('user')
@@ -107,7 +113,7 @@ class TaskAPI(handlers.JsonRequestHandler):
             strings=['title'],
             booleans=['archived', 'wip'],
             integers=['status', 'timer_last_start', 'timer_target_ms', 'timer_pending_ms',
-                      'timer_total_ms', 'timer_complete_sess']
+                      'timer_total_ms', 'timer_complete_sess', 'project_id']
         )
         task = None
         if id:

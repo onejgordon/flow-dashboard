@@ -7,6 +7,7 @@ var MiniJournalWidget = require('components/MiniJournalWidget');
 var TaskWidget = require('components/TaskWidget');
 var FlashCard = require('components/FlashCard');
 var AppConstants = require('constants/AppConstants');
+var TaskActions = require('actions/TaskActions');
 import {findItemById} from 'utils/store-utils';
 var util = require('utils/util');
 import {get} from 'lodash';
@@ -37,7 +38,7 @@ export default class Dashboard extends React.Component {
         let in_input = tag == 'input' || tag == 'textarea';
         if (in_input) return true;
         if (keyCode == 84) { // t
-            if (this.refs.taskwidget) this.refs.taskwidget.show_new_box();
+            TaskActions.openTaskDialog()
             document.getElementById('TaskWidget').scrollIntoView();
             e.preventDefault();
             return false;

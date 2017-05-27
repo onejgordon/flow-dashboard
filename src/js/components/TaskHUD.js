@@ -197,7 +197,9 @@ export default class TaskHUD extends React.Component {
     }
 
     return (
-      <CSSTransitionGroup transitionName="fade">
+      <CSSTransitionGroup transitionName="fade"
+                          transitionEnterTimeout={300}
+                          transitionLeaveTimeout={300}>
         { inner }
       </CSSTransitionGroup>
     );

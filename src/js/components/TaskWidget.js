@@ -1,19 +1,25 @@
 var React = require('react');
 import { IconButton, List,
-  RaisedButton, TextField, Paper,
-  FlatButton } from 'material-ui';
+  IconMenu, FontIcon, MenuItem, TextField, AutoComplete,
+  FlatButton, Dialog } from 'material-ui';
+import {browserHistory} from 'react-router';
+var ProjectStore = require('stores/ProjectStore');
+var TaskStore = require('stores/TaskStore');
+var TaskActions = require('actions/TaskActions');
 var util = require('utils/util');
 var api = require('utils/api');
 var TaskLI = require('components/list_items/TaskLI');
+import {findIndexById, findItemById, removeItemsById} from 'utils/store-utils';
 var TaskHUD = require('components/TaskHUD');
-import {findIndexById, removeItemsById} from 'utils/store-utils';
 var ProgressLine = require('components/common/ProgressLine');
 var toastr = require('toastr');
 var AsyncActionButton = require('components/common/AsyncActionButton');
+import connectToStores from 'alt-utils/lib/connectToStores';
 import {changeHandler} from 'utils/component-utils';
 
+@connectToStores
 @changeHandler
-export default class TaskWidget extends React.Component {
+class TaskWidget extends React.Component {
   static propTypes = {
     timezone: React.PropTypes.string,
     show_task_progressbar: React.PropTypes.bool
@@ -23,12 +29,13 @@ export default class TaskWidget extends React.Component {
     timezone: "UTC",
     show_task_progressbar: true
   }
+
   constructor(props) {
       super(props);
       this.state = {
           tasks: [],
           form: {},
-          new_showing: false
+          project_selector_showing: false
       };
       this.I_ST = {
         fontSize: 20
@@ -36,9 +43,22 @@ export default class TaskWidget extends React.Component {
       this.IB_ST = {
         padding: 10,
         width: 20,
-        height: 20
+        height: 20,
+        marginLeft: "20px",
+        marginTop: "10px"
       }
       this.TASK_COLOR = "#DF00FF";
+  }
+
+  static getStores() {
+    return [ProjectStore, TaskStore];
+  }
+
+  static getPropsFromStores() {
+    return {
+      ps: ProjectStore.getState(),
+      dialog_open: TaskStore.getState().dialog_open
+    };
   }
 
   componentDidMount() {
@@ -80,12 +100,11 @@ export default class TaskWidget extends React.Component {
   add_task() {
     let {form} = this.state;
     this.setState({creating: true}, () => {
-      api.post("/api/task", {title: form.new_task}, (res) => {
+      api.post("/api/task", {title: form.new_task, project_id: form.project_id}, (res) => {
         let {tasks} = this.state;
         tasks.push(res.task);
-        this.setState({tasks: tasks, new_showing: false, form: {}, creating: false}, () => {
-          this.refs.new_task.focus()
-        });
+        TaskActions.closeTaskDialog()
+        this.setState({tasks: tasks, form: {}, creating: false})
       });
     })
   }
@@ -109,10 +128,38 @@ export default class TaskWidget extends React.Component {
     }
   }
 
-  show_new_box() {
-    this.setState({new_showing: true}, () => {
-      this.refs.new_task.focus();
-    });
+  goto_task_history() {
+    browserHistory.push('/app/task/history');
+  }
+
+  show_task_dialog() {
+    TaskActions.openTaskDialog()
+  }
+
+  dismiss_task_dialog() {
+    TaskActions.closeTaskDialog()
+  }
+
+  project_input_update(searchText) {
+      let {form} = this.state
+      if (form.project_id) {
+        delete form.project_id
+        this.setState({form})
+      }
+  }
+
+  project_new_request(chosenRequest, index) {
+    let p
+    if (index > -1) {
+      p = this.props.ps.projects[index]
+    } else {
+      p = ProjectStore.getProjectByTitle(chosenRequest)
+    }
+    if (p) {
+      let {form} = this.state
+      form.project_id = p.id
+      this.setState({form})
+    }
   }
 
   task_progress() {
@@ -159,6 +206,10 @@ export default class TaskWidget extends React.Component {
     this.task_update(task, {wip: is_wip ? 1 : 0});
   }
 
+  show_project_selector() {
+    this.setState({project_selector_showing: true})
+  }
+
   clear_timer_logs(task) {
     this.task_update(task, {
       timer_pending_ms: 0,
@@ -176,8 +227,8 @@ export default class TaskWidget extends React.Component {
   }
 
   render() {
-    let {show_task_progressbar, timezone} = this.props;
-    let {tasks, new_showing, form, creating} = this.state;
+    let {show_task_progressbar, timezone, dialog_open} = this.props;
+    let {tasks, form, creating, project_selector_showing} = this.state;
     let now = new Date();
     let total_mins = 24 * 60;
     let current_mins = now.getHours() * 60 + now.getMinutes();
@@ -186,13 +237,48 @@ export default class TaskWidget extends React.Component {
     let visible_tasks = tasks.filter((t) => { return !t.archived; });
     let _buttons = [
       <IconButton key="ref" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.fetch_recent.bind(this)} tooltip="Refresh">refresh</IconButton>,
-      <IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.show_new_box.bind(this)} tooltip="Add Task (T)">add</IconButton>,
-      <span key="archive_all" className="pull-right" style={{marginRight: '20px'}}><IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.archive_all_done.bind(this)} tooltip="Archive Complete">archive</IconButton></span>,
+      <IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.show_task_dialog.bind(this)} tooltip="Add Task (T)">add</IconButton>,
+      <IconMenu key="menu" className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
+        <MenuItem key="archive" onClick={this.archive_all_done.bind(this)} leftIcon={<FontIcon className="material-icons">archive</FontIcon>} primaryText="Archive Complete" />
+        <MenuItem key="task_history" onClick={this.goto_task_history.bind(this)} leftIcon={<FontIcon className="material-icons">list</FontIcon>} primaryText="Task History" />
+      </IconMenu>
+
     ]
     let morning = now.getHours() <= 12;
     let exclamation = morning ? "Set the top two or three tasks for today." : "All clear!"
+    let _no_tasks_cta = <span>{ exclamation } <a href="javascript:void(0)" onClick={this.show_task_dialog.bind(this)}>Add a task</a>.</span>
+    let _project_section
+    if (project_selector_showing) _project_section = (<AutoComplete
+                          hintText="Project (optional)"
+                          dataSource={this.props.ps.projects}
+                          filter={(searchText, key) => searchText !== '' && key.toLowerCase().indexOf(searchText.toLowerCase()) !== -1}
+                          onUpdateInput={this.project_input_update.bind(this)}
+                          onNewRequest={this.project_new_request.bind(this)}
+                          openOnFocus={true}
+                          dataSourceConfig={{text: 'title', value: 'id'}}
+                          floatingLabelText="Project"
+                          fullWidth={true} />)
+    else _project_section = (
+      <div style={{marginTop: "20px"}}>
+        <IconButton iconClassName="material-icons" onClick={this.show_project_selector.bind(this)} tooltip="Link with Project">layers</IconButton>
+      </div>
+    )
+
+    let dialog_actions = [
+      <AsyncActionButton
+                working={creating}
+                enabled={new_task_entered}
+                text_disabled="Add Task"
+                text_working="Adding..."
+                text_enabled="Add Task"
+                onClick={this.add_task.bind(this)} />,
+      <FlatButton label="Cancel" onClick={this.dismiss_task_dialog.bind(this)} />
+    ]
+    if (form.project_id) {
+      let p = findItemById(this.props.ps.projects, form.project_id, 'id');
+      if (p) dialog_actions.splice(0, 0, <span className="transparent" style={{marginRight: "15px"}}>Linking with: { p.title }</span>)
+    }
     let wip_task = this.wip_task();
-    let _no_tasks_cta = <span>{ exclamation } <a href="javascript:void(0)" onClick={this.show_new_box.bind(this)}>Add a task</a>.</span>
     return (
       <div className="TaskWidget" id="TaskWidget">
 
@@ -202,7 +288,7 @@ export default class TaskWidget extends React.Component {
           <List className="taskList">
             { visible_tasks.sort((a, b) => { return b.wip - a.wip;}).map((t) => {
               return <TaskLI key={t.id} task={t}
-                        canSetWIP={!wip_task}
+                        wip_enabled={!wip_task}
                         onUpdateWIP={this.set_task_wip.bind(this)}
                         onUpdateStatus={this.update_status.bind(this)}
                         onClearTimerLogs={this.clear_timer_logs.bind(this)}
@@ -220,22 +306,29 @@ export default class TaskWidget extends React.Component {
           <ProgressLine value={tasks_done} total={tasks_total} color={this.TASK_COLOR} tooltip="Progress on today's tasks" />
         </div>
 
-        <div hidden={!new_showing}>
-          <Paper style={{padding: '10px'}}>
-            <TextField name="new_task" ref="new_task" floatingLabelText="Enter new task title..." value={form.new_task || ""} onChange={this.changeHandler.bind(this, 'form', 'new_task')} onKeyPress={this.new_task_key_press.bind(this)} fullWidth />
-            <AsyncActionButton
-              working={creating}
-              enabled={new_task_entered}
-              text_disabled="Add Task"
-              text_working="Adding..."
-              text_enabled="Add Task"
-              onClick={this.add_task.bind(this)} />
-            <FlatButton label="Cancel" onClick={this.setState.bind(this, {new_showing: false})} />
-          </Paper>
-        </div>
+        <Dialog title="New Task"
+                open={dialog_open}
+                onRequestClose={this.dismiss_task_dialog.bind(this)}
+                actions={dialog_actions}>
+          <div style={{padding: '10px'}}>
+            <div className="row">
+              <div className="col-sm-7">
+                <TextField name="new_task" ref="new_task" floatingLabelText="Enter new task title..."
+                           value={form.new_task || ""}
+                           onChange={this.changeHandler.bind(this, 'form', 'new_task')}
+                           onKeyPress={this.new_task_key_press.bind(this)} fullWidth autoFocus />
+              </div>
+              <div className="col-sm-5">
+                { _project_section }
+              </div>
+            </div>
+          </div>
+        </Dialog>
 
         <TaskHUD task={wip_task} onTaskUpdate={this.handle_task_changed.bind(this)} />
       </div>
     )
   }
 }
+
+export default TaskWidget

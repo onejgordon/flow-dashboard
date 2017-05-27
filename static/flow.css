@@ -331,6 +331,21 @@ div.section {
   opacity: 1.0;
 }
 
+.project-indicator {
+  display: inline-block;
+  margin: 0 5px 3px 5px;
+  padding: 2px 5px;
+  font-size: 0.65em;
+  text-transform: uppercase;
+}
+
+/* Tasks */
+
+.task-secondary > span {
+  margin-right: 7px;
+}
+
+
 /* Task HUD */
 
 .taskHUD {
@@ -388,6 +403,10 @@ div.section {
     font-size: 1.8em;
     opacity: 0.5;
     margin: 40px;
+}
+
+.transparent {
+  opacity: 0.5;
 }
 
 /* Tasks */

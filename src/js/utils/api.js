@@ -6,8 +6,7 @@ var api = {
 
 	post: function(url, data, success, fail, opts) {
 		var no_success_bool = opts && opts.no_success_bool;
-		$.post(url, data, function(res, status, jqxhr) {
-			var status = jqxhr.status;
+		return $.post(url, data, function(res, status, jqxhr) {
 			if (res) {
 				if (res.message) {
 					if (res.success) toastr.success(res.message);
@@ -31,8 +30,7 @@ var api = {
 
 	get: function(url, data, success, fail, opts) {
 		var no_toast = opts && opts.no_toast;
-		$.getJSON(url, data, function(res, _status, jqxhr) {
-			var status = jqxhr.status;
+		return $.getJSON(url, data, function(res, _status, jqxhr) {
 			if (res) {
 				if (res.message && !no_toast) {
 					if (res.success) toastr.success(res.message);

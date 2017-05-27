@@ -88,6 +88,18 @@ indexes:
   properties:
   - name: dt_created
 
+- kind: Task
+  ancestor: yes
+  properties:
+  - name: dt_created
+    direction: desc
+
+- kind: Task
+  ancestor: yes
+  properties:
+  - name: project
+  - name: dt_created
+    direction: desc
 
 - kind: Quote
   ancestor: yes

@@ -3,35 +3,46 @@ import { DatePicker, RaisedButton, FlatButton, TextField,
   IconMenu, MenuItem, IconButton, FontIcon } from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 import {clone} from 'lodash';
-import {findIndexById} from 'utils/store-utils';
+var ProjectActions = require('actions/ProjectActions');
 var MobileDialog = require('components/common/MobileDialog');
 var ProjectLI = require('components/list_items/ProjectLI');
-var api = require('utils/api');
 var ProjectAnalysis = require('components/ProjectAnalysis');
+var ProjectStore = require('stores/ProjectStore');
 var util = require('utils/util');
+import connectToStores from 'alt-utils/lib/connectToStores';
 
+@connectToStores
 @changeHandler
 export default class ProjectViewer extends React.Component {
   static propTypes = {
     due_soon_days: React.PropTypes.number,
-    initially_show: React.PropTypes.number
+    initially_show: React.PropTypes.number,
+    projects: React.PropTypes.array,
+    working: React.PropTypes.bool
   }
 
   static defaultProps = {
     due_soon_days: 5,
-    initially_show: 3
+    initially_show: 3,
+    working: false
   }
 
   constructor(props) {
       super(props);
       this.state = {
-          form: {},
-          projects: [],
           all_showing: false,
           project_dialog_open: false,
           project_analysis: null,
-          working: false
+          form: {}
       };
+  }
+
+  static getStores() {
+    return [ProjectStore];
+  }
+
+  static getPropsFromStores() {
+    return ProjectStore.getState();
   }
 
   componentDidMount() {
@@ -39,17 +50,12 @@ export default class ProjectViewer extends React.Component {
   }
 
   fetch_projects() {
-    api.get("/api/project/active", {}, (res) => {
-      this.setState({projects: res.projects})
-    });
+    ProjectStore.fetchProjects()
   }
 
-  handle_project_update(p) {
-    let {projects} = this.state;
-    let idx = findIndexById(projects, p.id, 'id');
-    if (idx > -1) projects[idx] = p;
-    this.setState({projects});
-  }
+  // handle_project_update(p) {
+  //   ProjectActions.updatedProject(p)
+  // }
 
   due_in_days(p) {
     if (p.due != null) {
@@ -68,8 +74,8 @@ export default class ProjectViewer extends React.Component {
   }
 
   sorted_visible() {
-    let {initially_show} = this.props;
-    let {projects, all_showing} = this.state;
+    let {initially_show, projects} = this.props;
+    let {all_showing} = this.state;
     let visible = projects.sort((a,b) => {
       let a_title = a.title || ""; // Handle null
       let b_title = b.title || "";
@@ -82,33 +88,23 @@ export default class ProjectViewer extends React.Component {
       else return b.starred - a.starred;
     });
     if (!all_showing) return visible.slice(0, initially_show);
-    // if (!all_showing) return visible.filter((prj) => {
-    //   return prj.starred || util.due_soon(prj);
-    // })
     else return visible;
   }
 
   update_project() {
-    let {form} = this.state;
-    let params = clone(form);
-    if (params.due) params.due = util.printDateObj(params.due);
-    this.setState({updating: true}, () => {
-      api.post("/api/project", params, (res) => {
-        if (res.project) {
-          let projects = this.state.projects;
-          let idx = findIndexById(projects, res.project.id, 'id');
-          if (idx > -1) projects[idx] = res.project;
-          else projects.push(res.project);
-          this.setState({projects: projects, project_dialog_open: false, form: {}, updating: false});
-        }
-      })
-    });
+    let {working} = this.props
+    let {form} = this.state
+    if (!working) {
+      let params = clone(form);
+      if (params.due) params.due = util.printDateObj(params.due);
+      ProjectStore.updateProject(params)
+      this.setState({project_dialog_open: false, form: {}})
+    }
   }
 
   render_projects() {
     return this.sorted_visible().map((p) => {
         return <ProjectLI key={p.id} project={p}
-          onProjectUpdate={this.handle_project_update.bind(this)}
           onEdit={this.open_editor.bind(this, p)}
           onShowAnalysis={this.setState.bind(this, {project_analysis: p})} />
     });
@@ -134,7 +130,7 @@ export default class ProjectViewer extends React.Component {
   }
 
   render_dialog() {
-    let {project_dialog_open, form, updating} = this.state;
+    let {project_dialog_open, updating, form} = this.state;
     let editing = form.id != null;
     let actions = [
       <RaisedButton primary={true} label={editing ? "Update" : "Create"} onClick={this.update_project.bind(this)} disabled={updating} />,
@@ -159,12 +155,12 @@ export default class ProjectViewer extends React.Component {
   }
 
   count_projects() {
-    let {projects} = this.state;
+    let {projects} = this.props;
     return projects.length;
   }
 
   render() {
-    let {all_showing, projects} = this.state;
+    let {all_showing} = this.state;
     let {initially_show} = this.props;
     let n_projects = this.count_projects();
     let empty = n_projects == 0;

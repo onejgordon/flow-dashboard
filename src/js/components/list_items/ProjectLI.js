@@ -3,16 +3,14 @@ import {ListItem, FontIcon, Paper, Chip,
   IconMenu, MenuItem, IconButton, Checkbox} from 'material-ui';
 var util = require('utils/util');
 var DateTime = require('components/common/DateTime');
-var api = require('utils/api');
-var util = require('utils/util');
+var ProjectStore = require('stores/ProjectStore');
 
 
 export default class ProjectLI extends React.Component {
   static defaultProps = {
     project: null,
     onClick: null,
-    with_progress: true,
-    onProjectUpdate: null
+    with_progress: true
   }
 
   constructor(props) {
@@ -55,9 +53,7 @@ export default class ProjectLI extends React.Component {
 
   update(p, data) {
     data.id = p.id;
-    api.post("/api/project", data, (res) => {
-      if (this.props.onProjectUpdate) this.props.onProjectUpdate(res.project);
-    });
+    ProjectStore.updateProject(data)
   }
 
   set_progress(prg) {
@@ -150,7 +146,7 @@ export default class ProjectLI extends React.Component {
                 <MenuItem primaryText="Edit" leftIcon={<FontIcon className="material-icons">mode_edit</FontIcon>} onClick={this.handle_edit_click.bind(this, project)} />
                 <MenuItem primaryText={progress_action_label} leftIcon={<FontIcon className="material-icons">view_week</FontIcon>} onClick={this.toggle_progress.bind(this)} />
                 <MenuItem primaryText="Archive project" leftIcon={<FontIcon className="material-icons">archive</FontIcon>} onClick={this.archive.bind(this)} />
-                <MenuItem primaryText="Chart Progress (Burn Up)" leftIcon={<FontIcon className="material-icons">show_chart</FontIcon>} onClick={this.show_analysis.bind(this)} />
+                <MenuItem primaryText="Visualize Project" leftIcon={<FontIcon className="material-icons">show_chart</FontIcon>} onClick={this.show_analysis.bind(this)} />
               </IconMenu>
             </div>
             <h2 style={this.H}>
