@@ -44,7 +44,7 @@ class TaskWidget extends React.Component {
         padding: 10,
         width: 20,
         height: 20,
-        marginLeft: "20px",
+        marginLeft: "10px",
         marginTop: "10px"
       }
       this.TASK_COLOR = "#DF00FF"

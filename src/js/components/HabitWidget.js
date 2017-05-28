@@ -28,11 +28,12 @@ export default class HabitWidget extends React.Component {
       this.state = {
           habits: [],
           habitdays: {},
-          habit_week_start: this.get_habit_week_start(),
+          habit_week_start: null,
           new_dialog_open: false,
           habit_analysis: null,
           form: {},
-          creating: false
+          creating: false,
+          on_mobile: util.user_agent_mobile()
       };
       this.SHOW_MATERIAL_ICONS = ['check_circle', 'group_work', 'add', 'directions_run',
                                   'spa', 'lightbulb_outline', 'access_alarm', 'fitness_center',
@@ -43,7 +44,8 @@ export default class HabitWidget extends React.Component {
 
   componentDidMount() {
     this.fetch_current();
-
+    console.log('mobile')
+    console.log(this.state.on_mobile)
   }
 
   create_habit() {
@@ -66,7 +68,7 @@ export default class HabitWidget extends React.Component {
   fetch_current() {
     api.get("/api/habit/recent", {days: this.props.days}, (res) => {
       // dict of ids to habit days (if present)
-      this.setState({habits: res.habits, habitdays: res.habitdays});
+      this.setState({habits: res.habits, habitdays: res.habitdays, habit_week_start: this.get_habit_week_start()});
     });
   }
 
@@ -122,6 +124,11 @@ export default class HabitWidget extends React.Component {
     return date >= habit_week_start;
   }
 
+  show_days() {
+    let {on_mobile} = this.state
+    return on_mobile ? 3 : 7
+  }
+
   render_commitment_message() {
     let {commitments} = this.props;
     let {habits, habitdays} = this.state;
@@ -138,13 +145,13 @@ export default class HabitWidget extends React.Component {
   }
 
   render_day_headers() {
-    let {days, commitments} = this.props;
+    let {commitments} = this.props;
     let cursor = new Date();
     let today = new Date();
     let res = [];
-    cursor.setDate(cursor.getDate() - days + 1);
+    cursor.setDate(cursor.getDate() - this.show_days() + 1);
     while (cursor <= today) {
-      let d = util.printDate(cursor.getTime(), "MMM DD");
+      let d = util.printDate(cursor.getTime(), "dd Do");
       let in_week = this.day_in_current_habit_week(cursor);
       let cls = in_week ? "current-habit-week" : "";
       res.push(<th key={d} className={cls}>{d}</th>);
@@ -190,7 +197,7 @@ export default class HabitWidget extends React.Component {
   }
 
   render_habit(h) {
-    let {days, commitments} = this.props;
+    let {commitments, days} = this.props;
     let {habitdays} = this.state;
     let _progress;
     let cursor = new Date();
@@ -199,7 +206,7 @@ export default class HabitWidget extends React.Component {
     let res = [];
     let done_in_week = 0;
     var done = false, is_committed = false;
-    let n_committed = 0, n_committed_done = 0;
+    let n_committed = 0, n_committed_done = 0, col_num = 1;
     let last_run = false;
     cursor.setDate(cursor.getDate() - days + 1);
     while (!last_run) {
@@ -229,13 +236,16 @@ export default class HabitWidget extends React.Component {
       else if (is_committed) st.color = AppConstants.COMMIT_COLOR;
       if (!in_week) st.opacity = 0.6;
       let tt = done ? "Mark Not Done" : "Mark Done";
-      res.push(<td key={iso_day}>
-        <IconButton iconClassName="material-icons"
-            onClick={this.toggle_day.bind(this, h, iso_day)}
-            tooltip={tt}
-            iconStyle={st}>{icon}
-        </IconButton></td>);
+      if (days - col_num < this.show_days()) {
+        res.push(<td key={iso_day}>
+          <IconButton iconClassName="material-icons"
+              onClick={this.toggle_day.bind(this, h, iso_day)}
+              tooltip={tt}
+              iconStyle={st}>{icon}
+          </IconButton></td>);
+      }
       cursor.setDate(cursor.getDate() + 1);
+      col_num += 1
     }
     let st = {color: h.color || "#FFFFFF" };
     if (h.tgt_weekly) {
