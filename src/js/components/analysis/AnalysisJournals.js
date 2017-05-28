@@ -42,6 +42,8 @@ export default class AnalysisJournals extends React.Component {
             map_showing: false,
             google_maps: null // Holder for Google Maps object
         };
+
+        this.TAG_COLOR = '#3FE0F2'
     }
 
     static getStores() {
@@ -107,9 +109,8 @@ export default class AnalysisJournals extends React.Component {
                 data: tag_data,
                 pointRadius: 7,
                 pointHoverRadius: 9,
-                backgroundColor: '#3FE0F2',
-                pointBackgroundColor: '#3FE0F2',
-                // showLine: false
+                backgroundColor: this.TAG_COLOR,
+                pointBackgroundColor: this.TAG_COLOR
             })
         }
         return {
@@ -275,7 +276,7 @@ export default class AnalysisJournals extends React.Component {
                             {
                                 label: `With ${journal_tag_segment.id}`,
                                 data: segmented_data.data_with_tag,
-                                backgroundColor: '#F73C7C'
+                                backgroundColor: this.TAG_COLOR
                             },
                             {
                                 label: `Without ${journal_tag_segment.id}`,

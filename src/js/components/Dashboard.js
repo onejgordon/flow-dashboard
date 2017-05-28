@@ -25,7 +25,7 @@ export default class Dashboard extends React.Component {
 
     componentWillMount() {
         document.addEventListener("keydown", this.handle_key_down.bind(this));
-        util.set_title("Dashboard");
+        util.set_title(AppConstants.DASHBOARD_PAGE_TITLE);
     }
 
     componentWillUnmount() {

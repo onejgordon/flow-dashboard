@@ -47,7 +47,8 @@ class TaskWidget extends React.Component {
         marginLeft: "20px",
         marginTop: "10px"
       }
-      this.TASK_COLOR = "#DF00FF";
+      this.TASK_COLOR = "#DF00FF"
+      this.START_TIMER_ON_WIP = true
   }
 
   static getStores() {
@@ -203,7 +204,9 @@ class TaskWidget extends React.Component {
 
   set_task_wip(task, is_wip) {
     util.play_audio('commit.mp3');
-    this.task_update(task, {wip: is_wip ? 1 : 0});
+    let params = {wip: is_wip ? 1 : 0}
+    if (is_wip && this.START_TIMER_ON_WIP) params.timer_last_start = util.nowTimestamp()
+    this.task_update(task, params);
   }
 
   show_project_selector() {
@@ -282,7 +285,7 @@ class TaskWidget extends React.Component {
     return (
       <div className="TaskWidget" id="TaskWidget">
 
-        <h3 onClick={this.fetch_recent.bind(this)}>Top Tasks for {util.printDateObj(new Date(), timezone, {format: "dddd, MMMM DD"})} { _buttons }</h3>
+        <h3>Top Tasks for {util.printDateObj(new Date(), timezone, {format: "dddd, MMMM DD"})} { _buttons }</h3>
         <ProgressLine value={current_mins} total={total_mins} tooltip={util.printTime(now)} />
         { visible_tasks.length > 0 ?
           <List className="taskList">

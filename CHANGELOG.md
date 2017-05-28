@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 * User-definable goal slots (can be increased to 10)
 * Individual goal assessments (averaged to overall assessment)
 * Drill-down on goal analysis to view goal assessments
+* Show points on journal analysis chart for journals including selected hashtag or mention
 
 ## Version 0-25
 

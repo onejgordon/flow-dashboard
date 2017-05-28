@@ -2,6 +2,7 @@ var React = require('react');
 import {ListItem, FontIcon, IconButton,
   IconMenu, MenuItem, Checkbox} from 'material-ui';
 var util = require('utils/util');
+var toastr = require('toastr')
 
 export default class TaskLI extends React.Component {
   static propTypes = {
@@ -44,6 +45,13 @@ export default class TaskLI extends React.Component {
     this.props.onUpdateWIP(this.props.task, is_wip);
   }
 
+  attempt_mark_done(t) {
+    let {onUpdateStatus} = this.props
+    let can_mark_done = t.timer_last_start + t.timer_pending_ms == 0
+    if (can_mark_done) onUpdateStatus(t, this.DONE)
+    else toastr.info("Exit timer before completing this task")
+  }
+
   render_secondary() {
     let {absolute_date} = this.props;
     let t = this.props.task;
@@ -60,7 +68,7 @@ export default class TaskLI extends React.Component {
       else if (hours_until <= 3) _icon = <i className="glyphicon glyphicon-hourglass" style={{color: "orange"}} />;
     }
     secondary.push(<span key="due">{ _icon }&nbsp;{date}</span>)
-    if (t.timer_total_ms > 0) secondary.push(<span key="timed">{` (${util.secsToDuration(t.timer_total_ms/1000, {no_seconds: true})} logged)`}</span>)
+    if (t.timer_total_ms > 0) secondary.push(<span key="timed" className="timed">{` (${util.secsToDuration(t.timer_total_ms/1000, {no_seconds: true})} logged)`}</span>)
     if (t.project != null) secondary.push(<span key="proj" className="project-indicator">{ t.project.title }</span>)
     return <div className="task-secondary">{secondary}</div>
   }
@@ -75,10 +83,10 @@ export default class TaskLI extends React.Component {
     let archived = t.archived;
     if (!done && onDelete != null && delete_enabled) menu.push({icon: 'delete', click: onDelete.bind(this, t), label: 'Delete'})
     if (!archived && onArchive != null && archive_enabled) menu.push({icon: 'archive', click: onArchive.bind(this, t), label: 'Archive'});
-    if (t.status == this.NOT_DONE && onUpdateStatus != null && checkbox_enabled) click = onUpdateStatus.bind(this, t, this.DONE);
+    if (t.status == this.NOT_DONE && onUpdateStatus != null && checkbox_enabled) click = this.attempt_mark_done.bind(this, t)
     if (done && onUpdateStatus != null) click = onUpdateStatus.bind(this, t, this.NOT_DONE);
     if (!done && !archived && !t.wip && wip_enabled) {
-      menu.push({icon: 'play_for_work', click: this.set_wip.bind(this, true), label: 'On It (Start Working)'});
+      menu.splice(0, 0, {icon: 'play_for_work', click: this.set_wip.bind(this, true), label: 'On It (Start Working)'});
     }
     if (t.timer_total_ms > 0 && onClearTimerLogs != null) menu.push({icon: 'delete_sweep', click: onClearTimerLogs.bind(this, t), label: 'Clear Timer Logs'});
     let st = { fill: this.TASK_COLOR };

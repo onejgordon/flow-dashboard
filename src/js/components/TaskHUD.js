@@ -3,7 +3,7 @@ var util = require('utils/util');
 var api = require('utils/api');
 import {IconButton} from 'material-ui';
 import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup' // ES6
-
+var AppConstants = require('constants/AppConstants');
 
 export default class TaskHUD extends React.Component {
   static propTypes = {
@@ -30,8 +30,14 @@ export default class TaskHUD extends React.Component {
     let have_task = !!this.props.task;
     let will_have_task = !!nextProps.task;
     if (have_task != will_have_task) {
-      if (will_have_task) this.start_interval();
-      else this.stop_interval();
+      if (will_have_task) {
+        this.start_interval();
+        let {task} = nextProps
+        util.set_title(`${task.title} (Working)`)
+      } else {
+        this.stop_interval();
+        util.set_title(AppConstants.DASHBOARD_PAGE_TITLE)
+      }
     }
   }
 

@@ -11,6 +11,7 @@ var AppConstants = {
     GOAL_DEFAULT_SLOTS: 4,
     GOAL_MAX_SLOTS: 10,
     USER_ADMIN: 2,
+    DASHBOARD_PAGE_TITLE: "Dashboard",
     SECURE_BASE: "https://flowdash.co",
     TAGLINE: "Flow is a habit tracker and personal data analytics app that lets you keep focus on what matters. Flow owns none of your data. That's yours.",
     INTEGRATIONS: [

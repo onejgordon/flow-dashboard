@@ -345,6 +345,10 @@ div.section {
   margin-right: 7px;
 }
 
+.task-secondary > .timed {
+  color: #F9D23D;
+}
+
 
 /* Task HUD */
 
@@ -431,7 +435,7 @@ div.section {
 
 @keyframes pulse {
   0% {
-    opacity: 0.7;
+    opacity: 0.5;
   }
   100% {
     opacity: 1.0;
