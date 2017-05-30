@@ -42,7 +42,7 @@ var util = {
       if (notification) {
         notification.onclick = function(){
             window.focus();
-            this.cancel();
+            if (this.cancel) this.cancel();
         };
       }
     },
