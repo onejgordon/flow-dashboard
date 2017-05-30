@@ -1052,8 +1052,10 @@ class Goal(UserAccessible):
         if 'text' in params:
             self.text = params.get('text', [])
         if 'assessments' in params:
-            self.assessments = params.get('assessments', [])
-            self.assessment = tools.mean(self.assessments)
+            assessments = params.get('assessments', [])
+            if isinstance(assessments, list):
+                self.assessments = assessments
+                self.assessment = tools.mean(self.assessments)
 
     def type(self):
         return 'annual' if self.annual() else 'monthly'
