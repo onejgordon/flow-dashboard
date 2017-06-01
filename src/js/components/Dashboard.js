@@ -93,7 +93,6 @@ export default class Dashboard extends React.Component {
         let journal_location = false;
         let journal_window_start = AppConstants.JOURNAL_START_HOUR;
         let journal_window_end = AppConstants.JOURNAL_END_HOUR;
-        let timezone;
         let goal_slots = AppConstants.GOAL_DEFAULT_SLOTS;
         if (user) {
             journal_qs = get(user, 'settings.journals.questions', []);

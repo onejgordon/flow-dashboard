@@ -44,8 +44,6 @@ export default class HabitWidget extends React.Component {
 
   componentDidMount() {
     this.fetch_current();
-    console.log('mobile')
-    console.log(this.state.on_mobile)
   }
 
   create_habit() {
@@ -84,7 +82,9 @@ export default class HabitWidget extends React.Component {
       habit_id: habit.id,
       date: iso_day
     }
+    console.log(params)
     api.post(`/api/habit/${action}`, params, (res) => {
+      console.log(res)
       if (res.habitday) {
         this.update_habitday_in_state(res.habitday);
       }

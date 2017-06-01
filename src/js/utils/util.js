@@ -164,6 +164,7 @@ var util = {
         let day = d.getDate();
         let month = d.getMonth() + 1;
         if (month < 10) month = '0'+month;
+        if (day < 10) day = '0'+day;
         return year+'-'+month+'-'+day;
     },
 
