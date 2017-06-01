@@ -1,0 +1,97 @@
+{
+  "userSays": [
+    {
+      "id": "7a300ed0-cabc-4662-9609-496f76af829a",
+      "data": [
+        {
+          "text": "tasks remaining"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "58f02fde-7f41-4b07-bdd8-f5acf63695e4",
+      "data": [
+        {
+          "text": "what do i need to do"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "17093932-b802-42e5-a46c-4305c1901fc9",
+      "data": [
+        {
+          "text": "tasks "
+        },
+        {
+          "text": "today",
+          "meta": "@sys.ignore",
+          "userDefined": false
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "2ba9310f-af0e-4521-ba37-ddf8dcbcfb6b",
+      "data": [
+        {
+          "text": "today",
+          "meta": "@sys.ignore",
+          "userDefined": false
+        },
+        {
+          "text": "\u0027s tasks"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "50d84999-36b7-4334-9dba-78ee78bab024",
+      "data": [
+        {
+          "text": "what are my tasks"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "fc80c153-8ece-459c-b7d8-9f59e8b252b6",
+      "data": [
+        {
+          "text": "my tasks"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "6d145e1f-da03-4a9d-b070-ffec1ed27f51",
+  "name": "Task Request",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.task_view",
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": 0,
+          "speech": []
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}

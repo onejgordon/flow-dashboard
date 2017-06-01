@@ -1,0 +1,67 @@
+{
+  "userSays": [
+    {
+      "id": "9c36423f-b90e-4c71-8c15-89d5822fc03d",
+      "data": [
+        {
+          "text": "How do tasks work"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "1f1c6e7c-21ce-4906-96c1-327d2241f36e",
+      "data": [
+        {
+          "text": "Tell me about tasks"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "0b82843e-b4b3-4c59-bc93-b04c605da8fa",
+      "data": [
+        {
+          "text": "What are tasks"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "5399fefd-13f9-48fc-970e-aa645142db3d",
+      "data": [
+        {
+          "text": "Help on tasks"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "9b9973d1-d279-4b14-962a-729e2973ee9f",
+  "name": "Tasks Help",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.help_tasks",
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": 0,
+          "speech": []
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}

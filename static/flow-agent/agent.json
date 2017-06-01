@@ -1,32 +1,60 @@
 {
   "description": "Flow dashboard interaction for Google Home / Google Assistant",
   "language": "en",
-  "enabledDomainFeatures": [],
+  "enabledDomainFeatures": [
+    "smalltalk-domain-on",
+    "smalltalk-fulfillment-on",
+    "smalltalk-domain-new"
+  ],
   "googleAssistant": {
     "googleAssistantCompatible": true,
     "invocationName": "flow dashboard",
     "project": "genzai-app",
     "welcomeIntentSignInRequired": true,
-    "startIntents": [],
+    "startIntents": [
+      {
+        "intentId": "7fb0c1c5-4935-4f8a-9d85-f5f4a71829d7",
+        "signInRequired": true
+      },
+      {
+        "intentId": "b2019cfc-f53b-4c36-80a0-32ec1c742f22",
+        "signInRequired": true
+      },
+      {
+        "intentId": "308e5379-7d79-42dd-b66c-7c1d44e1c2fd",
+        "signInRequired": true
+      },
+      {
+        "intentId": "8633d4e9-a3b2-49ba-bd78-d781ca04b280",
+        "signInRequired": true
+      }
+    ],
+    "systemIntents": [],
     "endIntentIds": [
       "308e5379-7d79-42dd-b66c-7c1d44e1c2fd",
       "10f72820-b50b-44e5-bd4d-0db1e55d43a1",
       "b2019cfc-f53b-4c36-80a0-32ec1c742f22",
-      "7fb0c1c5-4935-4f8a-9d85-f5f4a71829d7"
+      "7fb0c1c5-4935-4f8a-9d85-f5f4a71829d7",
+      "6d145e1f-da03-4a9d-b070-ffec1ed27f51",
+      "d721fe0f-48cc-411d-8b6d-0b31c38e52c8",
+      "ec792743-3a65-4dc8-b378-c1a25e0f9b5f",
+      "9b9973d1-d279-4b14-962a-729e2973ee9f"
     ],
     "oAuthLinking": {
       "required": false,
-      "authorizationUrl": "[BASE]/app/auth",
+      "authorizationUrl": "https://flowdash.co/auth/google",
       "grantType": "IMPLICIT_GRANT"
     },
-    "voiceType": "FEMALE_1"
+    "voiceType": "FEMALE_1",
+    "capabilities": [],
+    "protocolVersion": "V2"
   },
   "defaultTimezone": "",
   "webhook": {
-    "url": "[BASE]/api/integrations/googlehome/request",
+    "url": "https://flowdash.co/api/agent/apiai/request",
     "username": "",
     "headers": {
-      "Auth-Key": "[secrets.API_AI_AUTH_KEY]",
+      "Auth-Key": "KEY",
       "": ""
     },
     "available": true,

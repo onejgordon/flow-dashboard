@@ -1,0 +1,67 @@
+{
+  "userSays": [
+    {
+      "id": "6e5ef50c-e193-425a-ad7c-19ec356d1adf",
+      "data": [
+        {
+          "text": "habit status"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "9c3d1a68-1ae3-4be8-951d-e2360ba8d6b8",
+      "data": [
+        {
+          "text": "tell me about my habits"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "025f51ab-7ca0-4ee3-a0fa-5a0517379df0",
+      "data": [
+        {
+          "text": "my habits"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "943968ae-c933-43c7-9aec-291ff0044206",
+      "data": [
+        {
+          "text": "how am i doing on habits"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "d721fe0f-48cc-411d-8b6d-0b31c38e52c8",
+  "name": "Habit Request",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.habit_status",
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": 0,
+          "speech": []
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}

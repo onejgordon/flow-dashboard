@@ -1,0 +1,63 @@
+{
+  "userSays": [
+    {
+      "id": "03eee004-1f1e-4b9d-af23-e18e866ca645",
+      "data": [
+        {
+          "text": "submit journal"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "3ce68ec6-6cc0-4277-aa09-c83ef418eb43",
+      "data": [
+        {
+          "text": "daily report"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "8e2ed722-761b-4903-bf7b-dd2b0ebdbad0",
+      "data": [
+        {
+          "text": "daily journal"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "16a6da90-0673-47fe-a6f4-c33101493d7d",
+  "name": "Daily Journal",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.journal",
+      "affectedContexts": [
+        {
+          "name": "DailyJournal-followup",
+          "parameters": {},
+          "lifespan": 2
+        }
+      ],
+      "parameters": [],
+      "messages": [
+        {
+          "type": 0,
+          "speech": []
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}

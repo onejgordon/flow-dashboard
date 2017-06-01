@@ -97,25 +97,25 @@ class APIAITestCase(BaseTestCase):
                     "device": {},
                     "inputs": [
                         {
-                            "raw_inputs": [
+                            "rawInputs": [
                                 {
                                     "query": "at flow dashboard what are my tasks",
-                                    "annotation_sets": [
+                                    "annotationSets": [
                                         {
                                             "domain": 1,
                                             "annotations": [
                                                 {
                                                     "confidence": 1099999.998,
-                                                    "start_position": 3,
+                                                    "startPosition": 3,
                                                     "length": 4
                                                 }
                                             ]
                                         }
                                     ],
-                                    "input_type": 2
+                                    "inputType": 2
                                 }
                             ],
-                            "intent": "assistant.intent.action.MAIN",
+                            "intent": "actions.intent.MAIN",
                             "arguments": [
                                 {
                                     "text_value": "what are my tasks",
@@ -126,8 +126,8 @@ class APIAITestCase(BaseTestCase):
                         }
                     ],
                     "user": {
-                        "access_token": access_token,
-                        "user_id": "XXX"
+                        "accessToken": access_token,
+                        "userId": "XXX"
                     },
                     "surface": {
                         "capabilities": [
@@ -137,7 +137,7 @@ class APIAITestCase(BaseTestCase):
                         ]
                     },
                     "conversation": {
-                        "conversation_id": "1489835199537",
+                        "conversationId": "1489835199537",
                         "type": 1
                     }
                 }

@@ -1207,7 +1207,7 @@ class AgentAPI(handlers.JsonRequestHandler):
     def _get_user(self, body):
         originalRequest = body.get('originalRequest', {})
         user = originalRequest.get('data', {}).get('user', {})
-        access_token = user.get('access_token')
+        access_token = user.get('accessToken')
         if access_token:
             user_id = User.user_id_from_aes_access_token(access_token)
             if user_id:
@@ -1253,7 +1253,7 @@ class AgentAPI(handlers.JsonRequestHandler):
         res['speech'] = speech
         res['displayText'] = speech
         data['google'] = {
-            'expect_user_response': not end_convo
+            'expectUserResponse': not end_convo
         }
         res['data'] = data
         res['contextOut'] = []

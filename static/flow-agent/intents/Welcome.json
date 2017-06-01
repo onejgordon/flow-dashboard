@@ -44,7 +44,11 @@
       "messages": [
         {
           "type": 0,
-          "speech": "With the Flow agent, you can check how you\u0027re doing, mark habits as complete, and commit to habits. Also, you can check on your goals."
+          "speech": [
+            "Flow here. Try saying \"how am I doing\", \"what are my goals\", or \"how do habits work\".",
+            "Flow here. Try saying \"my status\", \"my tasks\", or \"how do goals work\".",
+            "Hello, what can I do for you?"
+          ]
         }
       ]
     }
