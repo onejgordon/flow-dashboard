@@ -57,10 +57,6 @@ export default class About extends React.Component {
 
                         <img src="/images/screenshots/habit_trend.png" className="img-responsive" />
 
-                        <h3>Export everything.</h3>
-
-                        <p className="lead" style={{fontSize: "1.45em"}}>Export your data, at any time, to CSV.</p>
-
                         <h3>Flow Snapshot (beta).</h3>
 
                         <p className="lead" style={{fontSize: "1.45em"}}>Snapshots are a short questionnaire collected at random times throughout the day via your smartphone.</p>
@@ -83,16 +79,25 @@ export default class About extends React.Component {
 
                         <p className="lead" style={{fontSize: "1.45em"}}>You can chat with <a href="https://www.facebook.com/FlowDashboard/" target="_blank">Flow on Facebook Messenger</a> to review goals, commit to and complete tasks and habits, and answer your daily journal questions.</p>
 
+                        <div hidden={user != null}>
+                            <h3>Try Flow</h3>
+                            <p className="lead" style={{fontSize: "1.45em"}}><Link to="/app/login"><RaisedButton primary={true} label="Sign in" /></Link> to get started.</p>
+                        </div>
+
                         <div className="row">
                             <div className="col-sm-6">
-                                <div hidden={user != null}>
-                                    <h3>Try Flow</h3>
-                                    <p className="lead" style={{fontSize: "1.45em"}}><Link to="/app/login"><RaisedButton primary={true} label="Sign in" /></Link> to get started.</p>
-                                </div>
+                                <h3>Your Data is Yours</h3>
+
+                                <p className="lead" style={{fontSize: "1.45em"}}>
+                                    Flow will never share your data with any third party without explicit authorization.<br/><br/>
+                                    Export any of your data, at any time, to CSV. Developers can also access their data via API.<br/>
+                                    <Link to="/app/privacy">See our privacy policy</Link>.
+                                </p>
+
                             </div>
                             <div className="col-sm-6">
                                 <h3>Flow is Open Source</h3>
-                                <p className="lead" style={{fontSize: "1.45em"}}>Spin up your own instance, or contribute. Also see the <a href="http://docs.flowdash.apiary.io/" target="_blank">API documentation</a>.</p>
+                                <p className="lead" style={{fontSize: "1.45em"}}>Run your own instance of Flow, or contribute. Also see the <a href="http://docs.flowdash.apiary.io/" target="_blank">API documentation</a>.</p>
                                 <a href="https://github.com/onejgordon/flow-dashboard" target="_blank"><RaisedButton label="Source on Github" /></a>
                             </div>
                         </div>
