@@ -169,6 +169,7 @@ class REPORT():
     GOAL_REPORT = 3
     JOURNAL_REPORT = 4
     EVENT_REPORT = 5
+    PROJECT_REPORT = 6
 
     # Status
     CREATED = 1

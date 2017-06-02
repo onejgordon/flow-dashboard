@@ -65,7 +65,7 @@ export default class Reports extends React.Component {
     }
 
     download(r) {
-        if (r.serve_url) window.open(r.serve_url,'_blank');
+        if (r.serve_url && r.status == 3) window.open(r.serve_url,'_blank');
     }
 
     render_report(r) {
@@ -134,6 +134,16 @@ export default class Reports extends React.Component {
                     { this.render_date_form() }
 
                     <RaisedButton label="Generate" primary={true} icon={<FontIcon className="material-icons">play_circle_filled</FontIcon>} onClick={this.generate_report.bind(this, 2)} />
+                  </Tab>
+
+                  <Tab label="Projects">
+
+                    <br/>
+                    <p className="lead">Export project data</p>
+
+                    { this.render_date_form() }
+
+                    <RaisedButton label="Generate" primary={true} icon={<FontIcon className="material-icons">play_circle_filled</FontIcon>} onClick={this.generate_report.bind(this, 6)} />
                   </Tab>
 
                   <Tab label="Goals">

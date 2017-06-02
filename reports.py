@@ -2,7 +2,7 @@ import traceback
 import tools
 from google.appengine.ext import ndb
 from google.appengine.api import logservice, memcache
-from models import Report, HabitDay, Task, Goal, MiniJournal, Event
+from models import Project, HabitDay, Task, Goal, MiniJournal, Event
 from constants import REPORT, GCS_REPORT_BUCKET, GOAL
 import cloudstorage as gcs
 from datetime import datetime
@@ -258,6 +258,39 @@ class TaskReportWorker(GCSReportWorker):
             str(timer_ms / 1000),
             str(sess)
         ]
+        return row
+
+
+class ProjectReportWorker(GCSReportWorker):
+    KIND = Project
+
+    def __init__(self, rkey):
+        super(ProjectReportWorker, self).__init__(rkey, start_att="dt_created", start_att_desc=True, title="Project Report")
+        self.headers = [
+            "Date Created", "Date Due", "Date Completed", "Date Archived", "Title", "Subhead",
+            "Links", "Starred", "Archived", "Progress"]
+        for i in range(10):
+            self.headers.append("Progress %d%%" % ((i+1) * 10))
+
+    def entityData(self, prj):
+        row = [
+            tools.sdatetime(prj.dt_created, fmt=DATE_FMT),
+            tools.sdatetime(prj.dt_due, fmt=DATE_FMT),
+            tools.sdatetime(prj.dt_completed, fmt=DATE_FMT),
+            tools.sdatetime(prj.dt_archived, fmt=DATE_FMT),
+            prj.title,
+            prj.subhead,
+            ', '.join(prj.urls),
+            "1" if prj.starred else "0",
+            "1" if prj.archived else "0",
+            "%d%%" % (prj.progress * 10)
+        ]
+        for i in range(10):
+            val = ""
+            if prj.progress_ts and len(prj.progress_ts) > i:
+                ms = prj.progress_ts[i]
+                val = tools.sdatetime(tools.dt_from_ts(ms), fmt=DATE_FMT)
+            row.append(val)
         return row
 
 
