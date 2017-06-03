@@ -147,12 +147,12 @@ export default class TaskHUD extends React.Component {
     let playing = this.playing();
     let controls = [];
     if (playing) {
-      controls.push(<IconButton iconClassName="material-icons" onClick={this.pause_timer.bind(this)} tooltipPosition="top-center" tooltip="Pause Timer" disabled={working}>pause</IconButton>)
+      controls.push(<IconButton key="pause" iconClassName="material-icons" onClick={this.pause_timer.bind(this)} tooltipPosition="top-center" tooltip="Pause Timer" disabled={working}>pause</IconButton>)
     }
-    else controls.push(<IconButton iconClassName="material-icons" onClick={this.start_timer.bind(this)} tooltipPosition="top-center" tooltip="Start Timer" disabled={working}>play_arrow</IconButton>)
-    controls.push(<IconButton iconClassName="material-icons" onClick={this.set_pomodoro.bind(this)} tooltipPosition="top-center" tooltip={`Set Pomodoro Timer (${this.POMODORO_MINS} minutes)`} disabled={working}>timer</IconButton>)
-    controls.push(<IconButton iconClassName="material-icons" onClick={this.stop_timer.bind(this)} tooltipPosition="top-center" tooltip="Stop and Save Logged Time" disabled={working}>stop</IconButton>)
-    if (this.get_seconds() > 0) controls.push(<IconButton iconClassName="material-icons" onClick={this.reset_timer.bind(this)} tooltipPosition="top-center" tooltip="Clear & Reset Timer" disabled={working}>restore</IconButton>)
+    else controls.push(<IconButton key="start" iconClassName="material-icons" onClick={this.start_timer.bind(this)} tooltipPosition="top-center" tooltip="Start Timer" disabled={working}>play_arrow</IconButton>)
+    controls.push(<IconButton key="pomo" iconClassName="material-icons" onClick={this.set_pomodoro.bind(this)} tooltipPosition="top-center" tooltip={`Set Pomodoro Timer (${this.POMODORO_MINS} minutes)`} disabled={working}>timer</IconButton>)
+    controls.push(<IconButton key="stop" iconClassName="material-icons" onClick={this.stop_timer.bind(this)} tooltipPosition="top-center" tooltip="Stop and Save Logged Time" disabled={working}>stop</IconButton>)
+    if (this.get_seconds() > 0) controls.push(<IconButton key="reset" iconClassName="material-icons" onClick={this.reset_timer.bind(this)} tooltipPosition="top-center" tooltip="Clear & Reset Timer" disabled={working}>restore</IconButton>)
     return controls;
   }
 

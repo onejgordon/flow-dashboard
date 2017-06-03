@@ -1,8 +1,9 @@
 var React = require('react');
-import { IconButton, IconMenu, MenuItem, Dialog, RaisedButton, TextField, FontIcon } from 'material-ui';
+import { IconButton, IconMenu, MenuItem, Dialog,
+  RaisedButton, TextField, FontIcon, FlatButton } from 'material-ui';
 var util = require('utils/util');
 var api = require('utils/api');
-import {clone} from 'lodash';
+import {clone, pick} from 'lodash';
 import {cyanA400} from 'material-ui/styles/colors';
 var AppConstants = require('constants/AppConstants')
 import {changeHandler} from 'utils/component-utils';
@@ -29,10 +30,10 @@ export default class HabitWidget extends React.Component {
           habits: [],
           habitdays: {},
           habit_week_start: null,
-          new_dialog_open: false,
+          editor_open: false,
           habit_analysis: null,
           form: {},
-          creating: false,
+          working: false,
           on_mobile: util.user_agent_mobile()
       };
       this.SHOW_MATERIAL_ICONS = ['check_circle', 'group_work', 'add', 'directions_run',
@@ -46,19 +47,24 @@ export default class HabitWidget extends React.Component {
     this.fetch_current();
   }
 
-  create_habit() {
+  save_habit() {
     let {form} = this.state;
-    let params = clone(form);
-    this.setState({creating: true}, () => {
+    let params = pick(form, ['id', 'name', 'tgt_weekly', 'icon', 'color']);
+    this.setState({working: true}, () => {
       api.post("/api/habit", params, (res) => {
-        if (res.habit) this.setState({
-          habits: this.state.habits.concat(res.habit),
-          form: {},
-          new_dialog_open: false,
-          creating: false
-        });
+        if (res.habit) {
+          let habits = this.state.habits;
+          util.updateByKey(res.habit, habits, 'id');
+          this.setState({
+            habits: habits,
+            form: {},
+            editor_open: false,
+            working: false,
+            habit_analysis: null
+          });
+        }
       }, (res_err) => {
-        this.setState({creating: false});
+        this.setState({working: false});
       });
     });
   }
@@ -82,9 +88,7 @@ export default class HabitWidget extends React.Component {
       habit_id: habit.id,
       date: iso_day
     }
-    console.log(params)
     api.post(`/api/habit/${action}`, params, (res) => {
-      console.log(res)
       if (res.habitday) {
         this.update_habitday_in_state(res.habitday);
       }
@@ -299,13 +303,21 @@ export default class HabitWidget extends React.Component {
   }
 
   show_creator() {
-    this.setState({new_dialog_open: true});
+    this.setState({editor_open: true});
   }
 
   set_new_habit_icon(ic) {
     let {form} = this.state;
     form.icon = ic;
     this.setState({form});
+  }
+
+  start_editing(h) {
+    this.setState({editor_open: true, form: clone(h)})
+  }
+
+  dismiss_editor() {
+    this.setState({editor_open: false})
   }
 
   render_icon_chooser() {
@@ -317,11 +329,14 @@ export default class HabitWidget extends React.Component {
   }
 
   render() {
-    let {habits, habitdays, new_dialog_open, form, habit_analysis, creating} = this.state;
+    let {habits, habitdays, editor_open, form, habit_analysis, working} = this.state;
     let no_habits = habits.length == 0;
     let _commit_bar, _progress_bar, table;
     let target = 0, done = 0, committed = 0, committed_done = 0;
-    let actions = [<RaisedButton primary={true} label="Create Habit" onClick={this.create_habit.bind(this)} disabled={creating} />]
+    let actions = [
+      <RaisedButton primary={true} label="Save Habit" onClick={this.save_habit.bind(this)} disabled={working} />,
+      <FlatButton label="Cancel" onClick={this.dismiss_editor.bind(this)} />
+    ]
     if (!no_habits) {
       ({table, target, done, committed, committed_done} = this.generate_habit_table());
       let target_tooltip = `${util.printPercent(done/target, {default: '0%'})} of weekly target`;
@@ -355,17 +370,23 @@ export default class HabitWidget extends React.Component {
 
         <HabitAnalysis days={60}
           habit={habit_analysis}
-          onDismiss={this.show_analysis.bind(this, null)} />
+          onDismiss={this.show_analysis.bind(this, null)}
+          onEdit={this.start_editing.bind(this)} />
 
         <Dialog
-            open={new_dialog_open}
-            title="Create Habit"
+            open={editor_open}
+            title={form.id == null ? "Create Habit" : "Edit Habit"}
             autoDetectWindowHeight={true} autoScrollBodyContent={true}
-            onRequestClose={this.setState.bind(this, {new_dialog_open: false})}
+            onRequestClose={this.dismiss_editor.bind(this)}
             actions={actions}>
 
-            <TextField placeholder="Habit name" value={form.name || ''} onChange={this.changeHandler.bind(this, 'form', 'name')} fullWidth autoFocus />
+            <TextField placeholder="Habit name"
+                       name="name"
+                       value={form.name || ''}
+                       onChange={this.changeHandler.bind(this, 'form', 'name')}
+                       fullWidth autoFocus />
             <TextField placeholder="Weekly Target (# of completions per week)"
+                       name="target"
                        value={form.tgt_weekly || ''}
                        onChange={this.changeHandler.bind(this, 'form', 'tgt_weekly')}
                        type="number"
@@ -379,7 +400,11 @@ export default class HabitWidget extends React.Component {
               <div className="col-sm-6">
                 <label>Habit Icon</label>
                 <p className="help-block">Choose an icon below, or enter any icon ID from https://material.io/icons/.</p>
-                <TextField placeholder="Habit icon ID" value={form.icon || ''} onChange={this.changeHandler.bind(this, 'form', 'icon')} fullWidth />
+                <TextField placeholder="Habit icon ID"
+                           name="icon"
+                           value={form.icon || ''}
+                           onChange={this.changeHandler.bind(this, 'form', 'icon')}
+                           fullWidth />
                 { this.render_icon_chooser() }
               </div>
             </div>

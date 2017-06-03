@@ -1,5 +1,5 @@
 var React = require('react');
-import { Dialog } from 'material-ui';
+import { Dialog, FlatButton } from 'material-ui';
 var util = require('utils/util');
 var api = require('utils/api');
 import {changeHandler} from 'utils/component-utils';
@@ -11,7 +11,8 @@ var BigProp = require('components/common/BigProp');
 @changeHandler
 export default class HabitAnalysis extends React.Component {
   static propTypes = {
-    onDismiss: React.PropTypes.func
+    onDismiss: React.PropTypes.func,
+    onEdit: React.PropTypes.func
   }
   static defaultProps = {
     habit: null,
@@ -122,9 +123,16 @@ export default class HabitAnalysis extends React.Component {
       )
   }
 
+  handle_edit() {
+    if (this.props.onEdit) this.props.onEdit(this.props.habit)
+  }
+
   render() {
     let {habit} = this.props;
-    let actions = [];
+    let actions = [
+      <FlatButton label="Edit" onClick={this.handle_edit.bind(this)} primary />,
+      <FlatButton label="Dismiss" onClick={this.dismiss.bind(this)} />
+    ];
     let content;
     if (habit) content = this.render_content()
     return (
