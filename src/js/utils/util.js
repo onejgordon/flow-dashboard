@@ -94,20 +94,12 @@ var util = {
         if (i > -1) {
             if (do_delete) items.splice(i, 1);
             else items[i] = item;
-            success = true;
+            success = true
+        } else {
+            items.push(item)
+            success = true
         }
         return success;
-    },
-
-    objectIndexOf: function(key, list, _keyattr) {
-        var keyattr = _keyattr || "id";
-        for (var i=0; i<list.length; i++) {
-            var li_el = list[i];
-            if (li_el[keyattr] == key) {
-                return i;
-            }
-        }
-        return -1;
     },
 
     _render: function(html, directive, data) {

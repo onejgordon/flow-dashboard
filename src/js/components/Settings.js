@@ -9,8 +9,9 @@ var SimpleAdmin = require('components/common/SimpleAdmin');
 var AsyncActionButton = require('components/common/AsyncActionButton');
 var ReactJsonEditor = require('components/common/ReactJsonEditor');
 import Select from 'react-select';
+import {findItemById} from 'utils/store-utils';
 import {RaisedButton, TextField, DatePicker, FontIcon,
-    Paper, Tabs, Tab} from 'material-ui';
+    Paper, List, ListItem} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 import {get, set, clone} from 'lodash';
 import connectToStores from 'alt-utils/lib/connectToStores';
@@ -34,8 +35,19 @@ export default class Settings extends React.Component {
             settings: settings,
             tab: "settings",
             saving: false,
-            lastSave: util.nowTimestamp()
+            lastSave: util.nowTimestamp(),
+            subtab: "basics"
         };
+
+        this.SUBTABS = [
+            { value: "basics", label: "Profile" },
+            { value: "journals", label: "Journals" },
+            { value: "tasks", label: "Tasks" },
+            { value: "goals", label: "Goals" },
+            { value: "tracking", label: "Tracking" },
+            { value: "more", label: "More" },
+            { value: "advanced", label: "Advanced" },
+        ]
     }
 
     static getStores() {
@@ -55,16 +67,6 @@ export default class Settings extends React.Component {
 
     gotoTab(tab) {
         this.setState({tab: tab});
-    }
-
-    upload_events() {
-        let {form} = this.state;
-        let params = {events: form.events};
-        api.post("/api/event/batch", params, (res) => {
-            this.setState({form: {}}, () => {
-                if (this.refs.sa) this.refs.sa.fetchItems();
-            });
-        });
     }
 
     save_user_settings() {
@@ -92,10 +94,20 @@ export default class Settings extends React.Component {
         this.setState({settings: settings, lastChange: util.nowTimestamp()});
     }
 
+    goto_subtab(st) {
+        this.setState({subtab: st});
+    }
+
+    print_subtab_nav() {
+        return this.SUBTABS.map((st) => {
+            return <ListItem primaryText={st.label} onClick={this.goto_subtab.bind(this, st.value)} />
+        })
+    }
+
     render() {
         let _more;
         var props;
-        let {form, tab, settings} = this.state;
+        let {form, tab, settings, subtab} = this.state;
         let {user} = this.props;
         let unsaved = this.state.lastSave < this.state.lastChange;
         var tabs = [
@@ -103,7 +115,7 @@ export default class Settings extends React.Component {
             {id: 'habits', label: "Habits"},
             // {id: 'goals', label: "Goals"},
             // {id: 'projects', label: "Projects"},
-            {id: 'events', label: "Events"}
+            // {id: 'events', label: "Events"}
         ];
         if (tab == "habits") {
             props = {
@@ -126,38 +138,6 @@ export default class Settings extends React.Component {
                 getListFromJSON: function(data) { return data.habits; },
                 getObjectFromJSON: function(data) { return data.habit; }
             }
-        } else if (tab == "events") {
-
-            props = {
-                'url': "/api/event",
-                'id': 'sa',
-                'entity_name': "Events",
-                'attributes': [
-                    { name: 'id', label: "ID", editable: false, fixed: true },
-                    { name: 'title', label: "Title", editable: true, showInList: true },
-                    { name: 'date_start', label: "Date Start (YYYY-MM-DD)", editable: true, showInList: false },
-                    { name: 'date_end', label: "Date End (optional, YYYY-MM-DD)", editable: true, showInList: false },
-                    { name: 'color', label: "Color (hex)", editable: true, showInList: false }
-                ],
-                'fetch_params': {},
-                'unique_key': 'id',
-                'max': 50,
-                getListFromJSON: function(data) {
-                    return data.events;
-                },
-                getObjectFromJSON: function(data) { return data.event; }
-            }
-
-            _more = (
-                <div style={{margin: "10px"}}>
-                    <label>Batch Upload from JSON array</label>
-                    <p>Each element should be a JSON object that includes properties: <code>title</code> (str), <code>date_start</code> (str, YYYY-MM-DD), <code>date_end</code> (str, optional, YYYY-MM-DD), <code>details</code> (str, optional), <code>color</code> (str, e.g. #FF0000, optional).</p>
-                    <TextField placeholder="Events (JSON)" name="events" value={form.events || ""} onChange={this.changeHandler.bind(this, 'form', 'events')} multiLine={true} fullWidth />
-                    <RaisedButton label="Batch Upload from JSON" onClick={this.upload_events.bind(this)} />
-                </div>
-                )
-
-
         } else if (tab == "projects") {
 
             props = {
@@ -235,145 +215,154 @@ export default class Settings extends React.Component {
             let goal_pref_atts = [
                 { name: 'slots', title: 'Maximum number of goals to enter per period', type: 'number', default_value: AppConstants.GOAL_DEFAULT_SLOTS }
             ];
+            let subtab_title = findItemById(this.SUBTABS, subtab, 'value').label;
             _more = (
-                <Paper style={{padding: "10px", marginTop: "10px"}}>
-
-                    <Tabs>
-                        <Tab label="Basics">
-                            <div className="row" style={{padding: '10px'}}>
-                                <div className="col-sm-6">
-                                    <p>
-                                        <label>Email</label>
-                                        <div>{ user.email }</div>
-                                    </p>
-                                    <DatePicker autoOk={true} floatingLabelText="Birthday" formatDate={util.printDateObj} value={form.birthday} onChange={this.changeHandlerNilVal.bind(this, 'form', 'birthday')} />
-                                </div>
-                                <div className="col-sm-6">
-                                    <label>Timezone</label>
-                                    <Select
-                                        options={AppConstants.TIMEZONES}
-                                        value={form.timezone}
-                                        cancelable={false}
-                                        onChange={this.changeHandlerVal.bind(this, 'form', 'timezone')}
-                                        placeholder="Select timezone"
-                                        simpleValue
-                                      />
-                                </div>
-                            </div>
-                        </Tab>
-
-                        <Tab label="Daily Journals">
-                            <h3>Daily Journal Questions</h3>
-
-                            <div className="row">
-                                <div className="col-md-6">
-                                    <p className="lead">
-                                        Basic journal preferences.
-                                    </p>
-                                    <ReactJsonEditor
-                                        array={false} data={get(settings, ['journals', 'preferences'], {})}
-                                        attributes={journal_pref_atts}
-                                        onChange={this.handle_settings_change.bind(this, ['journals', 'preferences'])}
-                                        editButtonLabel="Edit Journal Preferences"
-                                        />
-                                </div>
-                                <div className="col-md-6">
-
-                                    <p className="lead">
-                                        Configure the questions that you answer in each daily journal.
-                                        Responses, if 'chart enabled', can be analyzed on the Analysis page.
-                                    </p>
-
-                                    <ReactJsonEditor title="Daily Journal Questions"
-                                        array={true} data={get(settings, ['journals', 'questions'], [])}
-                                        attributes={question_atts}
-                                        icon="question_answer"
-                                        onChange={this.handle_settings_change.bind(this, ['journals', 'questions'])}
-                                        addButtonLabel="Add Question"
-                                        primaryProp="text" secondaryProp="name" />
-                                </div>
-                            </div>
-                        </Tab>
-
-                        <Tab label="Tasks">
-                            <h3>Configure Tasks</h3>
-
-                            <ReactJsonEditor
-                                array={false} data={get(settings, ['tasks', 'preferences'], {})}
-                                attributes={task_pref_atts}
-                                onChange={this.handle_settings_change.bind(this, ['tasks', 'preferences'])}
-                                editButtonLabel="Edit Task Preferences"
-                                />
-                        </Tab>
-
-                        <Tab label="Goals">
-                            <h3>Configure Goals</h3>
-
-                            <ReactJsonEditor
-                                array={false} data={get(settings, ['goals', 'preferences'], {})}
-                                attributes={goal_pref_atts}
-                                onChange={this.handle_settings_change.bind(this, ['goals', 'preferences'])}
-                                editButtonLabel="Edit Goal Preferences"
-                                />
-                        </Tab>
-
-                        <Tab label="Tracking">
-                            <h3>Configure Tracking Chart (Custom Variables)</h3>
-
-                            <p className="lead">
-                                Choose which variables to display on the <Link to="/app/analysis/misc">tracking chart</Link>.
-                            </p>
-
-                            <ReactJsonEditor title="Tracking Chart Variables"
-                                array={true} data={get(settings, ['tracking', 'chart_vars'], [])}
-                                attributes={tracking_var_atts}
-                                icon="show_chart"
-                                onChange={this.handle_settings_change.bind(this, ['tracking', 'chart_vars'])}
-                                addButtonLabel="Add Variable"
-                                primaryProp="label" secondaryProp="name" />
-                        </Tab>
-
-                        <Tab label="More Menu">
-
-                            <br/>
-                            <p className="lead">The following items can be added to the <FontIcon className="material-icons">games</FontIcon> more menu that appears at the bottom of the main dashboard.</p>
-
-                            <h3>Configure Flashcards</h3>
-
-                            <p className="lead">
-                                Currently, you can configure flashcards to show randomly chosen rows from a Google Spreadsheet.
-                            </p>
-
-                            <ReactJsonEditor title="Flashcards"
-                                array={true} data={get(settings, ['flashcards'], [])}
-                                attributes={flashcard_atts}
-                                onChange={this.handle_settings_change.bind(this, ['flashcards'])}
-                                addButtonLabel="Add Flashcard"
-                                icon="help_outline"
-                                primaryProp="card_title" secondaryProp="id" />
-
-                            <h3>Configure Static Links</h3>
-
-                            <ReactJsonEditor title="Static Links"
-                                array={true} data={get(settings, ['links'], [])}
-                                attributes={static_link_atts}
-                                icon="link"
-                                onChange={this.handle_settings_change.bind(this, ['links'])}
-                                addButtonLabel="Add Link"
-                                primaryProp="label" secondaryProp="url" />
-                        </Tab>
-
-                        <Tab label="Advanced">
-                            <TextField name="password" floatingLabelText="Update API Password" value={form.password} onChange={this.changeHandler.bind(this, 'form', 'password')} /><br/>
-                        </Tab>
-
-                    </Tabs>
-
-                    <div className="clearfix">
-                        <AsyncActionButton working={this.state.saving} enabled={unsaved} onClick={this.save_user_settings.bind(this)} />
+                <div className="row">
+                    <div className="col-sm-3">
+                        <List>
+                            { this.print_subtab_nav() }
+                        </List>
                     </div>
+                    <div className="col-sm-9">
+                        <Paper style={{padding: "10px", marginTop: "10px"}}>
+                            <h2>{ subtab_title }</h2>
+                            <div hidden={subtab != "basics"}>
+                                <div className="row" style={{padding: '10px'}}>
+                                    <div className="col-sm-6">
+                                        <p>
+                                            <label>Email</label>
+                                            <div>{ user.email }</div>
+                                        </p>
+                                        <DatePicker autoOk={true} floatingLabelText="Birthday" formatDate={util.printDateObj} value={form.birthday} onChange={this.changeHandlerNilVal.bind(this, 'form', 'birthday')} />
+                                    </div>
+                                    <div className="col-sm-6">
+                                        <label>Timezone</label>
+                                        <Select
+                                            options={AppConstants.TIMEZONES}
+                                            value={form.timezone}
+                                            cancelable={false}
+                                            onChange={this.changeHandlerVal.bind(this, 'form', 'timezone')}
+                                            placeholder="Select timezone"
+                                            simpleValue
+                                          />
+                                    </div>
+                                </div>
+                            </div>
 
-                </Paper>
+                            <div hidden={subtab != "journals"}>
+                                <h3>Daily Journal Questions</h3>
+
+                                <div className="row">
+                                    <div className="col-md-6">
+                                        <p className="lead">
+                                            Basic journal preferences.
+                                        </p>
+                                        <ReactJsonEditor
+                                            array={false} data={get(settings, ['journals', 'preferences'], {})}
+                                            attributes={journal_pref_atts}
+                                            onChange={this.handle_settings_change.bind(this, ['journals', 'preferences'])}
+                                            editButtonLabel="Edit Journal Preferences"
+                                            />
+                                    </div>
+                                    <div className="col-md-6">
+
+                                        <p className="lead">
+                                            Configure the questions that you answer in each daily journal.
+                                            Responses, if 'chart enabled', can be analyzed on the Analysis page.
+                                        </p>
+
+                                        <ReactJsonEditor title="Daily Journal Questions"
+                                            array={true} data={get(settings, ['journals', 'questions'], [])}
+                                            attributes={question_atts}
+                                            icon="question_answer"
+                                            onChange={this.handle_settings_change.bind(this, ['journals', 'questions'])}
+                                            addButtonLabel="Add Question"
+                                            primaryProp="text" secondaryProp="name" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div hidden={subtab != "tasks"}>
+                                <h3>Configure Tasks</h3>
+
+                                <ReactJsonEditor
+                                    array={false} data={get(settings, ['tasks', 'preferences'], {})}
+                                    attributes={task_pref_atts}
+                                    onChange={this.handle_settings_change.bind(this, ['tasks', 'preferences'])}
+                                    editButtonLabel="Edit Task Preferences"
+                                    />
+                            </div>
+
+                            <div hidden={subtab != "goals"}>
+                                <h3>Configure Goals</h3>
+
+                                <ReactJsonEditor
+                                    array={false} data={get(settings, ['goals', 'preferences'], {})}
+                                    attributes={goal_pref_atts}
+                                    onChange={this.handle_settings_change.bind(this, ['goals', 'preferences'])}
+                                    editButtonLabel="Edit Goal Preferences"
+                                    />
+                            </div>
+
+                            <div hidden={subtab != "tracking"}>
+                                <h3>Configure Tracking Chart (Custom Variables)</h3>
+
+                                <p className="lead">
+                                    Choose which variables to display on the <Link to="/app/analysis/misc">tracking chart</Link>.
+                                </p>
+
+                                <ReactJsonEditor title="Tracking Chart Variables"
+                                    array={true} data={get(settings, ['tracking', 'chart_vars'], [])}
+                                    attributes={tracking_var_atts}
+                                    icon="show_chart"
+                                    onChange={this.handle_settings_change.bind(this, ['tracking', 'chart_vars'])}
+                                    addButtonLabel="Add Variable"
+                                    primaryProp="label" secondaryProp="name" />
+                            </div>
+
+                            <div hidden={subtab != "more"}>
+
+                                <br/>
+                                <p className="lead">The following items can be added to the <FontIcon className="material-icons">games</FontIcon> more menu that appears at the bottom of the main dashboard.</p>
+
+                                <h3>Configure Flashcards</h3>
+
+                                <p className="lead">
+                                    Currently, you can configure flashcards to show randomly chosen rows from a Google Spreadsheet.
+                                </p>
+
+                                <ReactJsonEditor title="Flashcards"
+                                    array={true} data={get(settings, ['flashcards'], [])}
+                                    attributes={flashcard_atts}
+                                    onChange={this.handle_settings_change.bind(this, ['flashcards'])}
+                                    addButtonLabel="Add Flashcard"
+                                    icon="help_outline"
+                                    primaryProp="card_title" secondaryProp="id" />
+
+                                <h3>Configure Static Links</h3>
+
+                                <ReactJsonEditor title="Static Links"
+                                    array={true} data={get(settings, ['links'], [])}
+                                    attributes={static_link_atts}
+                                    icon="link"
+                                    onChange={this.handle_settings_change.bind(this, ['links'])}
+                                    addButtonLabel="Add Link"
+                                    primaryProp="label" secondaryProp="url" />
+                            </div>
+
+                            <div hidden={subtab != "advanced"}>
+                                <TextField name="password" floatingLabelText="Update API Password" value={form.password} onChange={this.changeHandler.bind(this, 'form', 'password')} /><br/>
+                            </div>
+
+                        </Paper>
+
+                        <div className="clearfix vpad pull-right">
+                            <AsyncActionButton working={this.state.saving} enabled={unsaved} onClick={this.save_user_settings.bind(this)} />
+                        </div>
+
+                    </div>
+                </div>
+
                 )
         }
         var _tabs = tabs.map(function(t, i, arr) {

@@ -2,7 +2,8 @@ var React = require('react');
 var api = require('utils/api');
 var UserActions = require('actions/UserActions');
 import {Drawer, AppBar, IconButton, FlatButton, RaisedButton,
-    List, ListItem, TextField, Dialog, DatePicker, Toggle} from 'material-ui';
+    List, ListItem, TextField, Dialog, DatePicker, Toggle, IconMenu,
+    MenuItem, FontIcon} from 'material-ui';
 import {clone} from 'lodash';
 var ReactLifeTimeline = require('react-life-timeline');
 import connectToStores from 'alt-utils/lib/connectToStores';
@@ -20,7 +21,8 @@ class Timeline extends React.Component {
             events: [],
             event_list_open: false,
             editing_index: null,
-            form: {}
+            form: {},
+            batch_dialog_open: false
         };
     }
 
@@ -52,8 +54,8 @@ class Timeline extends React.Component {
 
     edit_event(e, i) {
         let form = clone(e);
-        if (form.date_start) form.date_start = new Date(form.date_start);
-        if (form.date_end) form.date_end = new Date(form.date_end);
+        if (form.date_start) form.date_start = util.date_from_iso(form.date_start);
+        if (form.date_end) form.date_end = util.date_from_iso(form.date_end);
         this.setState({editing_index: i, form: form});
     }
 
@@ -77,6 +79,10 @@ class Timeline extends React.Component {
         });
     }
 
+    batch_toggle(open) {
+        this.setState({batch_dialog_open: open})
+    }
+
     render_edit_form() {
         let {editing_index, form} = this.state;
         if (editing_index != null) return (
@@ -96,6 +102,16 @@ class Timeline extends React.Component {
                 </div>
             </div>
             )
+    }
+
+    upload_events() {
+        let {form} = this.state;
+        let params = {events: form.events};
+        api.post("/api/event/batch", params, (res) => {
+            this.setState({form: {}}, () => {
+                this.fetch_events()
+            });
+        });
     }
 
     save_event() {
@@ -119,7 +135,7 @@ class Timeline extends React.Component {
     }
 
     render() {
-        let {form} = this.state;
+        let {form, batch_dialog_open} = this.state;
         let {user} = this.props;
         if (!user) return <div></div>
         let DOB = this.props.user.birthday;
@@ -157,6 +173,18 @@ class Timeline extends React.Component {
                     { this.render_edit_form() }
                 </Dialog>
 
+
+                <Dialog title="Upload Batch of Events"
+                    open={batch_dialog_open}
+                    actions={[<RaisedButton label="Batch Upload from JSON" onClick={this.upload_events.bind(this)} primary />]}
+                    autoDetectWindowHeight={true} autoScrollBodyContent={true}
+                    onRequestClose={this.batch_toggle.bind(this, false)} >
+                    <label>Batch Upload from JSON array</label>
+                    <p>Each element should be a JSON object that includes properties: <code>title</code> (str), <code>date_start</code> (str, YYYY-MM-DD), <code>date_end</code> (str, optional, YYYY-MM-DD), <code>details</code> (str, optional), <code>color</code> (str, e.g. #FF0000, optional).</p>
+                    <TextField placeholder="Events (JSON array)" name="events" value={form.events || ""} onChange={this.changeHandler.bind(this, 'form', 'events')} multiLine={true} fullWidth />
+                </Dialog>
+
+
                 <Drawer docked={false} width={300} open={this.state.event_list_open} onRequestChange={this.setState.bind(this, {event_list_open: false})} openSecondary={true} >
                   <AppBar
                     title="Events"
@@ -171,6 +199,9 @@ class Timeline extends React.Component {
                 <div className="pull-right">
                     <FlatButton label="Show Event List" onTouchTap={this.setState.bind(this, {event_list_open: true})} />
                     <RaisedButton label="New Event" onTouchTap={this.new_event.bind(this)} primary={true} />
+                    <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
+                        <MenuItem key="batch" primaryText="Upload Batch" onClick={this.batch_toggle.bind(this, true)} leftIcon={<FontIcon className="material-icons">file_upload</FontIcon>} />
+                    </IconMenu>
                 </div>
 
                 <h2>Timeline</h2>

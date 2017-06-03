@@ -13,6 +13,7 @@ import {findIndexById, findItemById, removeItemsById} from 'utils/store-utils';
 var TaskHUD = require('components/TaskHUD');
 var ProgressLine = require('components/common/ProgressLine');
 var toastr = require('toastr');
+import {clone, merge} from 'lodash'
 var AsyncActionButton = require('components/common/AsyncActionButton');
 import connectToStores from 'alt-utils/lib/connectToStores';
 import {changeHandler} from 'utils/component-utils';
@@ -27,7 +28,8 @@ class TaskWidget extends React.Component {
 
   static defaultProps = {
     timezone: "UTC",
-    show_task_progressbar: true
+    show_task_progressbar: true,
+    working: false
   }
 
   constructor(props) {
@@ -98,16 +100,30 @@ class TaskWidget extends React.Component {
     });
   }
 
-  add_task() {
-    let {form} = this.state;
-    this.setState({creating: true}, () => {
-      api.post("/api/task", {title: form.new_task, project_id: form.project_id}, (res) => {
-        let {tasks} = this.state;
-        tasks.push(res.task);
-        TaskActions.closeTaskDialog()
-        this.setState({tasks: tasks, form: {}, creating: false})
+  task_update(task, params) {
+    // Toggle done on server
+    params.id = task.id;
+    this.setState({working: true}, () => {
+      api.post("/api/task", params, (res) => {
+        if (res.task) {
+          this.handle_task_changed(res.task, {form: {}, working: false, project_selector_showing: false});
+          TaskActions.closeTaskDialog()
+        }
       });
     })
+  }
+
+  save_task() {
+    let {form} = this.state;
+    this.task_update(form, {title: form.title, project_id: form.project_id})
+  }
+
+  handle_task_changed(task, additional_updates) {
+    let {tasks} = this.state
+    util.updateByKey(task, tasks, 'id')
+    let st = {tasks: tasks}
+    if (additional_updates) merge(st, additional_updates)
+    this.setState(st)
   }
 
   archive_all_done() {
@@ -119,12 +135,12 @@ class TaskWidget extends React.Component {
     })
   }
 
-  new_task_key_press(event) {
+  task_title_key_press(event) {
     if (event.charCode === 13) { // enter key pressed
       let {form} = this.state;
       event.preventDefault();
-      if (form.new_task && form.new_task.length > 0) {
-        this.add_task();
+      if (form.title && form.title.length > 0) {
+        this.save_task();
       }
     }
   }
@@ -133,8 +149,9 @@ class TaskWidget extends React.Component {
     browserHistory.push('/app/task/history');
   }
 
-  show_task_dialog() {
+  show_task_dialog(t) {
     TaskActions.openTaskDialog()
+    if (t) this.setState({form: clone(t)})
   }
 
   dismiss_task_dialog() {
@@ -173,23 +190,6 @@ class TaskWidget extends React.Component {
     return {tasks_done, tasks_total}
   }
 
-  task_update(task, params) {
-    // Toggle done on server
-    params.id = task.id;
-    api.post("/api/task", params, (res) => {
-      if (res.task) {
-        this.handle_task_changed(res.task);
-      }
-    });
-  }
-
-  handle_task_changed(task) {
-    let {tasks} = this.state;
-    let idx = findIndexById(tasks, task.id, 'id');
-    if (idx > -1) tasks[idx] = task;
-    this.setState({tasks});
-  }
-
   archive(task) {
     this.task_update(task, {archived: 1});
   }
@@ -200,6 +200,15 @@ class TaskWidget extends React.Component {
       tasks = removeItemsById(tasks, [task.id], 'id');
       this.setState({tasks});
     });
+  }
+
+  edit_task(task) {
+    this.show_task_dialog(task)
+  }
+
+  editing_task() {
+    let {form}  = this.state
+    return form.id != null;
   }
 
   set_task_wip(task, is_wip) {
@@ -231,12 +240,12 @@ class TaskWidget extends React.Component {
 
   render() {
     let {show_task_progressbar, timezone, dialog_open} = this.props;
-    let {tasks, form, creating, project_selector_showing} = this.state;
+    let {tasks, form, working, project_selector_showing} = this.state;
     let now = new Date();
     let total_mins = 24 * 60;
     let current_mins = now.getHours() * 60 + now.getMinutes();
     let {tasks_done, tasks_total} = this.task_progress();
-    let new_task_entered = form.new_task && form.new_task.length > 0;
+    let can_update = form.title && form.title.length > 0;
     let visible_tasks = tasks.filter((t) => { return !t.archived; });
     let _buttons = [
       <IconButton key="ref" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.fetch_recent.bind(this)} tooltip="Refresh">refresh</IconButton>,
@@ -266,15 +275,15 @@ class TaskWidget extends React.Component {
         <IconButton iconClassName="material-icons" onClick={this.show_project_selector.bind(this)} tooltip="Link with Project">layers</IconButton>
       </div>
     )
-
+    let editing = this.editing_task()
     let dialog_actions = [
       <AsyncActionButton
-                working={creating}
-                enabled={new_task_entered}
-                text_disabled="Add Task"
-                text_working="Adding..."
-                text_enabled="Add Task"
-                onClick={this.add_task.bind(this)} />,
+                working={working}
+                enabled={can_update}
+                text_disabled={editing ? "Update Task" : "Add Task"}
+                text_working={editing ? "Updating..." : "Adding..."}
+                text_enabled={editing ? "Update Task" : "Add Task"}
+                onClick={this.save_task.bind(this)} />,
       <FlatButton label="Cancel" onClick={this.dismiss_task_dialog.bind(this)} />
     ]
     if (form.project_id) {
@@ -296,11 +305,13 @@ class TaskWidget extends React.Component {
                         onUpdateStatus={this.update_status.bind(this)}
                         onClearTimerLogs={this.clear_timer_logs.bind(this)}
                         onDelete={this.delete_task.bind(this)}
+                        onEdit={this.edit_task.bind(this)}
                         onArchive={this.archive.bind(this)} />;
             }) }
           </List>
         : (
             <div className="empty">
+
               { _no_tasks_cta }
             </div>
           )
@@ -309,17 +320,17 @@ class TaskWidget extends React.Component {
           <ProgressLine value={tasks_done} total={tasks_total} color={this.TASK_COLOR} tooltip="Progress on today's tasks" />
         </div>
 
-        <Dialog title="New Task"
+        <Dialog title={editing ? "Edit Task" : "New Task"}
                 open={dialog_open}
                 onRequestClose={this.dismiss_task_dialog.bind(this)}
                 actions={dialog_actions}>
           <div style={{padding: '10px'}}>
             <div className="row">
               <div className="col-sm-7">
-                <TextField name="new_task" ref="new_task" floatingLabelText="Enter new task title..."
-                           value={form.new_task || ""}
-                           onChange={this.changeHandler.bind(this, 'form', 'new_task')}
-                           onKeyPress={this.new_task_key_press.bind(this)} fullWidth autoFocus />
+                <TextField name="title" ref="title" floatingLabelText="Enter task title..."
+                           value={form.title || ""}
+                           onChange={this.changeHandler.bind(this, 'form', 'title')}
+                           onKeyPress={this.task_title_key_press.bind(this)} fullWidth autoFocus />
               </div>
               <div className="col-sm-5">
                 { _project_section }

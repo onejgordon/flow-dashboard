@@ -8,11 +8,13 @@ export default class TaskLI extends React.Component {
   static propTypes = {
     onUpdateStatus: React.PropTypes.func,
     onArchive: React.PropTypes.func,
+    onEdit: React.PropTypes.func,
     onDelete: React.PropTypes.func,
     onUpdateWIP: React.PropTypes.func,
     onClearTimerLogs: React.PropTypes.func,
     checkbox_enabled: React.PropTypes.bool,
     delete_enabled: React.PropTypes.bool,
+    edit_enabled: React.PropTypes.bool,
     wip_enabled: React.PropTypes.bool,
     archive_enabled: React.PropTypes.bool,
     absolute_date: React.PropTypes.bool,
@@ -22,11 +24,13 @@ export default class TaskLI extends React.Component {
     task: null,
     onUpdateStatus: null,
     onArchive: null,
+    onEdit: null,
     onDelete: null,
     onUpdateWIP: null,
     onClearTimerLogs: null,
     checkbox_enabled: true,
     delete_enabled: true,
+    edit_enabled: true,
     wip_enabled: true,
     archive_enabled: true,
     absolute_date: false,
@@ -75,16 +79,18 @@ export default class TaskLI extends React.Component {
 
   render() {
     let t = this.props.task;
-    let {onDelete, onArchive, onUpdateStatus, onClearTimerLogs, checkbox_enabled, wip_enabled,
-      archive_enabled, delete_enabled} = this.props;
+    let {onDelete, onArchive, onEdit, onUpdateStatus, onClearTimerLogs,
+          checkbox_enabled, edit_enabled, wip_enabled,
+          archive_enabled, delete_enabled} = this.props;
     let click = null;
     let menu = [];
     let done = t.status == this.DONE;
     let archived = t.archived;
-    if (!done && onDelete != null && delete_enabled) menu.push({icon: 'delete', click: onDelete.bind(this, t), label: 'Delete'})
+    if (!archived && edit_enabled && onEdit != null) menu.push({icon: 'edit', click: onEdit.bind(this, t), label: 'Edit'});
     if (!archived && onArchive != null && archive_enabled) menu.push({icon: 'archive', click: onArchive.bind(this, t), label: 'Archive'});
     if (t.status == this.NOT_DONE && onUpdateStatus != null && checkbox_enabled) click = this.attempt_mark_done.bind(this, t)
     if (done && onUpdateStatus != null) click = onUpdateStatus.bind(this, t, this.NOT_DONE);
+    if (!done && onDelete != null && delete_enabled) menu.push({icon: 'delete', click: onDelete.bind(this, t), label: 'Delete'})
     if (!done && !archived && !t.wip && wip_enabled) {
       menu.splice(0, 0, {icon: 'play_for_work', click: this.set_wip.bind(this, true), label: 'On It (Start Working)'});
     }
