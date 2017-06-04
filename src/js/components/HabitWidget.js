@@ -47,6 +47,10 @@ export default class HabitWidget extends React.Component {
     this.fetch_current();
   }
 
+  count_habits() {
+    return this.state.habits.length;
+  }
+
   save_habit() {
     let {form} = this.state;
     let params = pick(form, ['id', 'name', 'tgt_weekly', 'icon', 'color']);
@@ -166,11 +170,17 @@ export default class HabitWidget extends React.Component {
     return res;
   }
 
+  name_sort(h1, h2) {
+    if (h1.name > h2.name) return 1
+    else if (h1.name < h2.name) return -1
+    else return 0
+  }
+
   generate_habit_table() {
     let {habits} = this.state;
     let habit_rows = [];
     let target = 0, done = 0, committed = 0, committed_done = 0;
-    habits.forEach((h) => {
+    habits.sort(this.name_sort.bind(this)).forEach((h) => {
       let {row, n_done, n_committed, n_committed_done, n_target} = this.render_habit(h);
       target += n_target;
       done += n_done;
@@ -352,6 +362,10 @@ export default class HabitWidget extends React.Component {
                               color="#FC3D6F"
                               tooltip={target_tooltip} />
     }
+    let menu_actions = [
+      <MenuItem key="gr" primaryText="Refresh" onClick={this.fetch_current.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
+    ]
+    if (this.count_habits() < AppConstants.HABIT_ACTIVE_LIMIT) menu_actions.push(<MenuItem key="new" primaryText="New Habit" onClick={this.show_creator.bind(this)} leftIcon={<FontIcon className="material-icons">add</FontIcon>} />)
     return (
       <div className="HabitWidget" id="HabitWidget">
         <div className="row">
@@ -361,8 +375,7 @@ export default class HabitWidget extends React.Component {
           <div className="col-sm-6">
             <div className="pull-right">
               <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
-                <MenuItem key="gr" primaryText="Refresh" onClick={this.fetch_current.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
-                <MenuItem key="new" primaryText="New Habit" onClick={this.show_creator.bind(this)} leftIcon={<FontIcon className="material-icons">add</FontIcon>} />
+                { menu_actions }
               </IconMenu>
             </div>
           </div>

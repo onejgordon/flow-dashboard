@@ -78,6 +78,8 @@ class HABIT():
 
     HELP = "You can set habits to build, and track completion. Try saying 'new habit: run', 'habit progress', or 'commit to run tonight'"
 
+    ACTIVE_LIMIT = 10
+
 
 class EVENT():
     # Type

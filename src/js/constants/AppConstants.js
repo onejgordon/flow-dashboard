@@ -6,6 +6,7 @@ var AppConstants = {
     PERSISTENCE: "bootstrap",
     USER_STORAGE_KEY: 'flowUser',
     HABIT_WEEK_START: 0, // Sunday (d.getDay())
+    HABIT_ACTIVE_LIMIT: 10,
     JOURNAL_START_HOUR: 21, // Default
     JOURNAL_END_HOUR: 4, // Default
     GOAL_DEFAULT_SLOTS: 4,

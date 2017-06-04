@@ -4,7 +4,7 @@
 from datetime import datetime, timedelta, time
 from google.appengine.ext import ndb
 from google.appengine.api import mail, search
-from constants import EVENT, USER, TASK, READABLE, JOURNALTAG, REPORT, NEW_USER_NOTIFICATIONS
+from constants import EVENT, USER, TASK, READABLE, JOURNALTAG, REPORT, NEW_USER_NOTIFICATIONS, HABIT
 import tools
 import json
 import random
@@ -583,7 +583,7 @@ class Habit(UserAccessible):
 
     @staticmethod
     def Active(user):
-        return Habit.query(ancestor=user.key).filter(Habit.archived == False).fetch(limit=8)
+        return Habit.query(ancestor=user.key).filter(Habit.archived == False).fetch(limit=HABIT.ACTIVE_LIMIT)
 
     @staticmethod
     def Create(user):
@@ -1438,6 +1438,7 @@ class Report(UserAccessible):
     def Create(user, title="Unnamed Report", type=REPORT.HABIT_REPORT, specs=None, ftype=None):
         logging.debug("Requesting report creation, type %d specs: %s" % (type, specs))
         r = Report(title=title, type=type, parent=user.key)
+        r.dt_created = datetime.now()
         if specs:
             r.set_specs(specs)
         r.storage_type = REPORT.GCS_CLIENT
@@ -1450,7 +1451,8 @@ class Report(UserAccessible):
 
     def get_duration(self):
         if self.dt_created and self.dt_generated:
-            return (self.dt_generated - self.dt_created).total_seconds()
+            secs = (self.dt_generated - self.dt_created).total_seconds()
+            return secs
         return 0
 
     def get_specs(self):
