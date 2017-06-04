@@ -7,6 +7,16 @@ from datetime import datetime
 from models import User
 from base_test_case import BaseTestCase
 from flow import app as tst_app
+import tools
+import imp
+try:
+    imp.find_module('secrets', ['settings'])
+except ImportError:
+    from settings import secrets_template as secrets
+else:
+    from settings import secrets
+
+USER_GOOGLE_ID = "1234"
 
 
 class AuthenticationTestCase(BaseTestCase):
@@ -27,3 +37,28 @@ class AuthenticationTestCase(BaseTestCase):
         user_id = User.user_id_from_aes_access_token(access_token)
         self.assertIsNotNone(access_token)
         self.assertEqual(user_id, user.key.id())
+
+    def testUserGoogleSimpleAccountLinking(self):
+        import jwt
+        user = User.Create(email="test@example.com", g_id=USER_GOOGLE_ID)
+        user.put()
+
+        creation = int(tools.unixtime(ms=False))
+        payload = {
+            'iss': 'https://accounts.google.com',
+            'aud': secrets.GOOGLE_CLIENT_ID,
+            'sub': USER_GOOGLE_ID,
+            'email': "test@example.com",
+            'locale': "en_US",
+            "iat": creation,
+            "exp": creation + 60*60
+        }
+        params = {
+            'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            'intent': 'get',
+            'assertion': jwt.encode(payload, secrets.GOOGLE_CLIENT_SECRET, algorithm='HS256')
+        }
+        response = self.post_json("/api/auth/google/token", params)
+        token_type = response.get('token_type')
+        self.assertEqual(token_type, 'bearer')
+

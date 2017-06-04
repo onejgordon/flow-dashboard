@@ -14,6 +14,7 @@ import random
 from google.appengine.api import urlfetch, search
 import json
 import urllib
+import jwt
 import imp
 try:
     imp.find_module('secrets', ['settings'])
@@ -862,6 +863,67 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         else:
             self.message = "Malformed"
         self.set_response({'redirect': redir_url}, debug=True)
+
+    def _google_return_tokens(self, user):
+        expire_secs = 60*60
+        access_token = user.aes_token(client_id='google', add_props={
+            'token_type': 'access',
+            'expiration_time': tools.sdatetime(datetime.now() + timedelta(minutes=expire_secs/60))
+        })
+        refresh_token = user.aes_token(client_id='google', add_props={
+            'token_type': 'refresh'
+        })
+        self.set_response({
+            'token_type': "bearer",
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+            'expires_in': expire_secs
+        }, debug=True)
+
+    def google_token(self):
+        '''Support oauth2 assertion
+        https://developers.google.com/actions/identity/oauth2-assertion-flow
+        '''
+        grant_type = self.request.get('grant_type')
+        intent = self.request.get('intent')  # get or create
+        assertion = self.request.get('assertion')
+        # consent_code = self.request.get('consent_code')
+        # scope = self.request.get('scope')
+        assertion_flow = grant_type == 'urn:ietf:params:oauth:grant-type:jwt-bearer'
+        email = None
+        ok = False
+        if assertion_flow:
+            decoded = jwt.decode(assertion, secrets.GOOGLE_CLIENT_SECRET,
+                                 audience=secrets.GOOGLE_CLIENT_ID,
+                                 algorithms=['HS256'])
+            if decoded:
+                iss_ok = decoded.get('iss') == 'https://accounts.google.com'
+                if iss_ok:
+                    g_id = decoded.get('sub')
+                    email = decoded.get('email')
+                    u = User.GetByGoogleId(g_id)
+                    if not u:
+                        u = User.GetByEmail(email)
+                    account_exists = bool(u)
+                    if intent == 'get':
+                        if not account_exists:
+                            self.set_response({'error': 'user_not_found'}, status=401)
+                        else:
+                            self._google_return_tokens(u)
+                            ok = True
+                    elif intent == 'create':
+                        u = User.Create(email=email, g_id=g_id, name=decoded.get('name'))
+                        if u:
+                            self._google_return_tokens(u)
+                            ok = True
+
+        if not ok and email:
+            # Default redirect to auth
+            self.set_response({
+                "error": "linking_error",
+                "login_hint": email
+            })
+
 
     @authorized.role('user')
     def google_service_authenticate(self, service_name, d):

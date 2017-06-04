@@ -295,14 +295,20 @@ class User(ndb.Model):
         integrations[prop] = value
         self.integrations = json.dumps(integrations)
 
-    def aes_access_token(self, client_id='google'):
+    def aes_token(self, client_id='google', add_props=None):
         from common.aes_cypher import AESCipher
         cypher = AESCipher(secrets.AES_CYPHER_KEY)
-        msg = cypher.encrypt(json.dumps({
+        data = {
             'client_id': client_id,
             'user_id': self.key.id()
-            }))
+        }
+        if add_props:
+            data.update(add_props)
+        msg = cypher.encrypt(json.dumps(data))
         return msg
+
+    def aes_access_token(self, client_id='google', add_props=None):
+        return self.aes_token(client_id=client_id)
 
     @staticmethod
     def user_id_from_aes_access_token(access_token):
