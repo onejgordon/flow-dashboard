@@ -94,9 +94,8 @@ export default class ProjectViewer extends React.Component {
       let params = clone(form);
       if (params.due) params.due = util.printDateObj(params.due);
       if (params.milestones) params.milestones = JSON.stringify(params.milestones)
-      console.log(params)
       ProjectStore.updateProject(params)
-      this.setState({project_dialog_open: false, form: {}})
+      this.setState({project_dialog_open: false, form: {}, milestones_enabled: []})
     }
   }
 
@@ -120,7 +119,7 @@ export default class ProjectViewer extends React.Component {
         form.due = new Date(form.due);
       }
     }
-    this.setState({project_dialog_open: true, form: form});
+    this.setState({project_dialog_open: true, form: form, milestones_enabled: []});
   }
 
   dismiss_editor() {
@@ -197,6 +196,8 @@ export default class ProjectViewer extends React.Component {
         <DatePicker autoOk={true} floatingLabelText="Due (optional)" formatDate={util.printDateObj} value={due_date} onChange={this.changeHandlerNilVal.bind(this, 'form', 'due')} />
 
         <h4>Milestones</h4>
+
+        <p className="lead">You can assign or label key milestones in the project, then check them off as you go to update progress (from the project detail dialog)</p>
 
         <div className="row">
           { this.render_milestone_toggles() }

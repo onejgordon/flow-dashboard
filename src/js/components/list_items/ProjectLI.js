@@ -133,7 +133,7 @@ export default class ProjectLI extends React.Component {
     subhead = <h3 style={this.SUBHEAD}>{ subheads }</h3>
     let st = {padding: "10px", marginBottom: "10px"};
     if (project.archived) st.opacity = 0.3;
-    let progress_action_label = this.progress_enabled() ? "Clear progress and disable" : "Enable progress tracking";
+    let progress_action_label = this.progress_enabled() ? "Clear and disable progress" : "Enable progress tracking";
     return (
       <Paper rounded={true} style={st} key={project.id}>
         <div className="row">

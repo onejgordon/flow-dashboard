@@ -46,7 +46,7 @@ export default class ProjectAnalysis extends React.Component {
 
   render_milestones() {
     let {project} = this.props;
-    if (project.milestones) {
+    if (project.milestones && project.milestones.length > 0) {
       let _lis = [];
       project.milestones.forEach((ms, i) => {
         let checked = project.progress >= (i+1)
