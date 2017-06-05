@@ -381,7 +381,9 @@ def gets(self, strings=[], lists=[], floats=[], integers=[], booleans=[],
                 pass
     for arg in json:
         raw = self.request.get(arg)
-        vals[arg] = getJson(raw)
+        json_val = getJson(raw)
+        if json_val is not None:
+            vals[arg] = json_val
     for arg in dates:
         raw = self.request.get(arg, default_value=getDefault)
         if raw:

@@ -40,6 +40,10 @@ a:hover > .show_hover {
     opacity: 1.0;
 }
 
+a.label {
+  color: white;
+}
+
 body {
     font-family: 'Roboto', Helvetica, sans-serif;
     font-weight: 300;

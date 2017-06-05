@@ -104,25 +104,22 @@ export default class ProjectLI extends React.Component {
 
   render() {
     let {project} = this.props;
-    let multi_links = project.urls && project.urls.length > 1;
     let title, subhead;
     let links;
     if (!project || !project.urls) return null;
-    if (multi_links) {
-      title = project.title || "Unknown";
-      links = project.urls.map((url, i) => {
-        let shortened_url = util.url_summary(url);
-        return (
-          <Chip
-              key={i}
-              labelStyle={{fontSize: "9px"}}
-              onTouchTap={this.goto_link.bind(this, url)}
-              style={{margin: 4, display: 'inline-block'}}>
-              { shortened_url }
-          </Chip>
-        );
-      })
-    } else title = <a href={project.urls[0]} target="_blank">{ project.title || project.urls[0] || "Unnamed Project" }</a>
+    title = <a href="javascript:void(0)" onClick={this.show_analysis.bind(this)}>{project.title || "Unknown"}</a>
+    links = project.urls.map((url, i) => {
+      let shortened_url = util.url_summary(url);
+      return (
+        <Chip
+            key={i}
+            labelStyle={{fontSize: "9px"}}
+            onTouchTap={this.goto_link.bind(this, url)}
+            style={{margin: 4, display: 'inline-block'}}>
+            { shortened_url }
+        </Chip>
+      );
+    })
     let subheads = [<span key="dt" className="label label-default" style={{marginRight: "5px"}}><DateTime prefix="Created" ms={project.ts_created}/></span>];
     if (project.complete) subheads.push(<span key="complete" className="label label-success" style={{marginRight: "5px"}}>Complete</span>)
     if (project.due != null) {

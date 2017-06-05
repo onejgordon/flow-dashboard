@@ -1,8 +1,9 @@
 var React = require('react');
-import { Dialog } from 'material-ui';
+import { Dialog, Checkbox, ListItem, List } from 'material-ui';
 var util = require('utils/util');
 import {Line} from "react-chartjs-2";
 import {changeHandler} from 'utils/component-utils';
+var ProjectStore = require('stores/ProjectStore');
 var BigProp = require('components/common/BigProp');
 var TaskLI = require('components/list_items/TaskLI');
 var FetchedList = require('components/common/FetchedList');
@@ -18,7 +19,6 @@ export default class ProjectAnalysis extends React.Component {
   constructor(props) {
       super(props);
       this.state = {
-          habitdays: {}
       };
   }
 
@@ -34,6 +34,33 @@ export default class ProjectAnalysis extends React.Component {
     return {
       progress: progress,
       date: new Date(ms)
+    }
+  }
+
+  check_milestone(prg) {
+    let {project} = this.props;
+    util.play_audio('complete.mp3');
+    project.progress = prg
+    ProjectStore.updateProject(project)
+  }
+
+  render_milestones() {
+    let {project} = this.props;
+    if (project.milestones) {
+      let _lis = [];
+      project.milestones.forEach((ms, i) => {
+        let checked = project.progress >= (i+1)
+        let cb = <Checkbox onCheck={this.check_milestone.bind(this, i+1)} checked={checked} disabled={checked} />
+        if (ms && ms.length > 0) _lis.push(<ListItem key={i} primaryText={ms} secondaryText={`${(i+1)*10}% milestone`} leftCheckbox={cb} />)
+      })
+      return (
+        <div>
+          <h3>Milestones</h3>
+          <List>
+            { _lis }
+          </List>
+        </div>
+      )
     }
   }
 
@@ -113,11 +140,11 @@ export default class ProjectAnalysis extends React.Component {
     let projected_completion_text = projected_completion ? util.printDateObj(new Date(projected_completion)) : "--";
     return (
       <div>
-        <div className="row">
-          <div className="col-sm-9">
+        <div className="row vpad">
+          <div className="col-sm-8">
             <Line data={progressData} options={opts} width={1000} height={450}/>
           </div>
-          <div className="col-sm-3">
+          <div className="col-sm-4">
             <BigProp label="Overall rate (%/day)" value={rate.toFixed(1)} />
             <BigProp label="Duration (days)" value={days.toFixed(2)} />
             <div hidden={complete}>
@@ -125,6 +152,8 @@ export default class ProjectAnalysis extends React.Component {
             </div>
           </div>
         </div>
+
+        { this.render_milestones() }
 
         <h3>Linked Tasks</h3>
 

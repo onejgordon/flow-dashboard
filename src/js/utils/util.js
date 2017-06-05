@@ -473,13 +473,6 @@ var util = {
         return Math.floor((Math.random() * max) + min);
     },
 
-    listMessageVariables: function(s) {
-        if (s != null) {
-            var re = /\[[A-Z_-]*?\]/g;
-            return s.match(re);
-        } else return null;
-    },
-
     emptyArray: function(len, item) {
         var item = item === undefined ? null : item;
         var arr = [];

@@ -1,9 +1,7 @@
 var alt = require('config/alt');
 import ProjectActions from 'actions/ProjectActions';
 import ProjectSource from 'sources/ProjectSource';
-var toastr = require('toastr');
 import {findIndexById} from 'utils/store-utils';
-var util = require('utils/util');
 
 class ProjectStore {
     constructor() {
@@ -14,7 +12,8 @@ class ProjectStore {
         this.registerAsync(ProjectSource)
 
         this.exportPublicMethods({
-            getProjectByTitle: this.getProjectByTitle
+            getProjectByTitle: this.getProjectByTitle,
+            getProjectById: this.getProjectById,
         })
     }
 
@@ -55,6 +54,11 @@ class ProjectStore {
         if (idx > -1) return projects[idx]
     }
 
+    getProjectById(id) {
+        let projects = this.getState().projects
+        let idx = findIndexById(projects, id, 'id');
+        if (idx > -1) return projects[idx]
+    }
 
 }
 

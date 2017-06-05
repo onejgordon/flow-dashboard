@@ -337,6 +337,7 @@ class Project(UserAccessible):
     archived = ndb.BooleanProperty(default=False)
     progress = ndb.IntegerProperty(default=0)  # 1 - 10 (-1 disabled)
     progress_ts = ndb.IntegerProperty(repeated=True, indexed=False) # Timestamp (ms) for each progress step (len 10)
+    milestones = ndb.TextProperty(repeated=True)
 
     def json(self):
         return {
@@ -349,6 +350,7 @@ class Project(UserAccessible):
             'subhead': self.subhead,
             'progress': self.progress,
             'progress_ts': self.progress_ts,
+            'milestones': self.milestones,
             'archived': self.archived,
             'starred': self.starred,
             'complete': self.is_completed(),
@@ -385,6 +387,10 @@ class Project(UserAccessible):
             self.set_progress(params.get('progress'))
         if 'due' in params:
             self.dt_due = params.get('due')
+        if 'milestones' in params:
+            milestones = params.get('milestones', [])
+            if milestones is not None:
+                self.milestones = [str(x) if x else "" for x in milestones]
 
     def set_progress(self, progress):
         regression = progress < self.progress
