@@ -40,6 +40,10 @@ a:hover > .show_hover {
     opacity: 1.0;
 }
 
+a.label {
+  color: white;
+}
+
 body {
     font-family: 'Roboto', Helvetica, sans-serif;
     font-weight: 300;
@@ -203,14 +207,12 @@ div.section {
 
 .progressBoxes {
     display: block;
-    width: 99%;
-    margin: 0px auto;
 }
 
 .progressBox_o {
     display: block;
     float: left;
-    padding: 2px;
+    padding: 5px;
 }
 
 .progressBox_i {

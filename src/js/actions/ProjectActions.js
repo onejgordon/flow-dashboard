@@ -14,7 +14,7 @@ class ProjectActions {
     }
 
     updatedProject(result) {
-    	return result.project
+        return result.project
     }
 }
 

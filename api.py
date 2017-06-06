@@ -51,6 +51,7 @@ class ProjectAPI(handlers.JsonRequestHandler):
             booleans=['starred', 'archived'],
             integers=['progress'],
             dates=['due'],
+            json=['milestones'],
             supportTextBooleans=True
         )
         if id:
