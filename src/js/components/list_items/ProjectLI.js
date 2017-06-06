@@ -26,7 +26,8 @@ export default class ProjectLI extends React.Component {
       this.SUBHEAD = {
         fontSize: "14px",
         marginTop: "2px",
-        color: '#CCC'
+        color: '#CCC',
+        lineHeight: "25px",
       }
   }
 
@@ -96,9 +97,7 @@ export default class ProjectLI extends React.Component {
       );
     }
     return (
-      <div style={{marginTop: "10px"}}>
-        <div className="progressBoxes">{ boxes }</div>
-      </div>
+      <div className="progressBoxes clearfix">{ boxes }</div>
     );
   }
 
@@ -136,33 +135,32 @@ export default class ProjectLI extends React.Component {
     let progress_action_label = this.progress_enabled() ? "Clear and disable progress" : "Enable progress tracking";
     return (
       <Paper rounded={true} style={st} key={project.id}>
+        <div className="pull-right">
+          <IconMenu iconButtonElement={<IconButton><FontIcon className="material-icons">more_vert</FontIcon></IconButton>}>
+            <MenuItem primaryText="Edit" leftIcon={<FontIcon className="material-icons">mode_edit</FontIcon>} onClick={this.handle_edit_click.bind(this, project)} />
+            <MenuItem primaryText={progress_action_label} leftIcon={<FontIcon className="material-icons">view_week</FontIcon>} onClick={this.toggle_progress.bind(this)} />
+            <MenuItem primaryText="Archive project" leftIcon={<FontIcon className="material-icons">archive</FontIcon>} onClick={this.archive.bind(this)} />
+            <MenuItem primaryText="Visualize Project" leftIcon={<FontIcon className="material-icons">show_chart</FontIcon>} onClick={this.show_analysis.bind(this)} />
+          </IconMenu>
+        </div>
+        <h2 style={this.H}>
+          <IconButton
+            style={{margin: 0, padding: 0, width: '24px', height: '24px'}}
+            iconStyle={{fontSize: '18px', margin: 0, padding: 0}}
+            iconClassName="material-icons"
+            onClick={this.toggle_starred.bind(this)}>{project.starred ? 'star' : 'star_border'}</IconButton>
+            { title }
+        </h2>
         <div className="row">
-          <div className="col-sm-12">
-            <div className="pull-right">
-              <IconMenu iconButtonElement={<IconButton><FontIcon className="material-icons">more_vert</FontIcon></IconButton>}>
-                <MenuItem primaryText="Edit" leftIcon={<FontIcon className="material-icons">mode_edit</FontIcon>} onClick={this.handle_edit_click.bind(this, project)} />
-                <MenuItem primaryText={progress_action_label} leftIcon={<FontIcon className="material-icons">view_week</FontIcon>} onClick={this.toggle_progress.bind(this)} />
-                <MenuItem primaryText="Archive project" leftIcon={<FontIcon className="material-icons">archive</FontIcon>} onClick={this.archive.bind(this)} />
-                <MenuItem primaryText="Visualize Project" leftIcon={<FontIcon className="material-icons">show_chart</FontIcon>} onClick={this.show_analysis.bind(this)} />
-              </IconMenu>
-            </div>
-            <h2 style={this.H}>
-              <IconButton
-                style={{margin: 0, padding: 0, width: '24px', height: '24px'}}
-                iconStyle={{fontSize: '18px', margin: 0, padding: 0}}
-                iconClassName="material-icons"
-                onClick={this.toggle_starred.bind(this)}>{project.starred ? 'star' : 'star_border'}</IconButton>
-                { title }
-            </h2>
+          <div className="col-sm-8">
             { subhead }
           </div>
-          <div className="col-sm-6">
-            { this.render_progress() }
-          </div>
-          <div className="col-sm-6">
+          <div className="col-sm-4">
             { links }
           </div>
         </div>
+
+        { this.render_progress() }
 
       </Paper>
     )

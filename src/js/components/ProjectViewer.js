@@ -152,7 +152,7 @@ export default class ProjectViewer extends React.Component {
       if (first) cls += " col-sm-offset-2"
       let enabled = this.milestone_is_enabled(i)
       let label = `${(i+1)*10}%`
-      toggles.push(<span className={cls} key={i}><a href="javascript:void(0)" onClick={this.toggle_milestone.bind(this, i)} className={"label " + (enabled ? "label-info" : "label-default")}>{ label }</a></span>)
+      toggles.push(<span className={cls} key={i}><a href="javascript:void(0)" onClick={this.toggle_milestone.bind(this, i)} className={"label " + (enabled ? "label-success" : "label-default")}>{ label }</a></span>)
     }
     return toggles
   }
@@ -191,13 +191,20 @@ export default class ProjectViewer extends React.Component {
 
         <TextField name="title" placeholder="Project title" value={form.title} onChange={this.changeHandler.bind(this, 'form', 'title')} fullWidth autoFocus />
         <TextField name="subhead" placeholder="Project subhead (optional)" value={form.subhead} onChange={this.changeHandler.bind(this, 'form', 'subhead')} fullWidth />
-        <TextField name="url1" placeholder="Project URL 1 (optional)" value={form.url1 || ''} onChange={this.changeHandler.bind(this, 'form', 'url1')} fullWidth />
-        <TextField name="url2" placeholder="Project URL 2 (optional)" value={form.url2 || ''} onChange={this.changeHandler.bind(this, 'form', 'url2')} fullWidth />
+
+        <div className="row">
+          <div className="col-sm-6">
+            <TextField name="url1" placeholder="Project URL 1 (optional)" value={form.url1 || ''} onChange={this.changeHandler.bind(this, 'form', 'url1')} fullWidth />
+          </div>
+          <div className="col-sm-6">
+            <TextField name="url2" placeholder="Project URL 2 (optional)" value={form.url2 || ''} onChange={this.changeHandler.bind(this, 'form', 'url2')} fullWidth />
+          </div>
+        </div>
         <DatePicker autoOk={true} floatingLabelText="Due (optional)" formatDate={util.printDateObj} value={due_date} onChange={this.changeHandlerNilVal.bind(this, 'form', 'due')} />
 
         <h4>Milestones</h4>
 
-        <p className="lead">You can assign or label key milestones in the project, then check them off as you go to update progress (from the project detail dialog)</p>
+        <p className="lead">You can label key milestones in the project, then check them off as you go to update progress (from the project detail dialog)</p>
 
         <div className="row">
           { this.render_milestone_toggles() }

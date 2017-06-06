@@ -207,14 +207,12 @@ div.section {
 
 .progressBoxes {
     display: block;
-    width: 99%;
-    margin: 0px auto;
 }
 
 .progressBox_o {
     display: block;
     float: left;
-    padding: 2px;
+    padding: 5px;
 }
 
 .progressBox_i {

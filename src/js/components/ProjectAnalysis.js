@@ -51,11 +51,12 @@ export default class ProjectAnalysis extends React.Component {
       project.milestones.forEach((ms, i) => {
         let checked = project.progress >= (i+1)
         let cb = <Checkbox onCheck={this.check_milestone.bind(this, i+1)} checked={checked} disabled={checked} />
-        if (ms && ms.length > 0) _lis.push(<ListItem key={i} primaryText={ms} secondaryText={`${(i+1)*10}% milestone`} leftCheckbox={cb} />)
+        if (ms && ms.length > 0) _lis.push(<ListItem style={{fontWeight: 'normal'}} key={i} primaryText={ms} secondaryText={`${(i+1)*10}% milestone`} leftCheckbox={cb} />)
       })
       return (
         <div>
           <h3>Milestones</h3>
+          <p>Check off milestones to update progress</p>
           <List>
             { _lis }
           </List>
