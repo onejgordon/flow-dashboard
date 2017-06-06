@@ -95,8 +95,8 @@ class Timeline extends React.Component {
                         <SwatchesPicker width="100%" height={200} display={true} color={form.color || ""} onChangeComplete={this.color_change.bind(this)} />
                     </div>
                     <div className="col-sm-6">
-                        <DatePicker autoOk={true} floatingLabelText="Date Start" formatDate={util.printDateObj} value={form.date_start||''} onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_start')} />
-                        <DatePicker autoOk={true} floatingLabelText="Date End (optional)" formatDate={util.printDateObj} value={form.date_end||''} onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_end')} />
+                        <DatePicker autoOk={true} floatingLabelText="Date Start" formatDate={util.printDateObj} value={form.date_start||null} onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_start')} />
+                        <DatePicker autoOk={true} floatingLabelText="Date End (optional)" formatDate={util.printDateObj} value={form.date_end||null} onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_end')} />
                         <Toggle toggled={form.ongoing} onToggle={this.changeHandlerToggle.bind(this, 'form', 'ongoing')} label="Ongoing" labelPosition="right" />
                     </div>
                 </div>
@@ -132,6 +132,10 @@ class Timeline extends React.Component {
 
     new_event() {
         this.setState({form: {}, editing_index: -1});
+    }
+
+    toggle_event_list(open) {
+        this.setState({event_list_open: open})
     }
 
     render() {
@@ -190,14 +194,14 @@ class Timeline extends React.Component {
                     title="Events"
                     zDepth={0}
                     iconElementRight={<IconButton iconClassName="material-icons">close</IconButton>}
-                    onRightIconButtonTouchTap={this.setState.bind(this, {event_list_open: false})} />
+                    onRightIconButtonTouchTap={this.toggle_event_list.bind(this, false)} />
                     <List>
                       { this.render_events() }
                     </List>
                 </Drawer>
 
                 <div className="pull-right">
-                    <FlatButton label="Show Event List" onTouchTap={this.setState.bind(this, {event_list_open: true})} />
+                    <FlatButton label="Show Event List" onTouchTap={this.toggle_event_list.bind(this, true)} />
                     <RaisedButton label="New Event" onTouchTap={this.new_event.bind(this)} primary={true} />
                     <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
                         <MenuItem key="batch" primaryText="Upload Batch" onClick={this.batch_toggle.bind(this, true)} leftIcon={<FontIcon className="material-icons">file_upload</FontIcon>} />
