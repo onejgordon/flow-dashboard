@@ -133,6 +133,11 @@ export default class FlashCard extends React.Component {
     return !flipped && withhold.indexOf(section) > -1;
   }
 
+  flip() {
+    let {flipped} = this.state;
+    this.setState({flipped: !flipped})
+  }
+
   render() {
     let {title, subhead, link, details} = this.state;
     let {layout, col_order} = this.props;
@@ -160,7 +165,7 @@ export default class FlashCard extends React.Component {
       if (this.flipping_enabled()) {
         let {flipped} = this.state;
         _flipping = (
-          <FlatButton label={flipped ? "Hide" : "Show"} onClick={this.setState.bind(this, {flipped: !flipped})} />
+          <FlatButton label={flipped ? "Hide" : "Show"} onClick={this.flip.bind(this)} />
         )
       }
     }
