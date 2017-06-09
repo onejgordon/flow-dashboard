@@ -234,6 +234,31 @@ class HabitAPI(handlers.JsonRequestHandler):
         })
 
     @authorized.role('user')
+    def increment(self, d):
+        '''
+        Increment completions for a habit with a countable daily target
+        '''
+        from constants import HABIT_DONE_REPLIES
+        habit_id = self.request.get_range('habit_id')
+        day_iso = self.request.get('date')
+        cancel = self.request.get_range('cancel') == 1
+        habit = Habit.get_by_id(habit_id, parent=self.user.key)
+        hd = None
+        if habit:
+            marked_done, hd = HabitDay.Increment(habit, tools.fromISODate(day_iso), cancel=cancel)
+            if marked_done:
+                self.message = random.choice(HABIT_DONE_REPLIES)
+            else:
+                if cancel:
+                    self.message = "Undone - count reset to %s" % hd.count
+                else:
+                    self.message = "Count increased to %s" % hd.count
+            self.success = True
+        self.set_response({
+            'habitday': hd.json() if hd else None
+        })
+
+    @authorized.role('user')
     def commit(self, d):
         '''
         Mark done/not-done for a habit day
@@ -260,7 +285,7 @@ class HabitAPI(handlers.JsonRequestHandler):
         params = tools.gets(self,
                             strings=['name', 'description', 'color', 'icon'],
                             booleans=['archived'],
-                            integers=['tgt_weekly'],
+                            integers=['tgt_weekly', 'tgt_daily'],
                             supportTextBooleans=True
                             )
         habit = None
@@ -1384,8 +1409,8 @@ class ReportAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def serve(self, d):
         import cloudstorage as gcs
-        rkey = self.request.get('rkey')
-        r = Report.GetAccessible(rkey, self.user, urlencoded_key=True)
+        rid = self.request.get('rid')
+        r = self.user.get(Report, rid)
         if r:
             if r.is_done() and r.gcs_files:
                 gcsfn = r.gcs_files[0]
@@ -1410,8 +1435,8 @@ class ReportAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def delete(self, d):
-        rkey = self.request.get('rkey')
-        r = Report.GetAccessible(rkey, self.user, urlencoded_key=True)
+        rid = self.request.get('rid')
+        r = self.user.get(Report, rid)
         if r:
             r.clean_delete(self_delete=True)
             self.message = "Report deleted"

@@ -59,7 +59,7 @@ export default class Reports extends React.Component {
       }
 
     delete(r) {
-        api.post("/api/report/delete", {rkey: r.key}, (res) => {
+        api.post("/api/report/delete", {rid: r.id}, (res) => {
           this.refs.list.remove_item_by_key(r.key, 'key');
         });
     }
