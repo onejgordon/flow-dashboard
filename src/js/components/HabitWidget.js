@@ -358,10 +358,6 @@ export default class HabitWidget extends React.Component {
     this.setState({form});
   }
 
-  show_creator() {
-    this.setState({editor_open: true});
-  }
-
   set_new_habit_icon(ic) {
     let {form} = this.state;
     form.icon = ic;
@@ -375,6 +371,11 @@ export default class HabitWidget extends React.Component {
   dismiss_editor() {
     this.setState({editor_open: false})
   }
+
+  show_creator() {
+    this.setState({editor_open: true, form: {}});
+  }
+
 
   handle_daily_toggle() {
     let {form} = this.state
