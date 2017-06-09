@@ -1,6 +1,31 @@
 {
   "userSays": [
     {
+      "id": "9a3da1bc-1fd0-4062-9cb9-d216219f94dd",
+      "data": [
+        {
+          "text": "commit to "
+        },
+        {
+          "text": "habit",
+          "alias": "habit",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " "
+        },
+        {
+          "text": "later",
+          "alias": "time",
+          "meta": "@sys.time",
+          "userDefined": true
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
       "id": "08a8db1c-f346-435b-9770-241987ff0f52",
       "data": [
         {
@@ -81,6 +106,12 @@
           "prompts": [
             "Which habit?"
           ]
+        },
+        {
+          "dataType": "@sys.time",
+          "name": "time",
+          "value": "$time",
+          "isList": false
         }
       ],
       "messages": [

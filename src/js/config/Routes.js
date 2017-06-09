@@ -6,6 +6,7 @@ var Dashboard = require('components/Dashboard');
 var Timeline = require('components/Timeline');
 var Splash = require('components/Splash');
 var About = require('components/About');
+var Privacy = require('components/Privacy');
 var Auth = require('components/Auth');
 var Settings = require('components/Settings');
 var Analysis = require('components/Analysis');
@@ -41,6 +42,7 @@ module.exports = (
       <Route path="splash" component={Splash} />
       <Route path="login" component={Splash} />
       <Route path="about" component={About} />
+      <Route path="privacy" component={Privacy} />
       <Route path="dashboard" component={Dashboard} />
       <Route path="timeline" component={Timeline} />
       <Route path="settings" component={Settings} />

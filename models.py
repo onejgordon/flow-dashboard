@@ -4,7 +4,7 @@
 from datetime import datetime, timedelta, time
 from google.appengine.ext import ndb
 from google.appengine.api import mail, search
-from constants import EVENT, USER, TASK, READABLE, JOURNALTAG, REPORT, NEW_USER_NOTIFICATIONS
+from constants import EVENT, USER, TASK, READABLE, JOURNALTAG, REPORT, NEW_USER_NOTIFICATIONS, HABIT
 import tools
 import json
 import random
@@ -295,14 +295,20 @@ class User(ndb.Model):
         integrations[prop] = value
         self.integrations = json.dumps(integrations)
 
-    def aes_access_token(self, client_id='google'):
+    def aes_token(self, client_id='google', add_props=None):
         from common.aes_cypher import AESCipher
         cypher = AESCipher(secrets.AES_CYPHER_KEY)
-        msg = cypher.encrypt(json.dumps({
+        data = {
             'client_id': client_id,
             'user_id': self.key.id()
-            }))
+        }
+        if add_props:
+            data.update(add_props)
+        msg = cypher.encrypt(json.dumps(data))
         return msg
+
+    def aes_access_token(self, client_id='google', add_props=None):
+        return self.aes_token(client_id=client_id)
 
     @staticmethod
     def user_id_from_aes_access_token(access_token):
@@ -331,6 +337,7 @@ class Project(UserAccessible):
     archived = ndb.BooleanProperty(default=False)
     progress = ndb.IntegerProperty(default=0)  # 1 - 10 (-1 disabled)
     progress_ts = ndb.IntegerProperty(repeated=True, indexed=False) # Timestamp (ms) for each progress step (len 10)
+    milestones = ndb.TextProperty(repeated=True)
 
     def json(self):
         return {
@@ -343,6 +350,7 @@ class Project(UserAccessible):
             'subhead': self.subhead,
             'progress': self.progress,
             'progress_ts': self.progress_ts,
+            'milestones': self.milestones,
             'archived': self.archived,
             'starred': self.starred,
             'complete': self.is_completed(),
@@ -379,6 +387,10 @@ class Project(UserAccessible):
             self.set_progress(params.get('progress'))
         if 'due' in params:
             self.dt_due = params.get('due')
+        if 'milestones' in params:
+            milestones = params.get('milestones', [])
+            if milestones is not None:
+                self.milestones = [str(x) if x else "" for x in milestones]
 
     def set_progress(self, progress):
         regression = progress < self.progress
@@ -414,9 +426,15 @@ class Task(UserAccessible):
     status = ndb.IntegerProperty(default=TASK.NOT_DONE)
     wip = ndb.BooleanProperty(default=False)
     archived = ndb.BooleanProperty(default=False)
+    project = ndb.KeyProperty()
+    timer_last_start = ndb.DateTimeProperty(indexed=False)
+    timer_target_ms = ndb.IntegerProperty(indexed=False, default=0)  # For current timer run
+    timer_pending_ms = ndb.IntegerProperty(indexed=False, default=0)
+    timer_total_ms = ndb.IntegerProperty(indexed=False, default=0)  # Cumulative
+    timer_complete_sess = ndb.IntegerProperty(indexed=False, default=0)
 
-    def json(self):
-        return {
+    def json(self, references=['project']):
+        res = {
             'id': self.key.id(),
             'ts_created': tools.unixtime(self.dt_created),
             'ts_due': tools.unixtime(self.dt_due),
@@ -425,8 +443,19 @@ class Task(UserAccessible):
             'archived': self.archived,
             'wip': self.wip,
             'title': self.title,
-            'done': self.is_done()
+            'done': self.is_done(),
+            'project_id': self.project.id() if self.project else None,
+            'timer_total_ms': self.timer_total_ms or 0,
+            'timer_target_ms': self.timer_target_ms or 0,
+            'timer_pending_ms': self.timer_pending_ms or 0,
+            'timer_complete_sess': self.timer_complete_sess or 0,
+            'timer_last_start': tools.unixtime(self.timer_last_start) if self.timer_last_start else 0
         }
+        if references:
+            if 'project' in references:
+                if self.project:
+                    res['project'] = self.project.get().json()
+        return res
 
     @staticmethod
     def CountCompletedSince(user, since):
@@ -437,11 +466,18 @@ class Task(UserAccessible):
         return Task.query(ancestor=user.key).filter(Task.status == TASK.NOT_DONE).order(-Task.dt_created).fetch(limit=limit)
 
     @staticmethod
-    def Recent(user, limit=10, with_archived=False, offset=0):
+    def Recent(user, limit=10, offset=0, with_archived=False, project_id=None, prefetch=None):
         q = Task.query(ancestor=user.key).order(-Task.dt_created)
         if not with_archived:
             q = q.filter(Task.archived == False)
-        return q.fetch(limit=limit, offset=offset)
+        if project_id:
+            q = q.filter(Task.project == ndb.Key('User', user.key.id(), 'Project', project_id))
+        tasks = q.fetch(limit=limit, offset=offset)
+        if prefetch:
+            for t in tasks:
+                if 'project' in prefetch and t.project:
+                    t.project.get_async()
+        return tasks
 
     @staticmethod
     def DueInRange(user, start, end, limit=100):
@@ -493,6 +529,25 @@ class Task(UserAccessible):
                 self.wip = False
         if 'wip' in params:
             self.wip = params.get('wip')
+        if 'project_id' in params:
+            if params['project_id']:
+                self.project = ndb.Key('User', self.key.parent().id(), 'Project', params.get('project_id'))
+            else:
+                self.project = None
+        if 'timer_total_ms' in params:
+            self.timer_total_ms = params.get('timer_total_ms')
+        if 'timer_pending_ms' in params:
+            self.timer_pending_ms = params.get('timer_pending_ms')
+        if 'timer_last_start' in params:
+            last_start_ms = params.get('timer_last_start')
+            if last_start_ms:
+                self.timer_last_start = tools.dt_from_ts(last_start_ms)
+            else:
+                self.timer_last_start = None
+        if 'timer_target_ms' in params:
+            self.timer_target_ms = params.get('timer_target_ms')
+        if 'timer_complete_sess' in params:
+            self.timer_complete_sess = params.get('timer_complete_sess')
         return message
 
     def mark_done(self):
@@ -540,7 +595,7 @@ class Habit(UserAccessible):
 
     @staticmethod
     def Active(user):
-        return Habit.query(ancestor=user.key).filter(Habit.archived == False).fetch(limit=8)
+        return Habit.query(ancestor=user.key).filter(Habit.archived == False).fetch(limit=HABIT.ACTIVE_LIMIT)
 
     @staticmethod
     def Create(user):
@@ -1009,8 +1064,10 @@ class Goal(UserAccessible):
         if 'text' in params:
             self.text = params.get('text', [])
         if 'assessments' in params:
-            self.assessments = params.get('assessments', [])
-            self.assessment = tools.mean(self.assessments)
+            assessments = params.get('assessments', [])
+            if isinstance(assessments, list):
+                self.assessments = assessments
+                self.assessment = tools.mean(self.assessments)
 
     def type(self):
         return 'annual' if self.annual() else 'monthly'
@@ -1393,6 +1450,7 @@ class Report(UserAccessible):
     def Create(user, title="Unnamed Report", type=REPORT.HABIT_REPORT, specs=None, ftype=None):
         logging.debug("Requesting report creation, type %d specs: %s" % (type, specs))
         r = Report(title=title, type=type, parent=user.key)
+        r.dt_created = datetime.now()
         if specs:
             r.set_specs(specs)
         r.storage_type = REPORT.GCS_CLIENT
@@ -1405,7 +1463,8 @@ class Report(UserAccessible):
 
     def get_duration(self):
         if self.dt_created and self.dt_generated:
-            return (self.dt_generated - self.dt_created).total_seconds()
+            secs = (self.dt_generated - self.dt_created).total_seconds()
+            return secs
         return 0
 
     def get_specs(self):
@@ -1467,13 +1526,14 @@ class Report(UserAccessible):
     def run(self, start_cursor=None):
         """Begins report generation"""
         from reports import HabitReportWorker, TaskReportWorker, GoalReportWorker, JournalReportWorker, \
-            EventReportWorker
+            EventReportWorker, ProjectReportWorker
         worker_lookup = {
             REPORT.HABIT_REPORT: HabitReportWorker,
             REPORT.TASK_REPORT: TaskReportWorker,
             REPORT.GOAL_REPORT: GoalReportWorker,
             REPORT.JOURNAL_REPORT: JournalReportWorker,
-            REPORT.EVENT_REPORT: EventReportWorker
+            REPORT.EVENT_REPORT: EventReportWorker,
+            REPORT.PROJECT_REPORT: ProjectReportWorker
         }
         worker_class = worker_lookup.get(self.type)
         worker = None

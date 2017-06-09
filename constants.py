@@ -34,6 +34,7 @@ DEFAULT_USER_SETTINGS = {
                 'text': "How was the day?",
                 'response_type': "number",
                 'chart': True,
+                'chart_default': True,
                 'tag_segment_chart': True,
                 'color': '#dd0000'
             }
@@ -76,6 +77,8 @@ COOKIE_NAME = "flow_session"
 class HABIT():
 
     HELP = "You can set habits to build, and track completion. Try saying 'new habit: run', 'habit progress', or 'commit to run tonight'"
+
+    ACTIVE_LIMIT = 10
 
 
 class EVENT():
@@ -168,6 +171,7 @@ class REPORT():
     GOAL_REPORT = 3
     JOURNAL_REPORT = 4
     EVENT_REPORT = 5
+    PROJECT_REPORT = 6
 
     # Status
     CREATED = 1

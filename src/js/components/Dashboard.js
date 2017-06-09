@@ -7,7 +7,9 @@ var MiniJournalWidget = require('components/MiniJournalWidget');
 var TaskWidget = require('components/TaskWidget');
 var FlashCard = require('components/FlashCard');
 var AppConstants = require('constants/AppConstants');
+var TaskActions = require('actions/TaskActions');
 import {findItemById} from 'utils/store-utils';
+import {browserHistory} from 'react-router';
 var util = require('utils/util');
 import {get} from 'lodash';
 import {Dialog, IconButton, FontIcon,
@@ -23,8 +25,11 @@ export default class Dashboard extends React.Component {
     }
 
     componentWillMount() {
-        document.addEventListener("keydown", this.handle_key_down.bind(this));
-        util.set_title("Dashboard");
+        if (!this.props.user) browserHistory.push('/app')
+        else {
+            document.addEventListener("keydown", this.handle_key_down.bind(this));
+            util.set_title(AppConstants.DASHBOARD_PAGE_TITLE);
+        }
     }
 
     componentWillUnmount() {
@@ -37,7 +42,7 @@ export default class Dashboard extends React.Component {
         let in_input = tag == 'input' || tag == 'textarea';
         if (in_input) return true;
         if (keyCode == 84) { // t
-            if (this.refs.taskwidget) this.refs.taskwidget.show_new_box();
+            TaskActions.openTaskDialog()
             document.getElementById('TaskWidget').scrollIntoView();
             e.preventDefault();
             return false;
@@ -95,8 +100,7 @@ export default class Dashboard extends React.Component {
             journal_window_start = parseInt(get(user, 'settings.journals.preferences.journal_start_hour', AppConstants.JOURNAL_START_HOUR));
             journal_window_end = parseInt(get(user, 'settings.journals.preferences.journal_end_hour', AppConstants.JOURNAL_END_HOUR));
             goal_slots = parseInt(get(user, 'settings.goals.preferences.slots', AppConstants.GOAL_DEFAULT_SLOTS));
-
-        }
+        } else return <div></div>
         let _more_options = this.flashcards().map((fc) => {
             return <MenuItem key={fc.id} leftIcon={<FontIcon className="material-icons">{fc.icon}</FontIcon>} onClick={this.show_more.bind(this, fc.id)}>{fc.card_title}</MenuItem>
         });

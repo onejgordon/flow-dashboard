@@ -1,9 +1,12 @@
 var React = require('react');
-import { Dialog } from 'material-ui';
+import { Dialog, Checkbox, ListItem, List } from 'material-ui';
 var util = require('utils/util');
 import {Line} from "react-chartjs-2";
 import {changeHandler} from 'utils/component-utils';
+var ProjectStore = require('stores/ProjectStore');
 var BigProp = require('components/common/BigProp');
+var TaskLI = require('components/list_items/TaskLI');
+var FetchedList = require('components/common/FetchedList');
 
 @changeHandler
 export default class ProjectAnalysis extends React.Component {
@@ -16,7 +19,6 @@ export default class ProjectAnalysis extends React.Component {
   constructor(props) {
       super(props);
       this.state = {
-          habitdays: {}
       };
   }
 
@@ -33,6 +35,42 @@ export default class ProjectAnalysis extends React.Component {
       progress: progress,
       date: new Date(ms)
     }
+  }
+
+  check_milestone(prg) {
+    let {project} = this.props;
+    util.play_audio('complete.mp3');
+    project.progress = prg
+    ProjectStore.updateProject(project)
+  }
+
+  render_milestones() {
+    let {project} = this.props;
+    if (project.milestones && project.milestones.length > 0) {
+      let _lis = [];
+      project.milestones.forEach((ms, i) => {
+        let checked = project.progress >= (i+1)
+        let cb = <Checkbox onCheck={this.check_milestone.bind(this, i+1)} checked={checked} disabled={checked} />
+        if (ms && ms.length > 0) _lis.push(<ListItem style={{fontWeight: 'normal'}} key={i} primaryText={ms} secondaryText={`${(i+1)*10}% milestone`} leftCheckbox={cb} />)
+      })
+      return (
+        <div>
+          <h3>Milestones</h3>
+          <p>Check off milestones to update progress</p>
+          <List>
+            { _lis }
+          </List>
+        </div>
+      )
+    }
+  }
+
+  render_task(t)  {
+    return <TaskLI task={t}
+                   wip_enabled={false}
+                   checkbox_enabled={false}
+                   absolute_date={true}
+                   archive_enabled={false} />
   }
 
   render_content() {
@@ -102,17 +140,27 @@ export default class ProjectAnalysis extends React.Component {
     }
     let projected_completion_text = projected_completion ? util.printDateObj(new Date(projected_completion)) : "--";
     return (
-      <div className="row">
-        <div className="col-sm-9">
-          <Line data={progressData} options={opts} width={1000} height={450}/>
-        </div>
-        <div className="col-sm-3">
-          <BigProp label="Overall rate (%/day)" value={rate.toFixed(1)} />
-          <BigProp label="Duration (days)" value={days.toFixed(2)} />
-          <div hidden={complete}>
-            <BigProp label="Projected Completion" value={projected_completion_text} />
+      <div>
+        <div className="row vpad">
+          <div className="col-sm-8">
+            <Line data={progressData} options={opts} width={1000} height={450}/>
+          </div>
+          <div className="col-sm-4">
+            <BigProp label="Overall rate (%/day)" value={rate.toFixed(1)} />
+            <BigProp label="Duration (days)" value={days.toFixed(2)} />
+            <div hidden={complete}>
+              <BigProp label="Projected Completion" value={projected_completion_text} />
+            </div>
           </div>
         </div>
+
+        { this.render_milestones() }
+
+        <h3>Linked Tasks</h3>
+
+        <FetchedList url="/api/task" params={{project_id: project.id}}
+                     listProp="tasks" autofetch={true} paging_enabled={true}
+                     renderItem={this.render_task.bind(this)} />
       </div>
       )
   }
@@ -125,8 +173,10 @@ export default class ProjectAnalysis extends React.Component {
     return (
       <Dialog
           open={!!project}
-          title={project ? `Progress: ${project.title}` : ""}
+          title={project ? `${project.title}` : ""}
           onRequestClose={this.dismiss.bind(this)}
+          autoScrollBodyContent={true}
+          autoDetectWindowHeight={true}
           height="80%"
           actions={actions}>
 

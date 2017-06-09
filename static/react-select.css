@@ -17,7 +17,7 @@
   box-sizing: border-box;
 }
 .Select.is-disabled > .Select-control {
-  background-color: #f9f9f9;
+  background-color: #9FA2A2;
 }
 .Select.is-disabled > .Select-control:hover {
   box-shadow: none;
@@ -28,10 +28,10 @@
   opacity: 0.35;
 }
 .Select-control {
-  background-color: #3E3F3F;
-  border-color: #d9d9d9 #ccc #b3b3b3;
+  background-color: #242425;
+  border-color: #343436;
   border-radius: 4px;
-  border: 1px solid #ccc;
+  border: 1px solid #999C9C;
   color: white;
   cursor: default;
   display: table;
@@ -55,19 +55,19 @@
 .is-open > .Select-control {
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
-  background: #555;
-  border-color: #b3b3b3 #ccc #d9d9d9;
+  background: #333;
+  border-color: #242425;
 }
 .is-open > .Select-control .Select-arrow {
   top: -2px;
-  border-color: transparent transparent #999;
+  border-color: transparent transparent #555;
   border-width: 0 5px 5px;
 }
 .is-searchable.is-focused:not(.is-open) > .Select-control {
   cursor: text;
 }
 .is-focused:not(.is-open) > .Select-control {
-  border-color: #007eff;
+  border-color: #1AD1FF;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px rgba(0, 126, 255, 0.1);
 }
 .Select-placeholder,
@@ -233,9 +233,9 @@
 .Select-menu-outer {
   border-bottom-right-radius: 4px;
   border-bottom-left-radius: 4px;
-  background-color: #555;
-  border: 1px solid #ccc;
-  border-top-color: #e6e6e6;
+  background-color: #333;
+  border: 1px solid #7A7D7D;
+  border-top-color: #7A7D7D;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
   box-sizing: border-box;
   margin-top: -1px;
@@ -252,7 +252,7 @@
 }
 .Select-option {
   box-sizing: border-box;
-  background-color: #555;
+  background-color: #333;
   color: #DDD;
   cursor: pointer;
   display: block;

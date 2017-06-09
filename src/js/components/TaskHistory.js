@@ -30,6 +30,7 @@ export default class TaskHistory extends React.Component {
     render_task(t) {
         return <TaskLI task={t} wip_enabled={false}
                        checkbox_enabled={false}
+                       edit_enabled={false}
                        absolute_date={true}
                        archive_enabled={false} />
     }

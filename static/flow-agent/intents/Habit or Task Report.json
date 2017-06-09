@@ -1,0 +1,285 @@
+{
+  "userSays": [
+    {
+      "id": "fe5d67b7-8470-4e74-9751-40d78ae4fbc3",
+      "data": [
+        {
+          "text": "mark habit "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " as complete"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "d54f81e9-bd1e-4a8a-9e35-318f1ce5312f",
+      "data": [
+        {
+          "text": "mark task "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " as complete"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "99ed802e-d9b8-4652-b1e3-b28881c0afb9",
+      "data": [
+        {
+          "text": "mark habit "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " complete"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "6e149831-359e-455c-9193-765603bdc613",
+      "data": [
+        {
+          "text": "mark task "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " complete"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "c06e0277-7777-4668-ae78-1aa9d7a500e2",
+      "data": [
+        {
+          "text": "mark "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " complete"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "728de0c3-c3e8-4b29-afd8-7935b7fce2bf",
+      "data": [
+        {
+          "text": "mark "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " as finished"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "e4dc7117-bda3-47f4-8753-6bb56865cb22",
+      "data": [
+        {
+          "text": "mark "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " finished"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "71b7d140-7e83-4f9c-a3b4-da4fb517640e",
+      "data": [
+        {
+          "text": "task done "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "351aba44-0b3c-48d3-923b-6cd4536a3c76",
+      "data": [
+        {
+          "text": "habit done "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "81c0acc9-52c5-4c2c-9b18-ec2910f004ea",
+      "data": [
+        {
+          "text": "habit complete "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "3668d360-9268-4c1e-8de2-bcde8661afb1",
+      "data": [
+        {
+          "text": "task complete "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "a2362407-405c-4194-a719-2ce985fb2fcf",
+      "data": [
+        {
+          "text": "i\u0027m done with "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "0acd8db6-095c-4f4a-b599-41ff427ee804",
+      "data": [
+        {
+          "text": "mark "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        },
+        {
+          "text": " as complete"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "c3433c47-9bdb-4171-8bb2-d880f629b7de",
+      "data": [
+        {
+          "text": "I just finished "
+        },
+        {
+          "text": "run",
+          "alias": "habit_or_task",
+          "meta": "@sys.any",
+          "userDefined": true
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "7fb0c1c5-4935-4f8a-9d85-f5f4a71829d7",
+  "name": "Habit or Task Report",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.habit_or_task_report",
+      "affectedContexts": [],
+      "parameters": [
+        {
+          "required": true,
+          "dataType": "@sys.any",
+          "name": "habit_or_task",
+          "value": "$habit_or_task",
+          "prompts": [
+            "Which habit or task did you complete?"
+          ]
+        }
+      ],
+      "messages": [
+        {
+          "type": 0,
+          "speech": []
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}

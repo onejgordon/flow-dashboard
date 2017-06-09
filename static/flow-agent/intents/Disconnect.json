@@ -1,0 +1,47 @@
+{
+  "userSays": [
+    {
+      "id": "0ad7052b-5a5f-47b2-8764-82ce720d492b",
+      "data": [
+        {
+          "text": "Disconnect from Flow"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "09408b71-e794-47c0-9c56-1fd286b437d5",
+      "data": [
+        {
+          "text": "Disconnect"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "e04b1e32-e8a3-4150-8e82-8b9c26e017e2",
+  "name": "Disconnect",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.disconnect",
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": 0,
+          "speech": []
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}

@@ -104,6 +104,7 @@ app = webapp2.WSGIApplication(
 
         webapp2.Route('/api/auth/google_login', handler=api.AuthenticationAPI, handler_method="google_login"),
         webapp2.Route('/api/auth/google_auth', handler=api.AuthenticationAPI, handler_method="google_auth"),
+        webapp2.Route('/api/auth/google/token', handler=api.AuthenticationAPI, handler_method="google_token", methods=["POST"]),
         webapp2.Route('/api/auth/google/oauth2callback', handler=api.AuthenticationAPI, handler_method="google_oauth2_callback"),
         webapp2.Route('/api/auth/google/<service_name>/authenticate', handler=api.AuthenticationAPI, handler_method="google_service_authenticate"),
         webapp2.Route('/api/auth/fbook_auth', handler=api.AuthenticationAPI, handler_method="fbook_auth"),

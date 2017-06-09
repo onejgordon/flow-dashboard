@@ -2,7 +2,7 @@
   "userSays": [],
   "id": "7476f8f9-309d-405d-8739-d2d374b4c585",
   "name": "Default Fallback Intent",
-  "auto": true,
+  "auto": false,
   "contexts": [],
   "responses": [
     {
@@ -15,17 +15,10 @@
           "type": 0,
           "speech": [
             "I didn\u0027t get that. Can you say it again?",
-            "I missed what you said. Say it again?",
-            "Sorry, could you say that again?",
-            "Sorry, can you say that again?",
-            "Can you say that again?",
-            "Sorry, I didn\u0027t get that.",
-            "Sorry, what was that?",
-            "One more time?",
-            "What was that?",
-            "Say that again?",
-            "I didn\u0027t get that.",
-            "I missed that."
+            "I missed what you said. Say it again? Or try saying \"what can I do\"",
+            "Sorry. Try saying \"what can I do\"",
+            "Sorry, can you say that again? Or try saying \"Help me\"",
+            "Say that again?"
           ]
         }
       ]

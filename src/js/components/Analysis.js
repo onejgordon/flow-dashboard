@@ -97,7 +97,7 @@ export default class Analysis extends React.Component {
                 <Link to="/app/analysis/misc"><FlatButton label="Tracking" /></Link>
                 <Link to="/app/analysis/snapshots"><FlatButton label="Snapshots" /></Link>
 
-                <p className="lead">Note that on all charts clicking on series labels will toggle visibility</p>
+                <div><small>Note that on all charts clicking on series labels will toggle visibility</small></div>
 
                 { React.cloneElement(this.props.children, {
                     user: this.props.user,

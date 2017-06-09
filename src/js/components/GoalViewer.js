@@ -251,7 +251,7 @@ export default class GoalViewer extends React.Component {
     )
     let actions = [
       <RaisedButton label="Save Goals" onClick={this.save_goals.bind(this)} primary={true} />,
-      <FlatButton label="Later" onClick={this.dismiss.bind(this)} />
+      <FlatButton label="Dismiss" onClick={this.dismiss.bind(this)} />
     ]
     return (
       <div className="GoalsViewer">

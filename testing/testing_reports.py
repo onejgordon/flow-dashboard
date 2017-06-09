@@ -3,7 +3,7 @@
 
 from datetime import datetime, date
 from base_test_case import BaseTestCase
-from models import Task, User, Report, Goal, MiniJournal, Habit, HabitDay
+from models import Task, Project, Report, Goal, MiniJournal, Habit, HabitDay
 from constants import REPORT
 from flow import app as tst_app
 import tools
@@ -41,20 +41,23 @@ class ReportsTestCases(BaseTestCase):
         self._test_report(
             {'type': REPORT.TASK_REPORT},
             [
-
                 [
                     'Date Created',
                     'Date Due',
                     'Date Done',
                     'Title',
                     'Done',
-                    'Archived'
+                    'Archived',
+                    'Seconds Logged',
+                    'Complete Sessions Logged'
                 ],
                 [
                     tools.sdatetime(task.dt_created, fmt=DATE_FMT),
                     "2017-10-02 12:00:00 UTC",
                     "N/A",
                     "New task",
+                    "0",
+                    "0",
                     "0",
                     "0"
                 ]
@@ -134,6 +137,44 @@ class ReportsTestCases(BaseTestCase):
                     "Run",
                     "1",
                     "0"
+                ]
+            ]
+        )
+
+    def test_project_report(self):
+        prj = Project.Create(self.u)
+        prj.Update(title="New Project", subhead="Project subhead", due=datetime(2017, 4, 5))
+        prj.set_progress(3)
+        prj.put()
+
+        self._test_report(
+            {'type': REPORT.PROJECT_REPORT},
+            [
+                ["Date Created", "Date Due", "Date Completed", "Date Archived", "Title", "Subhead",
+                 "Links", "Starred", "Archived", "Progress", 'Progress 10%', 'Progress 20%', 'Progress 30%',
+                 'Progress 40%', 'Progress 50%', 'Progress 60%', 'Progress 70%', 'Progress 80%',
+                 'Progress 90%', 'Progress 100%'],
+                [
+                    tools.sdatetime(prj.dt_created, fmt="%Y-%m-%d %H:%M:%S %Z"),
+                    tools.sdatetime(prj.dt_due, fmt="%Y-%m-%d %H:%M:%S %Z"),
+                    tools.sdatetime(prj.dt_completed, fmt="%Y-%m-%d %H:%M:%S %Z"),
+                    tools.sdatetime(prj.dt_archived, fmt="%Y-%m-%d %H:%M:%S %Z"),
+                    "New Project",
+                    "Project subhead",
+                    "",
+                    "0",
+                    "0",
+                    "30%",
+                    "N/A",
+                    "N/A",
+                    tools.sdatetime(tools.dt_from_ts(prj.progress_ts[2]), fmt="%Y-%m-%d %H:%M:%S %Z"),
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A"
                 ]
             ]
         )

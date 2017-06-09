@@ -14,6 +14,7 @@ import random
 from google.appengine.api import urlfetch, search
 import json
 import urllib
+import jwt
 import imp
 try:
     imp.find_module('secrets', ['settings'])
@@ -50,6 +51,7 @@ class ProjectAPI(handlers.JsonRequestHandler):
             booleans=['starred', 'archived'],
             integers=['progress'],
             dates=['due'],
+            json=['milestones'],
             supportTextBooleans=True
         )
         if id:
@@ -93,10 +95,14 @@ class TaskAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def list(self, d):
         with_archived = self.request.get_range('with_archived') == 1
+        project_id = self.request.get_range('project_id')
         page, limit, offset = tools.paging_params(self.request)
-        tasks = Task.Recent(self.user, with_archived=with_archived, limit=limit, offset=offset)
+        if project_id:
+            with_archived = True
+        tasks = Task.Recent(self.user, with_archived=with_archived, project_id=project_id,
+                            limit=limit, offset=offset, prefetch=['project'])
         self.set_response({
-            'tasks': [t.json() for t in tasks]
+            'tasks': [t.json(references=['project']) for t in tasks]
         }, success=True)
 
     @authorized.role('user')
@@ -108,7 +114,8 @@ class TaskAPI(handlers.JsonRequestHandler):
         params = tools.gets(self,
             strings=['title'],
             booleans=['archived', 'wip'],
-            integers=['status']
+            integers=['status', 'timer_last_start', 'timer_target_ms', 'timer_pending_ms',
+                      'timer_total_ms', 'timer_complete_sess', 'project_id']
         )
         task = None
         if id:
@@ -858,6 +865,67 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
             self.message = "Malformed"
         self.set_response({'redirect': redir_url}, debug=True)
 
+    def _google_return_tokens(self, user):
+        expire_secs = 60*60
+        access_token = user.aes_token(client_id='google', add_props={
+            'token_type': 'access',
+            'expiration_time': tools.sdatetime(datetime.now() + timedelta(minutes=expire_secs/60))
+        })
+        refresh_token = user.aes_token(client_id='google', add_props={
+            'token_type': 'refresh'
+        })
+        self.set_response({
+            'token_type': "bearer",
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+            'expires_in': expire_secs
+        }, debug=True)
+
+    def google_token(self):
+        '''Support oauth2 assertion
+        https://developers.google.com/actions/identity/oauth2-assertion-flow
+        '''
+        grant_type = self.request.get('grant_type')
+        intent = self.request.get('intent')  # get or create
+        assertion = self.request.get('assertion')
+        # consent_code = self.request.get('consent_code')
+        # scope = self.request.get('scope')
+        assertion_flow = grant_type == 'urn:ietf:params:oauth:grant-type:jwt-bearer'
+        email = None
+        ok = False
+        if assertion_flow:
+            decoded = jwt.decode(assertion, secrets.GOOGLE_CLIENT_SECRET,
+                                 audience=secrets.GOOGLE_CLIENT_ID,
+                                 algorithms=['HS256'])
+            if decoded:
+                iss_ok = decoded.get('iss') == 'https://accounts.google.com'
+                if iss_ok:
+                    g_id = decoded.get('sub')
+                    email = decoded.get('email')
+                    u = User.GetByGoogleId(g_id)
+                    if not u:
+                        u = User.GetByEmail(email)
+                    account_exists = bool(u)
+                    if intent == 'get':
+                        if not account_exists:
+                            self.set_response({'error': 'user_not_found'}, status=401)
+                        else:
+                            self._google_return_tokens(u)
+                            ok = True
+                    elif intent == 'create':
+                        u = User.Create(email=email, g_id=g_id, name=decoded.get('name'))
+                        if u:
+                            self._google_return_tokens(u)
+                            ok = True
+
+        if not ok and email:
+            # Default redirect to auth
+            self.set_response({
+                "error": "linking_error",
+                "login_hint": email
+            })
+
+
     @authorized.role('user')
     def google_service_authenticate(self, service_name, d):
         data = {}
@@ -967,6 +1035,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         today = datetime.today()
         habitdays = []
         goals = []
+        logging.debug([dt_start, dt_end])
         journals, iso_dates = MiniJournal.Fetch(self.user, dt_start, dt_end)
         if with_habits:
             habits = Habit.Active(self.user)
@@ -976,7 +1045,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         if with_goals:
             goals = Goal.Year(self.user, today.year)
         if with_tasks:
-            tasks = Task.DueInRange(self.user, dt_start, dt_end, limit=100)
+            tasks = Task.DueInRange(self.user, dt_start, dt_end + timedelta(days=1), limit=100)
         self.set_response({
             'dates': iso_dates,
             'journals': [j.json() for j in journals if j],
@@ -1201,7 +1270,7 @@ class AgentAPI(handlers.JsonRequestHandler):
     def _get_user(self, body):
         originalRequest = body.get('originalRequest', {})
         user = originalRequest.get('data', {}).get('user', {})
-        access_token = user.get('access_token')
+        access_token = user.get('accessToken')
         if access_token:
             user_id = User.user_id_from_aes_access_token(access_token)
             if user_id:
@@ -1247,7 +1316,7 @@ class AgentAPI(handlers.JsonRequestHandler):
         res['speech'] = speech
         res['displayText'] = speech
         data['google'] = {
-            'expect_user_response': not end_convo
+            'expectUserResponse': not end_convo
         }
         res['data'] = data
         res['contextOut'] = []

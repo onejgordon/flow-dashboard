@@ -40,6 +40,10 @@ a:hover > .show_hover {
     opacity: 1.0;
 }
 
+a.label {
+  color: white;
+}
+
 body {
     font-family: 'Roboto', Helvetica, sans-serif;
     font-weight: 300;
@@ -203,14 +207,12 @@ div.section {
 
 .progressBoxes {
     display: block;
-    width: 99%;
-    margin: 0px auto;
 }
 
 .progressBox_o {
     display: block;
     float: left;
-    padding: 2px;
+    padding: 5px;
 }
 
 .progressBox_i {
@@ -292,7 +294,7 @@ div.section {
     color: #F9D23D;
 }
 
-.HabitWidget span.target.target-reached {
+.HabitWidget span.target.target-reached, .taskHUD span.target-reached {
     color: #22FF7A;
     font-weight: bold;
 }
@@ -331,6 +333,73 @@ div.section {
   opacity: 1.0;
 }
 
+.project-indicator {
+  display: inline-block;
+  margin: 0 5px 3px 5px;
+  padding: 2px 5px;
+  font-size: 0.65em;
+  text-transform: uppercase;
+}
+
+/* Tasks */
+
+.task-secondary > span {
+  margin-right: 7px;
+}
+
+.task-secondary > .timed {
+  color: #F9D23D;
+}
+
+
+/* Task HUD */
+
+.taskHUD {
+  background: rgba(0,0,0,0.7);
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.taskHUD .hud-label {
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: bold;
+  font-size: 0.6em;
+}
+
+.taskHUD .name {
+  color: #F9D23D;
+  font-size: 1.4em;
+}
+
+.taskHUD .timers .time {
+  color: white;
+  font-size: 1.5em;
+}
+
+.taskHUD .timers .time.playing {
+  color: #F9D23D;
+}
+
+.taskHUD .timers .time .playing-orb {
+  background-color: #F9D23D;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin: 0 7px 4px 0;
+  border-radius: 8px;
+  animation: pulse .5s infinite alternate;
+}
+
+.taskHUD .timers .target {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1em;
+}
+
 .readable .sh {
   margin-right: 5px;
 }
@@ -340,6 +409,10 @@ div.section {
     font-size: 1.8em;
     opacity: 0.5;
     margin: 40px;
+}
+
+.transparent {
+  opacity: 0.5;
 }
 
 /* Tasks */
@@ -364,7 +437,7 @@ div.section {
 
 @keyframes pulse {
   0% {
-    opacity: 0.7;
+    opacity: 0.5;
   }
   100% {
     opacity: 1.0;
@@ -445,40 +518,6 @@ div.section {
   width: 100%;
   height: 2px;
 }
-/*
-.pace .pace-progress-inner {
-  display: block;
-  position: absolute;
-  right: 0px;
-  width: 100px;
-  height: 100%;
-  box-shadow: 0 0 10px #29d, 0 0 5px #29d;
-  opacity: 1.0;
-  -webkit-transform: rotate(3deg) translate(0px, -4px);
-  -moz-transform: rotate(3deg) translate(0px, -4px);
-  -ms-transform: rotate(3deg) translate(0px, -4px);
-  -o-transform: rotate(3deg) translate(0px, -4px);
-  transform: rotate(3deg) translate(0px, -4px);
-}
-
-.pace .pace-activity {
-  display: block;
-  position: fixed;
-  z-index: 2000;
-  top: 25px;
-  right: 25px;
-  width: 14px;
-  height: 14px;
-  border: solid 2px transparent;
-  border-top-color: #29d;
-  border-left-color: #29d;
-  border-radius: 10px;
-  -webkit-animation: pace-spinner 400ms linear infinite;
-  -moz-animation: pace-spinner 400ms linear infinite;
-  -ms-animation: pace-spinner 400ms linear infinite;
-  -o-animation: pace-spinner 400ms linear infinite;
-  animation: pace-spinner 400ms linear infinite;
-}*/
 
 @-webkit-keyframes pace-spinner {
   0% { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
@@ -499,4 +538,25 @@ div.section {
 @keyframes pace-spinner {
   0% { transform: rotate(0deg); transform: rotate(0deg); }
   100% { transform: rotate(360deg); transform: rotate(360deg); }
+}
+
+/* For react-transition-group */
+
+.fade-enter {
+  position: fixed;
+  opacity: 0.01;
+}
+
+.fade-enter.fade-enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+.fade-leave {
+  opacity: 1;
+}
+
+.fade-leave.fade-leave-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
 }

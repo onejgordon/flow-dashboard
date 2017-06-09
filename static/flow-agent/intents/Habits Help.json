@@ -1,0 +1,67 @@
+{
+  "userSays": [
+    {
+      "id": "791d74ce-f0a9-4726-a31d-091b8a2081d7",
+      "data": [
+        {
+          "text": "What are habits"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "5b94d029-6b07-42c0-8131-0ce28b0ea089",
+      "data": [
+        {
+          "text": "Tell me about habits"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "c1a18cf8-1d00-4c90-b2b6-e6c35c68880c",
+      "data": [
+        {
+          "text": "How do habits work"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "16c5f150-dc2c-4dbc-b283-7684985d921f",
+      "data": [
+        {
+          "text": "Help on habits"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "ec792743-3a65-4dc8-b378-c1a25e0f9b5f",
+  "name": "Habits Help",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.help_habits",
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": 0,
+          "speech": []
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}

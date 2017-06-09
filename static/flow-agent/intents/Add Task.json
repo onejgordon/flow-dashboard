@@ -1,14 +1,14 @@
 {
   "userSays": [
     {
-      "id": "a2362407-405c-4194-a719-2ce985fb2fcf",
+      "id": "f00a8363-d2a7-464c-a516-756bd0fd9579",
       "data": [
         {
-          "text": "i\u0027m done with "
+          "text": "remind me to "
         },
         {
-          "text": "run",
-          "alias": "habit",
+          "text": "mytask",
+          "alias": "task_name",
           "meta": "@sys.any",
           "userDefined": true
         }
@@ -17,33 +17,30 @@
       "count": 0
     },
     {
-      "id": "0acd8db6-095c-4f4a-b599-41ff427ee804",
+      "id": "7c052d38-ea4b-4fea-81d9-c848ed9817e3",
       "data": [
         {
-          "text": "mark "
+          "text": "new task "
         },
         {
-          "text": "run",
-          "alias": "habit",
+          "text": "mytask",
+          "alias": "task_name",
           "meta": "@sys.any",
           "userDefined": true
-        },
-        {
-          "text": " as complete"
         }
       ],
       "isTemplate": false,
       "count": 0
     },
     {
-      "id": "c3433c47-9bdb-4171-8bb2-d880f629b7de",
+      "id": "f06eb6c2-f666-4ef4-b611-26ef40c07fad",
       "data": [
         {
-          "text": "I just finished "
+          "text": "add task "
         },
         {
-          "text": "run",
-          "alias": "habit",
+          "text": "mytask",
+          "alias": "task_name",
           "meta": "@sys.any",
           "userDefined": true
         }
@@ -52,24 +49,21 @@
       "count": 0
     }
   ],
-  "id": "7fb0c1c5-4935-4f8a-9d85-f5f4a71829d7",
-  "name": "Report Habit Complete",
+  "id": "fd7540a4-6124-4261-8610-0cb58f53901a",
+  "name": "Add Task",
   "auto": true,
   "contexts": [],
   "responses": [
     {
       "resetContexts": false,
-      "action": "input.habit_report",
+      "action": "input.task_add",
       "affectedContexts": [],
       "parameters": [
         {
-          "required": true,
           "dataType": "@sys.any",
-          "name": "habit",
-          "value": "$habit",
-          "prompts": [
-            "Which habit did you complete?"
-          ]
+          "name": "task_name",
+          "value": "$task_name",
+          "isList": false
         }
       ],
       "messages": [

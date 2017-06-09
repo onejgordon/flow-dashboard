@@ -1,0 +1,87 @@
+{
+  "userSays": [
+    {
+      "id": "a0c82d4d-11fd-4518-8984-e5d74b67be3d",
+      "data": [
+        {
+          "text": "how do goals work"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "03d71f70-12c1-41bb-bdac-c324952996dd",
+      "data": [
+        {
+          "text": "info on goals"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "08dd1a95-f655-4dcf-91f4-5b9beb41ba4d",
+      "data": [
+        {
+          "text": "goals?"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "f209c7fb-63a5-4ab3-a80d-5a15af9c0340",
+      "data": [
+        {
+          "text": "tell me about goals"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "e5a1f590-8c41-4e5a-bd96-4df738b700f1",
+      "data": [
+        {
+          "text": "what are goals"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    },
+    {
+      "id": "772ea06f-c830-4f9c-993e-d1c4c22a04df",
+      "data": [
+        {
+          "text": "help on goals"
+        }
+      ],
+      "isTemplate": false,
+      "count": 0
+    }
+  ],
+  "id": "094492de-3c05-4858-bcf7-d5b222dd5787",
+  "name": "Goals Help",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.help_goals",
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": 0,
+          "speech": []
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": []
+}
