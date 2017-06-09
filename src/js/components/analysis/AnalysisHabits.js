@@ -11,7 +11,8 @@ import {changeHandler} from 'utils/component-utils';
 export default class AnalysisHabits extends React.Component {
     static propTypes = {
         loaded: React.PropTypes.bool,
-        days: React.PropTypes.number
+        days: React.PropTypes.number,
+        end_date: React.PropTypes.object
     }
 
     static defaultProps = {
@@ -46,15 +47,16 @@ export default class AnalysisHabits extends React.Component {
     }
 
     fetch_data() {
-        let today = new Date();
+        let {end_date} = this.props;
         let start = new Date();
         start.setDate(start.getDate() - this.props.days);
         let params = {
             date_start: util.printDateObj(start, 'UTC'),
-            date_end: util.printDateObj(today, 'UTC'),
+            date_end: util.printDateObj(end_date, 'UTC'),
             with_habits: 1
         }
         api.get("/api/analysis", params, (res) => {
+            console.log(res)
             this.setState({
                 iso_dates: res.dates,
                 habits: res.habits,
