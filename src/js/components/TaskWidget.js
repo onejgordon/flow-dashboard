@@ -2,6 +2,7 @@ var React = require('react');
 import { IconButton, List,
   IconMenu, FontIcon, MenuItem, TextField, AutoComplete,
   FlatButton, Dialog } from 'material-ui';
+import PropTypes from 'prop-types';
 import {browserHistory} from 'react-router';
 var ProjectStore = require('stores/ProjectStore');
 var TaskStore = require('stores/TaskStore');
@@ -22,8 +23,8 @@ import {changeHandler} from 'utils/component-utils';
 @changeHandler
 class TaskWidget extends React.Component {
   static propTypes = {
-    timezone: React.PropTypes.string,
-    show_task_progressbar: React.PropTypes.bool
+    timezone: PropTypes.string,
+    show_task_progressbar: PropTypes.bool
   }
 
   static defaultProps = {

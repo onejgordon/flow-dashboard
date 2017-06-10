@@ -1,6 +1,7 @@
 var React = require('react');
 
 var AppConstants = require('constants/AppConstants');
+import PropTypes from 'prop-types';
 import {Bar, Line} from "react-chartjs-2";
 import connectToStores from 'alt-utils/lib/connectToStores';
 var util = require('utils/util');
@@ -10,8 +11,8 @@ var api = require('utils/api');
 @connectToStores
 export default class AnalysisHabits extends React.Component {
     static propTypes = {
-        loaded: React.PropTypes.bool,
-        days: React.PropTypes.number
+        loaded: PropTypes.bool,
+        days: PropTypes.number
     }
 
     static defaultProps = {
@@ -188,6 +189,6 @@ export default class AnalysisHabits extends React.Component {
             </div>
         );
     }
-};
+}
 
 module.exports = AnalysisHabits;

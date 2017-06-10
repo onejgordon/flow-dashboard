@@ -1,14 +1,15 @@
+var PropTypes = require('prop-types');
 var React = require('react');
 
 export default class BigProp extends React.Component {
   static propTypes = {
-    label: React.PropTypes.string,
-    value: React.PropTypes.node,
-    color: React.PropTypes.string,
-    size: React.PropTypes.string,
-    icon: React.PropTypes.element,
-    onClick: React.PropTypes.func,
-    labelPosition: React.PropTypes.string,
+    label: PropTypes.string,
+    value: PropTypes.node,
+    color: PropTypes.string,
+    size: PropTypes.string,
+    icon: PropTypes.element,
+    onClick: PropTypes.func,
+    labelPosition: PropTypes.string,
   }
   static defaultProps = {
     label: '--',

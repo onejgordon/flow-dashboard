@@ -1,6 +1,7 @@
 var React = require('react');
 import { DatePicker, RaisedButton, FlatButton, TextField,
   IconMenu, MenuItem, IconButton, FontIcon } from 'material-ui';
+import PropTypes from 'prop-types';
 import {changeHandler} from 'utils/component-utils';
 import {clone} from 'lodash';
 var MobileDialog = require('components/common/MobileDialog');
@@ -14,10 +15,10 @@ import connectToStores from 'alt-utils/lib/connectToStores';
 @changeHandler
 export default class ProjectViewer extends React.Component {
   static propTypes = {
-    due_soon_days: React.PropTypes.number,
-    initially_show: React.PropTypes.number,
-    projects: React.PropTypes.array,
-    working: React.PropTypes.bool
+    due_soon_days: PropTypes.number,
+    initially_show: PropTypes.number,
+    projects: PropTypes.array,
+    working: PropTypes.bool
   }
 
   static defaultProps = {

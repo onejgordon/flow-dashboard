@@ -1,23 +1,25 @@
+var PropTypes = require('prop-types');
 var React = require('react');
 import {ListItem, FontIcon, IconButton,
   IconMenu, MenuItem, Checkbox} from 'material-ui';
 var util = require('utils/util');
 var toastr = require('toastr')
+import {isEqual} from 'lodash'
 
 export default class TaskLI extends React.Component {
   static propTypes = {
-    onUpdateStatus: React.PropTypes.func,
-    onArchive: React.PropTypes.func,
-    onEdit: React.PropTypes.func,
-    onDelete: React.PropTypes.func,
-    onUpdateWIP: React.PropTypes.func,
-    onClearTimerLogs: React.PropTypes.func,
-    checkbox_enabled: React.PropTypes.bool,
-    delete_enabled: React.PropTypes.bool,
-    edit_enabled: React.PropTypes.bool,
-    wip_enabled: React.PropTypes.bool,
-    archive_enabled: React.PropTypes.bool,
-    absolute_date: React.PropTypes.bool,
+    onUpdateStatus: PropTypes.func,
+    onArchive: PropTypes.func,
+    onEdit: PropTypes.func,
+    onDelete: PropTypes.func,
+    onUpdateWIP: PropTypes.func,
+    onClearTimerLogs: PropTypes.func,
+    checkbox_enabled: PropTypes.bool,
+    delete_enabled: PropTypes.bool,
+    edit_enabled: PropTypes.bool,
+    wip_enabled: PropTypes.bool,
+    archive_enabled: PropTypes.bool,
+    absolute_date: PropTypes.bool,
   }
 
   static defaultProps = {
@@ -38,11 +40,13 @@ export default class TaskLI extends React.Component {
 
   constructor(props) {
       super(props);
-      this.state = {
-      };
       this.NOT_DONE = 1;
       this.DONE = 2;
       this.TASK_COLOR = "#DF00FF";
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return !isEqual(nextProps.task, this.props.task)
   }
 
   set_wip(is_wip) {
@@ -54,6 +58,18 @@ export default class TaskLI extends React.Component {
     let can_mark_done = t.timer_last_start + t.timer_pending_ms == 0
     if (can_mark_done) onUpdateStatus(t, this.DONE)
     else toastr.info("Exit timer before completing this task")
+  }
+
+  marked_up_title(html) {
+    return {__html: html}
+  }
+
+  render_title(t) {
+    let url_regex = /(ftp|http|https):\/\/[^ "]+/g
+    let html = t.title.replace(url_regex, (url) => {
+      if (url) return `<a href=${url} target="_blank">${ util.url_summary(url) }</a>`
+    })
+    return <div dangerouslySetInnerHTML={this.marked_up_title(html)} />;
   }
 
   render_secondary() {
@@ -110,12 +126,10 @@ export default class TaskLI extends React.Component {
         </IconMenu>
       );
     }
-    let primaryText;
-    if (t.wip) primaryText = <div className="wip">{t.title}</div>;
-    else {
-      let cls = t.done ? 'task done' : 'task';
-      primaryText = <div className={cls}>{t.title}</div>;
-    }
+    let cls = '';
+    if (t.wip) cls = 'wip'
+    else cls = t.done ? 'task done' : 'task'
+    let primaryText = <div className={cls}>{this.render_title(t)}</div>;
     return (
       <ListItem key={t.id}
         primaryText={ primaryText }

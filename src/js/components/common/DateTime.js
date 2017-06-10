@@ -1,11 +1,12 @@
+var PropTypes = require('prop-types');
 var React = require('react');
 var util = require('utils/util');
 
 export default class DateTime extends React.Component {
   static propTypes = {
-    ms: React.PropTypes.number,
-    prefix: React.PropTypes.string,
-    color: React.PropTypes.string
+    ms: PropTypes.number,
+    prefix: PropTypes.string,
+    color: PropTypes.string
   }
 
   static defaultProps = {
