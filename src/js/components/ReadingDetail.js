@@ -5,13 +5,14 @@ var api = require('utils/api');
 var Link = Router.Link;
 var QuoteLI = require('components/list_items/QuoteLI');
 var FetchedList = require('components/common/FetchedList');
+import PropTypes from 'prop-types';
 import {changeHandler} from 'utils/component-utils';
 
 
 @changeHandler
 export default class ReadingDetail extends React.Component {
   static propTypes = {
-    readable: React.PropTypes.object
+    readable: PropTypes.object
   }
 
   static defaultProps = {

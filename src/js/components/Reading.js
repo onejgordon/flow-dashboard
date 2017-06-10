@@ -46,7 +46,7 @@ export default class Reading extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        let filter_change = prevState.form.reading_filter != this.state.reading_filter;
+        let filter_change = prevState.form.reading_filter != this.state.form.reading_filter;
         if (filter_change) this.refs.readables.refresh();
     }
 

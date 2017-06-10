@@ -1,3 +1,4 @@
+var PropTypes = require('prop-types');
 var React = require('react');
 import {ListItem, FontIcon, IconButton,
   IconMenu, MenuItem, Checkbox} from 'material-ui';
@@ -6,18 +7,18 @@ var toastr = require('toastr')
 
 export default class TaskLI extends React.Component {
   static propTypes = {
-    onUpdateStatus: React.PropTypes.func,
-    onArchive: React.PropTypes.func,
-    onEdit: React.PropTypes.func,
-    onDelete: React.PropTypes.func,
-    onUpdateWIP: React.PropTypes.func,
-    onClearTimerLogs: React.PropTypes.func,
-    checkbox_enabled: React.PropTypes.bool,
-    delete_enabled: React.PropTypes.bool,
-    edit_enabled: React.PropTypes.bool,
-    wip_enabled: React.PropTypes.bool,
-    archive_enabled: React.PropTypes.bool,
-    absolute_date: React.PropTypes.bool,
+    onUpdateStatus: PropTypes.func,
+    onArchive: PropTypes.func,
+    onEdit: PropTypes.func,
+    onDelete: PropTypes.func,
+    onUpdateWIP: PropTypes.func,
+    onClearTimerLogs: PropTypes.func,
+    checkbox_enabled: PropTypes.bool,
+    delete_enabled: PropTypes.bool,
+    edit_enabled: PropTypes.bool,
+    wip_enabled: PropTypes.bool,
+    archive_enabled: PropTypes.bool,
+    absolute_date: PropTypes.bool,
   }
 
   static defaultProps = {

@@ -1,10 +1,11 @@
 var React = require('react');
+import PropTypes from 'prop-types';
 import {Link} from 'react-router';
 var AppConstants = require('constants/AppConstants');
 var MobileDialog = require('components/common/MobileDialog');
-import { Dialog, TextField, Slider,
-  FlatButton, RaisedButton, IconButton, List,
-  DropDownMenu,
+import { IconMenu, TextField,
+  FlatButton, RaisedButton, IconButton,
+  DropDownMenu, FontIcon,
   MenuItem } from 'material-ui';
 var util = require('utils/util');
 import {changeHandler} from 'utils/component-utils';
@@ -16,11 +17,11 @@ import {clone, merge} from 'lodash';
 @changeHandler
 export default class MiniJournalWidget extends React.Component {
   static propTypes = {
-    include_location: React.PropTypes.bool,
-    tomorrow_top_tasks: React.PropTypes.bool,
-    questions: React.PropTypes.array,
-    window_start_hr: React.PropTypes.number,
-    window_end_hr: React.PropTypes.number
+    include_location: PropTypes.bool,
+    tomorrow_top_tasks: PropTypes.bool,
+    questions: PropTypes.array,
+    window_start_hr: PropTypes.number,
+    window_end_hr: PropTypes.number
   }
 
   static defaultProps = {
@@ -290,9 +291,19 @@ export default class MiniJournalWidget extends React.Component {
         </MobileDialog>
 
         <div>
-          <h3>Daily Journal</h3>
+          <div className="row">
+            <div className="col-sm-6">
+              <h3>Daily Journal</h3>
+            </div>
+            <div className="col-sm-6">
+              <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
+                <Link to="/app/journal/history"><MenuItem key="hist" primaryText="Journal History" leftIcon={<FontIcon className="material-icons">list</FontIcon>} /></Link>
+              </IconMenu>
+            </div>
+          </div>
+
           { _status }
-          <div>See <Link to="/app/journal/history">journal history</Link>.</div>
+
         </div>
       </div>
     )

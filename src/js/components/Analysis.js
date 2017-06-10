@@ -1,12 +1,21 @@
 var React = require('react');
 
 var util = require('utils/util');
-import {IconButton, FlatButton, AutoComplete} from 'material-ui';
+import {IconButton, FlatButton} from 'material-ui';
 var api = require('utils/api');
 import {get} from 'lodash';
-import {Link} from 'react-router';
+import {Route, Redirect, Link, Switch} from 'react-router';
 import connectToStores from 'alt-utils/lib/connectToStores';
 var UserStore = require('stores/UserStore');
+
+// Analysis
+var AnalysisGoals = require('components/analysis/AnalysisGoals');
+var AnalysisJournals = require('components/analysis/AnalysisJournals');
+var AnalysisTasks = require('components/analysis/AnalysisTasks');
+var AnalysisHabits = require('components/analysis/AnalysisHabits');
+var AnalysisSnapshot = require('components/analysis/AnalysisSnapshot');
+var AnalysisMisc = require('components/analysis/AnalysisMisc');
+
 
 @connectToStores
 export default class Analysis extends React.Component {
@@ -83,6 +92,17 @@ export default class Analysis extends React.Component {
         let today = new Date();
         let admin = UserStore.admin();
         if (!loaded) return null;
+        let childProps = {
+            user: this.props.user,
+            goals: goals,
+            journals: journals,
+            tasks: tasks,
+            tracking_days: tracking_days,
+            habits: habits,
+            habitdays: habitdays,
+            iso_dates: iso_dates,
+            loaded: loaded
+        }
         return (
             <div>
 
@@ -99,20 +119,35 @@ export default class Analysis extends React.Component {
 
                 <div><small>Note that on all charts clicking on series labels will toggle visibility</small></div>
 
-                { React.cloneElement(this.props.children, {
-                    user: this.props.user,
-                    goals: goals,
-                    journals: journals,
-                    tasks: tasks,
-                    tracking_days: tracking_days,
-                    habits: habits,
-                    habitdays: habitdays,
-                    iso_dates: iso_dates,
-                    loaded: loaded }) }
+                <Switch>
+                    <div>
+                        <Route exact path="/app/analysis" render={() => (
+                            <Redirect to="/app/analysis/goals" />
+                            )} />
+                        <Route path="goals" render={() => (
+                          <AnalysisGoals {...childProps} />
+                          )} />
+                        <Route path="journals" render={() => (
+                          <AnalysisJournals {...childProps} />
+                          )} />
+                        <Route path="tasks" render={() => (
+                          <AnalysisTasks {...childProps} />
+                          )} />
+                        <Route path="habits" render={() => (
+                          <AnalysisHabits {...childProps} />
+                          )} />
+                            <Route path="snapshots" render={() => (
+                          <AnalysisSnapshot {...childProps} />
+                          )} />
+                            <Route path="misc" render={() => (
+                          <AnalysisMisc {...childProps} />
+                          )} />
+                    </div>
+                </Switch>
 
             </div>
         );
     }
-};
+}
 
 module.exports = Analysis;

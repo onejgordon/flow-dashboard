@@ -7,6 +7,7 @@ var util = require('utils/util');
 import {clone, cloneDeep} from 'lodash';
 var AppConstants = require('constants/AppConstants');
 var ProgressLine = require('components/common/ProgressLine');
+import PropTypes from 'prop-types';
 import {changeHandler} from 'utils/component-utils';
 
 @changeHandler
@@ -16,7 +17,7 @@ export default class GoalViewer extends React.Component {
   }
 
   static propTypes = {
-    goal_slots: React.PropTypes.number
+    goal_slots: PropTypes.number
   }
 
   constructor(props) {

@@ -9,14 +9,15 @@ var AppConstants = require('constants/AppConstants')
 import {changeHandler} from 'utils/component-utils';
 var HabitAnalysis = require('components/HabitAnalysis');
 var ProgressLine = require('components/common/ProgressLine');
+import PropTypes from 'prop-types';
 import { SwatchesPicker } from 'react-color';
 
 @changeHandler
 export default class HabitWidget extends React.Component {
 
   static propTypes = {
-    days: React.PropTypes.number,
-    commitments: React.PropTypes.bool
+    days: PropTypes.number,
+    commitments: PropTypes.bool
   }
 
   static defaultProps = {

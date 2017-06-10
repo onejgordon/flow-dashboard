@@ -1,6 +1,8 @@
 'use strict';
 
+const PropTypes = require('prop-types');
 var React = require('react');
+import {Route, Switch, Redirect} from 'react-router-dom';
 var GoogleAnalytics = require('react-g-analytics');
 var alt = require('config/alt');
 var UserActions = require('actions/UserActions');
@@ -11,6 +13,11 @@ import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import {fade} from 'material-ui/utils/colorManipulator';
 var toastr = require('toastr');
 var pace = require('pace-js');
+
+var App = require('components/App');
+var Auth = require('components/Auth');
+
+var NotFound = require('components/NotFound');
 
 import {
   amber500, cyan700, amber400, amber700,
@@ -72,7 +79,12 @@ class Site extends React.Component {
           <div>
             <GoogleAnalytics id="UA-7713869-14" />
 
-            <div>{this.props.children}</div>
+            <Route exact path="/" render={() => (
+              <Redirect to="/app" />
+              )} />
+            <Route path="auth/:provider" component={Auth} />
+            <Route path="app" component={App} />
+            <Route path="*" component={NotFound} />
 
             <div id="footer">
               MIT License. &copy; { copyright_years } <a className="muted" href={ AppConstants.AUTHOR_URL } target="_blank">{ AppConstants.AUTHOR }</a><br/>
@@ -81,11 +93,11 @@ class Site extends React.Component {
         </MuiThemeProvider>
     )
   }
-};
+}
 
 // Important!
 Site.childContextTypes = {
-  muiTheme: React.PropTypes.object
+  muiTheme: PropTypes.object
 };
 
 var injectTapEventPlugin = require("react-tap-event-plugin");

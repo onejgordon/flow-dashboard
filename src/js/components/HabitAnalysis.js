@@ -3,6 +3,7 @@ import { Dialog, FlatButton } from 'material-ui';
 var util = require('utils/util');
 var api = require('utils/api');
 import {changeHandler} from 'utils/component-utils';
+import PropTypes from 'prop-types';
 import {Doughnut} from "react-chartjs-2";
 var AppConstants = require('constants/AppConstants');
 var ReactTooltip = require('react-tooltip');
@@ -11,8 +12,8 @@ var BigProp = require('components/common/BigProp');
 @changeHandler
 export default class HabitAnalysis extends React.Component {
   static propTypes = {
-    onDismiss: React.PropTypes.func,
-    onEdit: React.PropTypes.func
+    onDismiss: PropTypes.func,
+    onEdit: PropTypes.func
   }
   static defaultProps = {
     habit: null,

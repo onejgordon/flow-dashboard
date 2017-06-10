@@ -2,7 +2,7 @@
 
 var React = require('react');
 import {Link} from 'react-router';
-import {browserHistory} from 'react-router';
+import {Route, Redirect, Switch} from 'react-router-dom';
 import { FontIcon, MenuItem, RaisedButton,
   IconButton, AppBar, Drawer} from 'material-ui';
 var AppConstants = require('constants/AppConstants');
@@ -13,6 +13,22 @@ import connectToStores from 'alt-utils/lib/connectToStores';
 import {G_OAUTH_CLIENT_ID, GOOGLE_API_KEY} from 'constants/client_secrets';
 var api = require('utils/api');
 var toastr = require('toastr');
+
+var Dashboard = require('components/Dashboard');
+var Timeline = require('components/Timeline');
+var Splash = require('components/Splash');
+var About = require('components/About');
+var Privacy = require('components/Privacy');
+var Settings = require('components/Settings');
+var Analysis = require('components/Analysis');
+var Reading = require('components/Reading');
+var JournalHistory = require('components/JournalHistory');
+var TaskHistory = require('components/TaskHistory');
+var Integrations = require('components/Integrations');
+var Reports = require('components/Reports');
+var Feedback = require('components/Feedback');
+var AdminAgent = require('components/admin/AdminAgent');
+
 
 @connectToStores
 export default class Private extends React.Component {
@@ -129,6 +145,7 @@ export default class Private extends React.Component {
     let on_about = this.props.location.pathname == '/app/about';
     if (!user && !on_signin) right_icon = <Link to="/app/login"><RaisedButton primary={true} label="Sign In" style={{marginTop: "5px", marginRight: "5px"}}/></Link>
     if (user && on_about) right_icon = <Link to="/app/dashboard"><RaisedButton primary={true} label="Dashboard" style={{marginTop: "5px", marginRight: "5px"}}/></Link>
+    let childProps = { user: user, signing_in: this.state.signing_in }
     return (
       <div>
         <AppBar
@@ -151,7 +168,60 @@ export default class Private extends React.Component {
         <div id="container" className="container">
 
           <div className="app-content row">
-            { React.cloneElement(this.props.children, { user: user, signing_in: this.state.signing_in }) }
+            <Switch>
+              <div>
+                <Route exact path="/app" render={() => (
+                  <Redirect to="/app/about" />)} />
+                <Route path="splash" render={() => (
+                  <Splash {...childProps} />
+                  )} />
+                <Route path="login" render={() => (
+                  <Splash {...childProps} />
+                  )} />
+                <Route path="about" render={() => (
+                  <About {...childProps} />
+                  )} />
+                <Route path="privacy" render={() => (
+                  <Privacy {...childProps} />
+                  )} />
+                <Route path="dashboard" render={() => (
+                  <Dashboard {...childProps} />
+                  )} />
+                <Route path="timeline" render={() => (
+                  <Timeline {...childProps} />
+                  )} />
+                <Route path="settings" render={() => (
+                  <Settings {...childProps} />
+                  )} />
+                <Route path="integrations" render={() => (
+                  <Integrations {...childProps} />
+                  )} />
+                <Route path="integrations/:action" render={() => (
+                  <Integrations {...childProps} />
+                  )} />
+                <Route path="exports" render={() => (
+                  <Reports {...childProps} />
+                  )} />
+                <Route path="reading" render={() => (
+                  <Reading {...childProps} />
+                  )} />
+                <Route path="journal/history" render={() => (
+                  <JournalHistory {...childProps} />
+                  )} />
+                <Route path="task/history" render={() => (
+                  <TaskHistory {...childProps} />
+                  )} />
+                <Route path="feedback" render={() => (
+                  <Feedback {...childProps} />
+                  )} />
+                <Route path="admin/agent" render={() => (
+                  <AdminAgent {...childProps} />
+                  )} />
+                <Route path="analysis" render={() => (
+                  <Analysis {...childProps} />
+                  )} />
+              </div>
+            </Switch>
           </div>
         </div>
 

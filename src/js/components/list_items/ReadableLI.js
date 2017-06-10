@@ -3,13 +3,14 @@ import {ListItem, FontIcon, Paper, TextField,
   IconMenu, MenuItem, IconButton, Avatar,
   RaisedButton, FlatButton} from 'material-ui';
 var api = require('utils/api');
+import PropTypes from 'prop-types';
 import {changeHandler} from 'utils/component-utils';
 var util = require('utils/util');
 
 @changeHandler
 export default class ReadableLI extends React.Component {
   static propTypes = {
-    readable: React.PropTypes.object
+    readable: PropTypes.object
   }
 
   static defaultProps = {
