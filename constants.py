@@ -172,6 +172,7 @@ class REPORT():
     JOURNAL_REPORT = 4
     EVENT_REPORT = 5
     PROJECT_REPORT = 6
+    TRACKING_REPORT = 7
 
     # Status
     CREATED = 1
@@ -191,7 +192,8 @@ class REPORT():
         TASK_REPORT: "Task Report",
         GOAL_REPORT: "Goal Report",
         JOURNAL_REPORT: "Journal Report",
-        EVENT_REPORT: "Event Report"
+        EVENT_REPORT: "Event Report",
+        TRACKING_REPORT: "Tracking Report"
     }
 
     STATUS_LABELS = {
