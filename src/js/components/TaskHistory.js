@@ -10,21 +10,10 @@ export default class TaskHistory extends React.Component {
     static defaultProps = {};
     constructor(props) {
         super(props);
-        this.state = {
-            form: {
-                before_date: new Date(),
-                days: 10
-            },
-        };
     }
 
     componentDidMount() {
         util.set_title("Task History");
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        let filter_change = prevState.form.form != this.state.form;
-        if (filter_change) this.refs.tasks.refresh();
     }
 
     render_task(t) {
@@ -36,9 +25,7 @@ export default class TaskHistory extends React.Component {
     }
 
     render() {
-        let {form} = this.state;
-        let params = clone(form);
-        params.with_archived = 1;
+        let params = {with_archived: 1}
         return (
             <div>
 
