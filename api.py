@@ -126,6 +126,8 @@ class TaskAPI(handlers.JsonRequestHandler):
             self.message = task.Update(**params)
             self.success = True
             task.put()
+        else:
+            self.message = "Failed to save task"
         self.set_response({
             'task': task.json() if task else None
         })
@@ -276,6 +278,7 @@ class HabitAPI(handlers.JsonRequestHandler):
             habit.Update(**params)
             habit.put()
             self.success = True
+            self.message = "Habit '%s' saved" % habit.name
         self.set_response({
             'habit': habit.json() if habit else None
         })

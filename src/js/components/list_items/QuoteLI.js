@@ -2,13 +2,14 @@ var React = require('react');
 import {ListItem, FontIcon,
   IconMenu, MenuItem, IconButton} from 'material-ui';
 var api = require('utils/api');
+import PropTypes from 'prop-types';
 import {changeHandler} from 'utils/component-utils';
 var util = require('utils/util');
 
 @changeHandler
 export default class QuoteLI extends React.Component {
   static propTypes = {
-    quote: React.PropTypes.object
+    quote: PropTypes.object
   }
 
   static defaultProps = {

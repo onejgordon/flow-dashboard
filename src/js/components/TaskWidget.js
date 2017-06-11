@@ -2,6 +2,7 @@ var React = require('react');
 import { IconButton, List,
   IconMenu, FontIcon, MenuItem, TextField, AutoComplete,
   FlatButton, Dialog } from 'material-ui';
+import PropTypes from 'prop-types';
 import {browserHistory} from 'react-router';
 var ProjectStore = require('stores/ProjectStore');
 var TaskStore = require('stores/TaskStore');
@@ -22,8 +23,8 @@ import {changeHandler} from 'utils/component-utils';
 @changeHandler
 class TaskWidget extends React.Component {
   static propTypes = {
-    timezone: React.PropTypes.string,
-    show_task_progressbar: React.PropTypes.bool
+    timezone: PropTypes.string,
+    show_task_progressbar: PropTypes.bool
   }
 
   static defaultProps = {
@@ -151,7 +152,9 @@ class TaskWidget extends React.Component {
 
   show_task_dialog(t) {
     TaskActions.openTaskDialog()
-    if (t) this.setState({form: clone(t)})
+    let st = {form: {}}
+    if (t) st.form = clone(t)
+    this.setState(st)
   }
 
   dismiss_task_dialog() {
@@ -298,7 +301,7 @@ class TaskWidget extends React.Component {
         <ProgressLine value={current_mins} total={total_mins} tooltip={util.printTime(now)} />
         { visible_tasks.length > 0 ?
           <List className="taskList">
-            { visible_tasks.sort((a, b) => { return b.wip - a.wip;}).map((t) => {
+            { visible_tasks.map((t) => {
               return <TaskLI key={t.id} task={t}
                         wip_enabled={!wip_task}
                         onUpdateWIP={this.set_task_wip.bind(this)}

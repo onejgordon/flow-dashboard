@@ -1,5 +1,6 @@
 var React = require('react');
 import {Paper, IconMenu, IconButton, MenuItem, FontIcon} from 'material-ui';
+import PropTypes from 'prop-types';
 import {changeHandler} from 'utils/component-utils';
 var ProgressLine = require('components/common/ProgressLine');
 
@@ -7,9 +8,9 @@ var ProgressLine = require('components/common/ProgressLine');
 @changeHandler
 export default class JournalLI extends React.Component {
   static propTypes = {
-    journal: React.PropTypes.object,
-    questions: React.PropTypes.array,
-    onEditClick: React.PropTypes.func
+    journal: PropTypes.object,
+    questions: PropTypes.array,
+    onEditClick: PropTypes.func
   }
 
   static defaultProps = {

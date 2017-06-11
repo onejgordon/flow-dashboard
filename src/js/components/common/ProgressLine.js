@@ -1,3 +1,4 @@
+var PropTypes = require('prop-types');
 var React = require('react');
 import { FontIcon } from 'material-ui';
 var util = require('utils/util');
@@ -5,12 +6,12 @@ var ReactTooltip = require('react-tooltip');
 
 export default class ProgressLine extends React.Component {
   static propTypes = {
-    value: React.PropTypes.number,
-    total: React.PropTypes.number,
-    color: React.PropTypes.string,
-    min_color: React.PropTypes.string,
-    tooltip: React.PropTypes.string,
-    style: React.PropTypes.object,
+    value: PropTypes.number,
+    total: PropTypes.number,
+    color: PropTypes.string,
+    min_color: PropTypes.string,
+    tooltip: PropTypes.string,
+    style: PropTypes.object,
   }
 
   static defaultProps = {

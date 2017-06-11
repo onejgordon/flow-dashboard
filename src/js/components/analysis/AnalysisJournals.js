@@ -2,6 +2,7 @@ var React = require('react');
 var util = require('utils/util');
 import {FlatButton, AutoComplete,
     Checkbox, DropDownMenu, MenuItem} from 'material-ui';
+import PropTypes from 'prop-types';
 import {Bar, Line} from "react-chartjs-2";
 var api = require('utils/api');
 import {get} from 'lodash';
@@ -13,7 +14,7 @@ import connectToStores from 'alt-utils/lib/connectToStores';
 @connectToStores
 export default class AnalysisJournals extends React.Component {
     static propTypes = {
-        journals: React.PropTypes.array
+        journals: PropTypes.array
     }
 
     static defaultProps = {
@@ -344,6 +345,6 @@ export default class AnalysisJournals extends React.Component {
             </div>
         );
     }
-};
+}
 
 module.exports = AnalysisJournals;
