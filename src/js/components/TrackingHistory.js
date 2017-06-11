@@ -3,7 +3,7 @@ var util = require('utils/util');
 import {changeHandler} from 'utils/component-utils';
 import {clone, isEqual} from 'lodash';
 var FetchedList = require('components/common/FetchedList');
-import {DatePicker, Paper, ListItem} from 'material-ui'
+import {DatePicker, FontIcon, Paper, ListItem} from 'material-ui'
 
 @changeHandler
 export default class TrackingHistory extends React.Component {
@@ -40,7 +40,7 @@ export default class TrackingHistory extends React.Component {
             let val = td.data[key];
             st.push(<span><b>{key}:</b> {val}</span>)
         })
-        return <ListItem key={td.id} primaryText={pt} secondaryText={st} />
+        return <ListItem leftIcon={<FontIcon className="material-icons">today</FontIcon>} key={td.id} primaryText={pt} secondaryText={st} />
     }
 
     render() {

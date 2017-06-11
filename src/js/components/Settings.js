@@ -98,14 +98,19 @@ export default class Settings extends React.Component {
     }
 
     print_subtab_nav() {
+        let {subtab} = this.state
         return this.SUBTABS.map((st) => {
-            return <ListItem primaryText={st.label} onClick={this.goto_subtab.bind(this, st.value)} />
+            let here = st.value == subtab
+            let style = {}
+            if (here) style.backgroundColor = '#414641'
+            return <ListItem primaryText={st.label}
+                             style={style}
+                             onClick={this.goto_subtab.bind(this, st.value)} />
         })
     }
 
     render() {
-        let _more;
-        var props;
+        let _content;
         let {form, settings, subtab} = this.state;
         let {user} = this.props;
         let unsaved = this.state.lastSave < this.state.lastChange;
@@ -161,7 +166,7 @@ export default class Settings extends React.Component {
             { name: 'slots', title: 'Maximum number of goals to enter per period', type: 'number', default_value: AppConstants.GOAL_DEFAULT_SLOTS }
         ];
         let subtab_title = findItemById(this.SUBTABS, subtab, 'value').label;
-        _more = (
+        _content = (
             <div className="row">
                 <div className="col-sm-3">
                     <List>
@@ -270,6 +275,16 @@ export default class Settings extends React.Component {
                             <br/>
                             <p className="lead">The following items can be added to the <FontIcon className="material-icons">games</FontIcon> more menu that appears at the bottom of the main dashboard.</p>
 
+                            <h3>Configure Static Links</h3>
+
+                            <ReactJsonEditor title="Static Links"
+                                array={true} data={get(settings, ['links'], [])}
+                                attributes={static_link_atts}
+                                icon="link"
+                                onChange={this.handle_settings_change.bind(this, ['links'])}
+                                addButtonLabel="Add Link"
+                                primaryProp="label" secondaryProp="url" />
+
                             <h3>Configure Flashcards</h3>
 
                             <p className="lead">
@@ -284,15 +299,6 @@ export default class Settings extends React.Component {
                                 icon="help_outline"
                                 primaryProp="card_title" secondaryProp="id" />
 
-                            <h3>Configure Static Links</h3>
-
-                            <ReactJsonEditor title="Static Links"
-                                array={true} data={get(settings, ['links'], [])}
-                                attributes={static_link_atts}
-                                icon="link"
-                                onChange={this.handle_settings_change.bind(this, ['links'])}
-                                addButtonLabel="Add Link"
-                                primaryProp="label" secondaryProp="url" />
                         </div>
 
                         <div hidden={subtab != "advanced"}>
@@ -309,15 +315,12 @@ export default class Settings extends React.Component {
             </div>
 
             )
-        let _sa = props != null ? <SimpleAdmin ref="sa" {...props} /> : null;
         return (
             <div>
 
                 <h2>Settings</h2>
 
-                { _sa }
-
-                { _more }
+                { _content }
 
             </div>
         );
