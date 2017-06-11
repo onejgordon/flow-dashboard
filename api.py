@@ -126,6 +126,8 @@ class TaskAPI(handlers.JsonRequestHandler):
             self.message = task.Update(**params)
             self.success = True
             task.put()
+        else:
+            self.message = "Failed to save task"
         self.set_response({
             'task': task.json() if task else None
         })

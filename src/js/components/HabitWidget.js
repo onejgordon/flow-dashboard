@@ -37,10 +37,11 @@ export default class HabitWidget extends React.Component {
           working: false,
           on_mobile: util.user_agent_mobile()
       };
+      this.MOBILE_SHOW_DAYS = 2
       this.SHOW_MATERIAL_ICONS = ['check_circle', 'group_work', 'add', 'directions_run',
                                   'spa', 'lightbulb_outline', 'access_alarm', 'fitness_center',
                                   'lock', 'stars', 'visibility', 'play_circle_filled',
-                                  'brightness_low', 'monetization_on'];
+                                  'brightness_low', 'monetization_on']
 
   }
 
@@ -135,7 +136,7 @@ export default class HabitWidget extends React.Component {
 
   show_days() {
     let {on_mobile} = this.state
-    return on_mobile ? 3 : 7
+    return on_mobile ? this.MOBILE_SHOW_DAYS : 7
   }
 
   render_commitment_message() {
