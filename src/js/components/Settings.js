@@ -253,7 +253,7 @@ export default class Settings extends React.Component {
                             <h3>Configure Tracking Chart (Custom Variables)</h3>
 
                             <p className="lead">
-                                Choose which variables to display on the <Link to="/app/analysis/misc">tracking chart</Link>.
+                                Choose which variables to display on the <Link to="/app/analysis/misc">tracking chart</Link>. View raw tracking data <Link to="/app/tracking/history">here</Link>.
                             </p>
 
                             <ReactJsonEditor title="Tracking Chart Variables"

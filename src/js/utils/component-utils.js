@@ -1,4 +1,5 @@
 var util = require('utils/util');
+import {clone, merge} from 'lodash'
 
 export default {
   changeHandler: function(target) {

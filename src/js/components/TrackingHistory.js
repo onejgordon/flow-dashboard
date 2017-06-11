@@ -27,7 +27,10 @@ export default class TrackingHistory extends React.Component {
 
     componentDidUpdate(prevProps, prevState) {
         let filter_change = !isEqual(prevState.form, this.state.form)
-        if (filter_change) this.refs.tds.refresh();
+        if (filter_change) {
+            // TODO: This is not firing
+            this.refs.tds.refresh();
+        }
     }
 
     render_td(td) {
@@ -37,7 +40,7 @@ export default class TrackingHistory extends React.Component {
             let val = td.data[key];
             st.push(<span><b>{key}:</b> {val}</span>)
         })
-        return <ListItem primaryText={pt} secondaryText={st} />
+        return <ListItem key={td.id} primaryText={pt} secondaryText={st} />
     }
 
     render() {
@@ -54,7 +57,7 @@ export default class TrackingHistory extends React.Component {
                     <div className="row">
                         <div className="col-sm-6">
                             <DatePicker autoOk={true}
-                                floatingLabelText="Before Date"
+                                floatingLabelText="After Date"
                                 formatDate={util.printDateObj}
                                 value={form.date_from}
                                 onChange={this.changeHandlerNilVal.bind(this, 'form', 'date_from')} />
