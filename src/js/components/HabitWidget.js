@@ -4,6 +4,7 @@ import { IconButton, IconMenu, MenuItem, Dialog,
 var util = require('utils/util');
 var api = require('utils/api');
 import {clone, pick} from 'lodash';
+import {Link} from 'react-router'
 import {cyanA400} from 'material-ui/styles/colors';
 var AppConstants = require('constants/AppConstants')
 import {changeHandler} from 'utils/component-utils';
@@ -55,7 +56,7 @@ export default class HabitWidget extends React.Component {
 
   save_habit() {
     let {form} = this.state;
-    let params = pick(form, ['id', 'name', 'tgt_weekly', 'icon', 'color']);
+    let params = pick(form, ['id', 'name', 'description', 'tgt_weekly', 'icon', 'color']);
     this.setState({working: true}, () => {
       api.post("/api/habit", params, (res) => {
         if (res.habit) {
@@ -368,6 +369,7 @@ export default class HabitWidget extends React.Component {
       <MenuItem key="gr" primaryText="Refresh" onClick={this.fetch_current.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
     ]
     if (this.count_habits() < AppConstants.HABIT_ACTIVE_LIMIT) menu_actions.push(<MenuItem key="new" primaryText="New Habit" onClick={this.show_creator.bind(this)} leftIcon={<FontIcon className="material-icons">add</FontIcon>} />)
+    menu_actions.push(<Link to="/app/habit/history"><MenuItem key="list" primaryText="All Habits" leftIcon={<FontIcon className="material-icons">list</FontIcon>} /></Link>)
     return (
       <div className="HabitWidget" id="HabitWidget">
         <div className="row">
@@ -400,6 +402,11 @@ export default class HabitWidget extends React.Component {
                        value={form.name || ''}
                        onChange={this.changeHandler.bind(this, 'form', 'name')}
                        fullWidth autoFocus />
+            <TextField placeholder="Description"
+                       name="description"
+                       value={form.description || ''}
+                       onChange={this.changeHandler.bind(this, 'form', 'description')}
+                       fullWidth />
             <TextField placeholder="Weekly Target (# of completions per week)"
                        name="target"
                        value={form.tgt_weekly || ''}

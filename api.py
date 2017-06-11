@@ -278,6 +278,7 @@ class HabitAPI(handlers.JsonRequestHandler):
             habit.Update(**params)
             habit.put()
             self.success = True
+            self.message = "Habit '%s' saved" % habit.name
         self.set_response({
             'habit': habit.json() if habit else None
         })
