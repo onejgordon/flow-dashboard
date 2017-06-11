@@ -598,7 +598,7 @@ class QuoteAPI(handlers.JsonRequestHandler):
         term = self.request.get('term')
         self.success, self.message, quotes = Quote.Search(self.user, term)
         data = {
-            'quotes': [q.json() for q in quotes]
+            'quotes': [q.json() for q in quotes if q]
         }
         self.set_response(data)
 
@@ -629,6 +629,7 @@ class QuoteAPI(handlers.JsonRequestHandler):
         id = self.request.get('id')
         quote = self.user.get(Quote, id=id)
         if quote:
+            quote.update_sd(delete=True)
             quote.key.delete()
             self.success = True
             self.message = "Quote deleted"
