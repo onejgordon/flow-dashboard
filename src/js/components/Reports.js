@@ -176,6 +176,16 @@ export default class Reports extends React.Component {
                     <RaisedButton label="Generate" primary={true} icon={<FontIcon className="material-icons">play_circle_filled</FontIcon>} onClick={this.generate_report.bind(this, 5)} />
                   </Tab>
 
+                  <Tab label="Tracking">
+
+                    <br/>
+                    <p className="lead">Export tracking data</p>
+
+                    { this.render_date_form() }
+
+                    <RaisedButton label="Generate" primary={true} icon={<FontIcon className="material-icons">play_circle_filled</FontIcon>} onClick={this.generate_report.bind(this, 7)} />
+                  </Tab>
+
                 </Tabs>
             </div>
         );

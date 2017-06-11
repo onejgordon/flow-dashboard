@@ -2,13 +2,12 @@ import traceback
 import tools
 from google.appengine.ext import ndb
 from google.appengine.api import logservice, memcache
-from models import Project, HabitDay, Task, Goal, MiniJournal, Event
+from models import Project, HabitDay, Task, Goal, MiniJournal, Event, TrackingDay
 from constants import REPORT, GCS_REPORT_BUCKET, GOAL
 import cloudstorage as gcs
 from datetime import datetime
 import gc
 import csv
-import json
 from common.decorators import deferred_task_decorator
 import logging
 
@@ -348,5 +347,24 @@ class EventReportWorker(GCSReportWorker):
             event.title,
             event.details,
             event.color
+        ]
+        return row
+
+
+class TrackingReportWorker(GCSReportWorker):
+    KIND = TrackingDay
+
+    def __init__(self, rkey):
+        super(TrackingReportWorker, self).__init__(rkey, start_att_desc=True, start_att="date", title="Tracking Report")
+        self.headers = ["Date", "Data"]
+
+    def entityData(self, td):
+        data = tools.getJson(td.data)
+        data_text = []
+        for key, val in data.items():
+            data_text.append("%s:%s" % (key, val))
+        row = [
+            tools.iso_date(td.date),
+            ', '.join(data_text)
         ]
         return row

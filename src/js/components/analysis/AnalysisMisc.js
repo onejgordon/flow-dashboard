@@ -2,7 +2,9 @@ var React = require('react');
 
 import {Bar, Line} from "react-chartjs-2";
 import connectToStores from 'alt-utils/lib/connectToStores';
+import {IconMenu, MenuItem, FontIcon, IconButton} from 'material-ui'
 var api = require('utils/api');
+import {Link} from 'react-router'
 import {get} from 'lodash';
 import {findItemById} from 'utils/store-utils';
 
@@ -115,6 +117,10 @@ export default class AnalysisMisc extends React.Component {
         return (
             <div>
 
+                  <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
+                    <Link to="/app/tracking/history"><MenuItem key="list" primaryText="View Raw Tracking Data" leftIcon={<FontIcon className="material-icons">list</FontIcon>} /></Link>
+                  </IconMenu>
+
                 <h4>Tracking</h4>
 
                 <Bar data={trackingData} options={trackingOps} width={1000} height={450}/>
@@ -122,6 +128,6 @@ export default class AnalysisMisc extends React.Component {
             </div>
         );
     }
-};
+}
 
 module.exports = AnalysisMisc;
