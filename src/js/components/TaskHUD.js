@@ -2,13 +2,14 @@ var React = require('react');
 var util = require('utils/util');
 var api = require('utils/api');
 import {IconButton} from 'material-ui';
+import PropTypes from 'prop-types';
 import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup' // ES6
 var AppConstants = require('constants/AppConstants');
 
 export default class TaskHUD extends React.Component {
   static propTypes = {
-    task: React.PropTypes.object,
-    onTaskUpdate: React.PropTypes.func
+    task: PropTypes.object,
+    onTaskUpdate: PropTypes.func
   }
 
   static defaultProps = {

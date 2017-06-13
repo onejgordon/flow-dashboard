@@ -1,4 +1,5 @@
 var React = require('react');
+import PropTypes from 'prop-types';
 import {Bar} from "react-chartjs-2";
 import {Dialog} from 'material-ui';
 import connectToStores from 'alt-utils/lib/connectToStores';
@@ -7,7 +8,7 @@ var ProgressLine = require('components/common/ProgressLine');
 @connectToStores
 export default class AnalysisGoals extends React.Component {
     static propTypes = {
-        goals: React.PropTypes.object
+        goals: PropTypes.object
     }
 
     static defaultProps = {
@@ -126,6 +127,6 @@ export default class AnalysisGoals extends React.Component {
             </div>
         );
     }
-};
+}
 
 module.exports = AnalysisGoals;

@@ -126,6 +126,8 @@ class TaskAPI(handlers.JsonRequestHandler):
             self.message = task.Update(**params)
             self.success = True
             task.put()
+        else:
+            self.message = "Failed to save task"
         self.set_response({
             'task': task.json() if task else None
         })
@@ -301,6 +303,7 @@ class HabitAPI(handlers.JsonRequestHandler):
             habit.Update(**params)
             habit.put()
             self.success = True
+            self.message = "Habit '%s' saved" % habit.name
         self.set_response({
             'habit': habit.json() if habit else None
         })
@@ -794,6 +797,20 @@ class SnapshotAPI(handlers.JsonRequestHandler):
 class TrackingAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
+    def list(self, d):
+        date_from = self.request.get('date_from')
+        date_to = self.request.get('date_to')
+        page, max, offset = tools.paging_params(self.request)
+        if date_from:
+            date_from = tools.fromISODate(date_from)
+        if date_to:
+            date_to = tools.fromISODate(date_to)
+        tracking_days = TrackingDay.Range(self.user, date_from, date_to, limit=max, offset=offset)
+        self.set_response({
+            'tracking_days': [td.json() for td in tracking_days]
+        }, success=True, debug=True)
+
+    @authorized.role('user')
     def update(self, d):
         '''
         Update a single TrackingDay() object with properties
@@ -820,7 +837,7 @@ class TrackingAPI(handlers.JsonRequestHandler):
 class UserAPI(handlers.JsonRequestHandler):
     @authorized.role('admin')
     def list(self, d):
-        page, max, offset = tools.paging_params(self)
+        page, max, offset = tools.paging_params(self.request)
         users = User.query().fetch(limit=max, offset=offset)
         self.success = True
         self.set_response({'users': [u.json() for u in users]})

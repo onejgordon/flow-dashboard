@@ -1,12 +1,13 @@
+var PropTypes = require('prop-types');
 var React = require('react');
 import {Paper, TextField, List, ListItem, Slider} from 'material-ui';
 var api = require('utils/api');
 
 export default class JournalEditor extends React.Component {
   static propTypes = {
-    questions: React.PropTypes.array,
-    onChange: React.PropTypes.func,
-    form: React.PropTypes.object
+    questions: PropTypes.array,
+    onChange: PropTypes.func,
+    form: PropTypes.object
   }
 
   static defaultProps = {

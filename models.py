@@ -1120,11 +1120,11 @@ class TrackingDay(ndb.Model):
         return TrackingDay.get_or_insert(id, date=date, parent=user.key)
 
     @staticmethod
-    def Range(user, dt_start, dt_end):
+    def Range(user, dt_start, dt_end, offset=0, limit=30):
         return TrackingDay.query(ancestor=user.key).order(-TrackingDay.date) \
             .filter(TrackingDay.date >= dt_start) \
             .filter(TrackingDay.date <= dt_end) \
-            .fetch()
+            .fetch(limit=limit, offset=offset)
 
     def Update(self, **params):
         if 'data' in params:
@@ -1536,14 +1536,15 @@ class Report(ndb.Model):
     def run(self, start_cursor=None):
         """Begins report generation"""
         from reports import HabitReportWorker, TaskReportWorker, GoalReportWorker, JournalReportWorker, \
-            EventReportWorker, ProjectReportWorker
+            EventReportWorker, ProjectReportWorker, TrackingReportWorker
         worker_lookup = {
             REPORT.HABIT_REPORT: HabitReportWorker,
             REPORT.TASK_REPORT: TaskReportWorker,
             REPORT.GOAL_REPORT: GoalReportWorker,
             REPORT.JOURNAL_REPORT: JournalReportWorker,
             REPORT.EVENT_REPORT: EventReportWorker,
-            REPORT.PROJECT_REPORT: ProjectReportWorker
+            REPORT.PROJECT_REPORT: ProjectReportWorker,
+            REPORT.TRACKING_REPORT: TrackingReportWorker
         }
         worker_class = worker_lookup.get(self.type)
         worker = None

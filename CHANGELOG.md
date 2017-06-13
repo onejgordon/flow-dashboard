@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 * Ability to edit habits in dashboard
 * Support up to 10 active habits (limit increased)
 * Sort habits by name
+* Clickable shortened links in task list
 
 ## Version 0-25
 

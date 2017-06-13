@@ -13,6 +13,8 @@ var Analysis = require('components/Analysis');
 var Reading = require('components/Reading');
 var JournalHistory = require('components/JournalHistory');
 var TaskHistory = require('components/TaskHistory');
+var HabitHistory = require('components/HabitHistory');
+var TrackingHistory = require('components/TrackingHistory');
 var Integrations = require('components/Integrations');
 var Reports = require('components/Reports');
 var Feedback = require('components/Feedback');
@@ -52,6 +54,8 @@ module.exports = (
       <Route path="reading" component={Reading} />
       <Route path="journal/history" component={JournalHistory} />
       <Route path="task/history" component={TaskHistory} />
+      <Route path="habit/history" component={HabitHistory} />
+      <Route path="tracking/history" component={TrackingHistory} />
       <Route path="feedback" component={Feedback} />
       <Route path="admin/agent" component={AdminAgent} />
       <Route path="analysis" component={Analysis}>

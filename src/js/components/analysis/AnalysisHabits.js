@@ -1,4 +1,6 @@
 var React = require('react');
+var AppConstants = require('constants/AppConstants');
+import PropTypes from 'prop-types';
 import {Bar, Line} from "react-chartjs-2";
 import {Toggle} from 'material-ui'
 import connectToStores from 'alt-utils/lib/connectToStores';
@@ -10,9 +12,9 @@ import {changeHandler} from 'utils/component-utils';
 @changeHandler
 export default class AnalysisHabits extends React.Component {
     static propTypes = {
-        loaded: React.PropTypes.bool,
-        days: React.PropTypes.number,
-        end_date: React.PropTypes.object
+        end_date: PropTypes.object,
+        loaded: PropTypes.bool,
+        days: PropTypes.number
     }
 
     static defaultProps = {
@@ -200,6 +202,6 @@ export default class AnalysisHabits extends React.Component {
             </div>
         );
     }
-};
+}
 
 module.exports = AnalysisHabits;

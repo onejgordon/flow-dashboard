@@ -1,5 +1,7 @@
 'use strict';
 
+const PropTypes = require('prop-types');
+
 var React = require('react');
 var GoogleAnalytics = require('react-g-analytics');
 var alt = require('config/alt');
@@ -81,11 +83,11 @@ class Site extends React.Component {
         </MuiThemeProvider>
     )
   }
-};
+}
 
 // Important!
 Site.childContextTypes = {
-  muiTheme: React.PropTypes.object
+  muiTheme: PropTypes.object
 };
 
 var injectTapEventPlugin = require("react-tap-event-plugin");

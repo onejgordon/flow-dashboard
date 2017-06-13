@@ -1,6 +1,7 @@
 var React = require('react');
 import { Dialog, Checkbox, ListItem, List } from 'material-ui';
 var util = require('utils/util');
+import PropTypes from 'prop-types';
 import {Line} from "react-chartjs-2";
 import {changeHandler} from 'utils/component-utils';
 var ProjectStore = require('stores/ProjectStore');
@@ -11,7 +12,7 @@ var FetchedList = require('components/common/FetchedList');
 @changeHandler
 export default class ProjectAnalysis extends React.Component {
   static propTypes = {
-    onDismiss: React.PropTypes.func
+    onDismiss: PropTypes.func
   }
   static defaultProps = {
     project: null,

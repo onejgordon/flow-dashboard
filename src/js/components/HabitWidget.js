@@ -5,19 +5,21 @@ import { IconButton, IconMenu, MenuItem, Dialog,
 var util = require('utils/util');
 var api = require('utils/api');
 import {clone, pick, merge} from 'lodash';
+import {Link} from 'react-router'
 import {cyanA400} from 'material-ui/styles/colors';
 var AppConstants = require('constants/AppConstants')
 import {changeHandler} from 'utils/component-utils';
 var HabitAnalysis = require('components/HabitAnalysis');
 var ProgressLine = require('components/common/ProgressLine');
+import PropTypes from 'prop-types';
 import { SwatchesPicker } from 'react-color';
 
 @changeHandler
 export default class HabitWidget extends React.Component {
 
   static propTypes = {
-    days: React.PropTypes.number,
-    commitments: React.PropTypes.bool
+    days: PropTypes.number,
+    commitments: PropTypes.bool
   }
 
   static defaultProps = {
@@ -38,10 +40,11 @@ export default class HabitWidget extends React.Component {
           on_mobile: util.user_agent_mobile(),
           cancellable_habitday: null
       };
+      this.MOBILE_SHOW_DAYS = 2
       this.SHOW_MATERIAL_ICONS = ['check_circle', 'group_work', 'add', 'directions_run',
                                   'spa', 'lightbulb_outline', 'access_alarm', 'fitness_center',
                                   'lock', 'stars', 'visibility', 'play_circle_filled',
-                                  'brightness_low', 'monetization_on'];
+                                  'brightness_low', 'monetization_on']
       this.CANCELLABLE_INTERVAL_ID = null
   }
 
@@ -55,7 +58,7 @@ export default class HabitWidget extends React.Component {
 
   save_habit() {
     let {form} = this.state;
-    let params = pick(form, ['id', 'name', 'tgt_weekly', 'tgt_daily', 'icon', 'color']);
+    let params = pick(form, ['id', 'name', 'description', 'tgt_weekly', 'tgt_daily', 'icon', 'color']);
     this.setState({working: true}, () => {
       api.post("/api/habit", params, (res) => {
         if (res.habit) {
@@ -159,7 +162,7 @@ export default class HabitWidget extends React.Component {
 
   show_days() {
     let {on_mobile} = this.state
-    return on_mobile ? 3 : 7
+    return on_mobile ? this.MOBILE_SHOW_DAYS : 7
   }
 
   render_commitment_message() {
@@ -420,6 +423,7 @@ export default class HabitWidget extends React.Component {
       <MenuItem key="gr" primaryText="Refresh" onClick={this.fetch_current.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
     ]
     if (this.count_habits() < AppConstants.HABIT_ACTIVE_LIMIT) menu_actions.push(<MenuItem key="new" primaryText="New Habit" onClick={this.show_creator.bind(this)} leftIcon={<FontIcon className="material-icons">add</FontIcon>} />)
+    menu_actions.push(<Link to="/app/habit/history"><MenuItem key="list" primaryText="All Habits" leftIcon={<FontIcon className="material-icons">list</FontIcon>} /></Link>)
     return (
       <div className="HabitWidget" id="HabitWidget">
         <div className="row">
@@ -467,6 +471,12 @@ export default class HabitWidget extends React.Component {
                            fullWidth />
               </div>
             </div>
+
+            <TextField placeholder="Description"
+                       name="description"
+                       value={form.description || ''}
+                       onChange={this.changeHandler.bind(this, 'form', 'description')}
+                       fullWidth />
 
             <div className="row">
               <div className="col-sm-6">
