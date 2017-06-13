@@ -58,11 +58,12 @@ export default class HabitAnalysis extends React.Component {
     let _squares = [];
     let cursor = new Date();
     cursor.setDate(cursor.getDate() - days);
-    let longest_streak = 0;
-    let streak = 0;
-    let n_done = 0;
-    let n_committed = 0;
-    let n_committed_done = 0;
+    let longest_streak = 0
+    let streak = 0
+    let n_done = 0
+    let n_committed = 0
+    let n_committed_done = 0
+    let n_counted = 0
     let habit_color = habit.color || "#1193FE";
     for (let i = 0; i < days; i++) {
       cursor.setDate(cursor.getDate() + 1);
@@ -80,6 +81,7 @@ export default class HabitAnalysis extends React.Component {
         streak = 0;
       }
       if (hd) {
+        n_counted += hd.count
         if (hd.done) day_st.backgroundColor = habit_color;
         if (hd.committed) {
           n_committed += 1;
@@ -102,7 +104,10 @@ export default class HabitAnalysis extends React.Component {
         </div>
         <div className="col-sm-6">
           <BigProp label="Longest streak" value={longest_streak} labelPosition="top" />
-          <BigProp label={`Completions in last ${days} days`} value={n_done} labelPosition="top" />
+          <BigProp label={`Done in last ${days} days`} value={n_done} labelPosition="top" />
+          <div hidden={!habit.tgt_daily}>
+            <BigProp label={`Count in last ${days} days`} value={n_counted} labelPosition="top" />
+          </div>
           <BigProp label={`Commitments Successful`} value={commitments_successful} labelPosition="top" />
 
           <h5 className="text-center">Overall completion rate - { completion_rate }</h5>

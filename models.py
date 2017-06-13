@@ -21,30 +21,7 @@ else:
     from settings import secrets
 
 
-class UserAccessible(ndb.Model):
-    '''
-    Parent class for items that have gated user access
-    All UserAccessible models should have parent = owning user
-    '''
-
-    @classmethod
-    def GetAccessible(cls, key_or_id, user, urlencoded_key=False):
-        if key_or_id:
-            if not urlencoded_key:
-                key = ndb.Key(cls.__name__, key_or_id)
-            else:
-                key = ndb.Key(urlsafe=key_or_id)
-            item = key.get()
-            if item:
-                if item.accessible(user):
-                    return item
-        return None
-
-    def accessible(self, user):
-        return self.key.parent() == user.key
-
-
-class UserSearchable(UserAccessible):
+class UserSearchable(ndb.Model):
     '''
     Parent class for items that can be searched via FTS
     '''
@@ -231,6 +208,9 @@ class User(ndb.Model):
             self.sync_services = params.get('sync_services')
 
     def get(self, cls, id=None):
+        '''
+        Get entity accessible to user (child of user)
+        '''
         if id:
             if isinstance(id, basestring) and id.isdigit():
                 id = int(id)
@@ -320,7 +300,7 @@ class User(ndb.Model):
             return loaded.get('user_id')
 
 
-class Project(UserAccessible):
+class Project(ndb.Model):
     """
     Ongoing projects with links
 
@@ -412,7 +392,7 @@ class Project(UserAccessible):
         return self.progress == 10
 
 
-class Task(UserAccessible):
+class Task(ndb.Model):
     """
     Tasks (currently not linked with projects)
     For tracking daily 'top tasks'
@@ -562,7 +542,7 @@ class Task(UserAccessible):
         self.wip = False
 
 
-class Habit(UserAccessible):
+class Habit(ndb.Model):
     """
     Key - ID
     """
@@ -571,6 +551,7 @@ class Habit(UserAccessible):
     description = ndb.TextProperty()
     color = ndb.TextProperty()
     tgt_weekly = ndb.IntegerProperty(indexed=False)
+    tgt_daily = ndb.IntegerProperty(indexed=False, default=0)  # 0 = disabled
     archived = ndb.BooleanProperty(default=False)
     icon = ndb.TextProperty()
 
@@ -583,7 +564,8 @@ class Habit(UserAccessible):
             'color': self.color,
             'archived': self.archived,
             'tgt_weekly': self.tgt_weekly,
-            'icon': self.icon
+            'tgt_daily': self.tgt_daily,
+            'icon': self.icon,
         }
 
     def slug_name(self):
@@ -614,9 +596,11 @@ class Habit(UserAccessible):
             self.archived = params.get('archived')
         if 'tgt_weekly' in params:
             self.tgt_weekly = params.get('tgt_weekly')
+        if 'tgt_daily' in params:
+            self.tgt_daily = params.get('tgt_daily')
 
 
-class HabitDay(UserAccessible):
+class HabitDay(ndb.Model):
     """
     Key - ID: habit:[habit_id]_day:[iso_date]
     """
@@ -626,6 +610,7 @@ class HabitDay(UserAccessible):
     date = ndb.DateProperty()
     done = ndb.BooleanProperty(default=False)
     committed = ndb.BooleanProperty(default=False)
+    count = ndb.IntegerProperty(default=0, indexed=False)
 
     def json(self):
         return {
@@ -634,7 +619,8 @@ class HabitDay(UserAccessible):
             'ts_updated': tools.unixtime(self.dt_updated),
             'habit_id': self.habit.id(),
             'done': self.done,
-            'committed': self.committed
+            'committed': self.committed,
+            'count': self.get_count()
         }
 
     @staticmethod
@@ -664,13 +650,17 @@ class HabitDay(UserAccessible):
         return []
 
     @staticmethod
-    def ID(habit, date):
-        return "habit:%s_day:%s" % (habit.key.id(), tools.iso_date(date))
+    def GetOrInsert(habit, date):
+        id = HabitDay.ID(habit, date)
+        hd = HabitDay.get_or_insert(id,
+                                    habit=habit.key,
+                                    date=date,
+                                    parent=habit.key.parent())
+        return hd
 
     @staticmethod
-    def Create(user, habit, date):
-        id = HabitDay.ID(habit, date)
-        return HabitDay(id=id, habit=habit.key, date=date, parent=user.key)
+    def ID(habit, date):
+        return "habit:%s_day:%s" % (habit.key.id(), tools.iso_date(date))
 
     def Update(self, **params):
         if 'done' in params:
@@ -679,11 +669,7 @@ class HabitDay(UserAccessible):
 
     @staticmethod
     def Toggle(habit, date, force_done=False):
-        id = HabitDay.ID(habit, date)
-        hd = HabitDay.get_or_insert(id,
-                                    habit=habit.key,
-                                    date=date,
-                                    parent=habit.key.parent())
+        hd = HabitDay.GetOrInsert(habit, date)
         if not force_done or not hd.done:
             # If force_done, only toggle if not done
             hd.toggle()
@@ -691,14 +677,29 @@ class HabitDay(UserAccessible):
         return (hd.done, hd)
 
     @staticmethod
+    def Increment(habit, date, cancel=False):
+        '''
+        Increase (or, if cancel, decrease) the count for this habit/day by 1
+        '''
+        hd = HabitDay.GetOrInsert(habit, date)
+        if not hd.count:
+            hd.count = 0
+        inc = 1 if not cancel else -1
+        hd.count += inc
+        hd.dt_updated = datetime.now()
+        marked_done = False
+        if habit.tgt_daily:
+            was_done = hd.done
+            hd.done = hd.count >= habit.tgt_daily
+            marked_done = not was_done and hd.done
+        hd.put()
+        return (marked_done, hd)
+
+    @staticmethod
     def Commit(habit, date=None):
         if not date:
             date = datetime.today()
-        id = HabitDay.ID(habit, date)
-        hd = HabitDay.get_or_insert(id,
-                                    habit=habit.key,
-                                    date=date,
-                                    parent=habit.key.parent())
+        hd = HabitDay.GetOrInsert(habit, date)
         hd.commit()
         hd.put()
         return hd
@@ -706,14 +707,23 @@ class HabitDay(UserAccessible):
     def toggle(self):
         self.dt_updated = datetime.now()
         self.done = not self.done
+        if not self.done and self.count:
+            # Reset count to 0 if we've untoggled
+            self.count = 0
         return self.done
 
     def commit(self):
         if not self.done:
             self.committed = True
 
+    def get_count(self):
+        if self.count:
+            return self.count
+        else:
+            return 1 if self.done else 0
 
-class JournalTag(UserAccessible):
+
+class JournalTag(ndb.Model):
     """
     Stores frequent activities/tags/people for daily journal
 
@@ -765,7 +775,7 @@ class JournalTag(UserAccessible):
         return self.type == JOURNALTAG.PERSON
 
 
-class MiniJournal(UserAccessible):
+class MiniJournal(ndb.Model):
     """
     Key - ID: [ISO_date]
     Capture some basic data points from the day via 1-2 questions?
@@ -853,7 +863,7 @@ class MiniJournal(UserAccessible):
         return data.get(prop)
 
 
-class Snapshot(UserAccessible):
+class Snapshot(ndb.Model):
     """
     Key - ID
     Randomly collect data points throughout day/week (frequency customizable)
@@ -924,7 +934,7 @@ class Snapshot(UserAccessible):
         return metrics.get(prop)
 
 
-class Event(UserAccessible):
+class Event(ndb.Model):
     """
     Key - ID
 
@@ -987,7 +997,7 @@ class Event(UserAccessible):
         return self.date_start == self.date_end
 
 
-class Goal(UserAccessible):
+class Goal(ndb.Model):
     """
     Key - ID: [YYYY] if annual goal, [YYYY-MM] if monthly goal
 
@@ -1086,7 +1096,7 @@ class Goal(UserAccessible):
         return str(self.key.id()) == 'longterm'
 
 
-class TrackingDay(UserAccessible):
+class TrackingDay(ndb.Model):
     """
     Key - ID: [YYYY-MM-DD]
 
@@ -1409,7 +1419,7 @@ class Quote(UserSearchable):
             #             return r
 
 
-class Report(UserAccessible):
+class Report(ndb.Model):
     """
     Key - ID
     """
@@ -1553,7 +1563,7 @@ class Report(UserAccessible):
     def serving_url(self):
         url = None
         if self.storage_type == REPORT.GCS_CLIENT:
-            url = "/api/report/serve?rkey=%s" % self.key.urlsafe()
+            url = "/api/report/serve?rid=%s" % self.key.id()
         return url
 
     def get_gcs_file(self, index=0):

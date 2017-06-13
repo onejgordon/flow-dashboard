@@ -21,10 +21,9 @@ class ReportsTestCases(BaseTestCase):
 
     def _test_report(self, params, expected_output):
         response = self.post_json("/api/report/generate", params, headers=self.api_headers)
-        rkey = response.get('report', {}).get('key')
         rid = response.get('report', {}).get('id')
         self.execute_tasks_until_empty()
-        response = self.get("/api/report/serve?rkey=%s" % rkey, headers=self.api_headers)
+        response = self.get("/api/report/serve?rid=%s" % rid, headers=self.api_headers)
         compare_output = response.body  # Avoid whitespace normalization in normal_body
         compare_output = compare_output.replace('\r\n', '\n').replace('\r', '\n').split('\n')
         self.assertEqual([x for x in compare_output if x], [','.join(eo) for eo in expected_output])

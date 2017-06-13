@@ -1,7 +1,7 @@
 var React = require('react');
 
 var util = require('utils/util');
-import {IconButton, FlatButton, AutoComplete} from 'material-ui';
+import {IconButton, FlatButton} from 'material-ui';
 var api = require('utils/api');
 import {get} from 'lodash';
 import {Link} from 'react-router';
@@ -15,6 +15,7 @@ export default class Analysis extends React.Component {
         super(props);
         let today = new Date();
         let start = new Date();
+        let end = new Date();
         this.INITIAL_RANGE = 14;
         let user = props.user;
         let questions = [];
@@ -23,9 +24,10 @@ export default class Analysis extends React.Component {
             return q.chart_default;
         }).map((q) => {return q.name;});
         start.setDate(today.getDate() - this.INITIAL_RANGE);
+        end.setDate(today.getDate() + 1); // Include all of today
         this.state = {
             start: start,
-            end: today,
+            end: end,
             iso_dates: [],
             journals: [],
             goals: {},
@@ -79,7 +81,7 @@ export default class Analysis extends React.Component {
         let {loaded, goals,
             habits, habitdays, iso_dates,
             tracking_days,
-            journals, tasks} = this.state;
+            journals, tasks, end} = this.state;
         let today = new Date();
         let admin = UserStore.admin();
         if (!loaded) return null;
@@ -108,6 +110,7 @@ export default class Analysis extends React.Component {
                     habits: habits,
                     habitdays: habitdays,
                     iso_dates: iso_dates,
+                    end_date: end,
                     loaded: loaded }) }
 
             </div>

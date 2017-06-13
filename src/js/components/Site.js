@@ -22,7 +22,7 @@ import {
 const muiTheme = getMuiTheme({
   fontFamily: 'Roboto, sans-serif',
   palette: {
-    primary1Color: "#43C7D5",
+    primary1Color: "#45D8FF",
     primary2Color: cyan700,
     primary3Color: grey600,
     accent1Color: amber700,

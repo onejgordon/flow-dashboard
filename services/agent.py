@@ -403,7 +403,7 @@ class ConversationAgent(object):
             else:
                 text = "No habits done yet."
             if habits_committed_undone:
-                text += " Don't forget you've committed to %s." % (' and '.join(habits_committed_undone))
+                text += " Don't forget you've committed to %s." % tools.english_list(habits_committed_undone)
         else:
             text = "You haven't added any habits yet. Try saying 'add habit run'"
         return text
