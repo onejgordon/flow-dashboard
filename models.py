@@ -686,6 +686,8 @@ class HabitDay(ndb.Model):
             hd.count = 0
         inc = 1 if not cancel else -1
         hd.count += inc
+        if hd.count < 0:
+            hd.count = 0
         hd.dt_updated = datetime.now()
         marked_done = False
         if habit.tgt_daily:
