@@ -110,7 +110,7 @@ export default class Dashboard extends React.Component {
         return (
             <div>
 
-                <TaskWidget ref="taskwidget" timezone={user.timezone} />
+                <TaskWidget ref="taskwidget" user={user} />
 
                 <GoalViewer goal_slots={goal_slots} />
 

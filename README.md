@@ -92,17 +92,23 @@ Visit `https://[project-id].appspot.com` to see the app live.
 	* Configurable questions
 	* Optional location pickup & mapping
 	* Extract @mentions and #tags from configured open-ended responses (auto-suggest)
+	* Segment analysis of journals by tag (highlight journal days with/without + show averages)
 * Habit tracking ala habits app
 	* With weekly targets
 	* Commitments
-* Tracking top tasks for each day (submitted with journal)
-* Monthly/year goals & assessments
+	* Optional daily targets for 'countable' habits
+* Tracking top tasks for each day
+	* Analyze tasks completed: on time, late, not completed, on each given day
+* Monthly/year/long-term goals
+	* Goal assessment report at end of month
+	* Rating for each goal monthly defined
 * Ongoing Projects tracking
 	* Track time of each progress increment
+	* Link tasks with projects
+	* Define labeled milestones
 	* View 'burn-up' chart of completion progress over time
 * Analysis
 	* Show summary charts of all data reported to platform
-	* Segment analysis of journals by tag (highlight journal days with/without + show averages)
 * Google Assitant / Home / Facebook Messenger integration for actions like:
 	* "How am I doing"
 	* "What are my goals for this month"
@@ -110,6 +116,10 @@ Visit `https://[project-id].appspot.com` to see the app live.
 	* "Daily report"
 * Reading widget
 	* Show currently-reading articles / books
+	* Sync quotes from evernote / Kindle
+	* Sync articles from Pocket
+	* Mark articles / books as favorites, and add notes
+	* Quotes & articles fully searchable
 * Flash card widget for spreadsheet access (e.g. random quotes, excerpts)
 * Export all data to CSV
 

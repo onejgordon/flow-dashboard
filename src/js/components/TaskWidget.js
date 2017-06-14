@@ -14,7 +14,7 @@ import {findIndexById, findItemById, removeItemsById} from 'utils/store-utils';
 var TaskHUD = require('components/TaskHUD');
 var ProgressLine = require('components/common/ProgressLine');
 var toastr = require('toastr');
-import {clone, merge} from 'lodash'
+import {clone, merge, get} from 'lodash'
 var AsyncActionButton = require('components/common/AsyncActionButton');
 import connectToStores from 'alt-utils/lib/connectToStores';
 import {changeHandler} from 'utils/component-utils';
@@ -23,12 +23,12 @@ import {changeHandler} from 'utils/component-utils';
 @changeHandler
 class TaskWidget extends React.Component {
   static propTypes = {
-    timezone: PropTypes.string,
+    user: PropTypes.object,
     show_task_progressbar: PropTypes.bool
   }
 
   static defaultProps = {
-    timezone: "UTC",
+    user: null,
     show_task_progressbar: true,
     working: false
   }
@@ -225,6 +225,18 @@ class TaskWidget extends React.Component {
     this.setState({project_selector_showing: true})
   }
 
+  add_common_tasks() {
+    let {user} = this.props;
+    let common_tasks = get(user.settings, ['tasks', 'common_tasks'], [])
+    if (common_tasks) {
+      api.post("/api/task/action", {action: 'create_common'}, (res) => {
+        if (res.tasks) {
+          this.setState({tasks: this.state.tasks.concat(res.tasks)})
+        }
+      });
+    } else toastr.info("Please first configure your common tasks in settings > tasks")
+  }
+
   clear_timer_logs(task) {
     this.task_update(task, {
       timer_pending_ms: 0,
@@ -242,7 +254,7 @@ class TaskWidget extends React.Component {
   }
 
   render() {
-    let {show_task_progressbar, timezone, dialog_open} = this.props;
+    let {show_task_progressbar, user, dialog_open} = this.props;
     let {tasks, form, working, project_selector_showing} = this.state;
     let now = new Date();
     let total_mins = 24 * 60;
@@ -256,6 +268,7 @@ class TaskWidget extends React.Component {
       <IconMenu key="menu" className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
         <MenuItem key="archive" onClick={this.archive_all_done.bind(this)} leftIcon={<FontIcon className="material-icons">archive</FontIcon>} primaryText="Archive Complete" />
         <MenuItem key="task_history" onClick={this.goto_task_history.bind(this)} leftIcon={<FontIcon className="material-icons">list</FontIcon>} primaryText="Task History" />
+        <MenuItem key="common" onClick={this.add_common_tasks.bind(this)} leftIcon={<FontIcon className="material-icons">playlist_add_check</FontIcon>} primaryText="Add Common Tasks" />
       </IconMenu>
 
     ]
@@ -294,6 +307,7 @@ class TaskWidget extends React.Component {
       if (p) dialog_actions.splice(0, 0, <span className="transparent" style={{marginRight: "15px"}}>Linking with: { p.title }</span>)
     }
     let wip_task = this.wip_task();
+    let timezone = user ? user.timezone || "UTC" : "UTC"
     return (
       <div className="TaskWidget" id="TaskWidget">
 
