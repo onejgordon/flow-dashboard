@@ -155,7 +155,23 @@ class TaskAPI(handlers.JsonRequestHandler):
         '''
         action = self.request.get('action')
         res = {}
-        if action == 'archive_complete':
+        if action == 'create_common':
+            common_tasks = self.user.get_setting_prop(['tasks', 'common_tasks'])
+            if common_tasks:
+                task_put = []
+                for ct in common_tasks:
+                    title = ct.get('title')
+                    if title:
+                        task_put.append(Task.Create(self.user, title))
+                if task_put:
+                    ndb.put_multi(task_put)
+                    self.message = "Created %d task(s)" % len(task_put)
+                    res['tasks'] = [t.json() for t in task_put]
+                    self.success = True
+            else:
+                self.message = "You haven't configured any common tasks"
+
+        elif action == 'archive_complete':
             recent = Task.Recent(self.user, limit=20)
             to_archive = []
             for t in recent:

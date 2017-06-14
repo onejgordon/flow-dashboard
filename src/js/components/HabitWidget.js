@@ -423,7 +423,7 @@ export default class HabitWidget extends React.Component {
       <MenuItem key="gr" primaryText="Refresh" onClick={this.fetch_current.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
     ]
     if (this.count_habits() < AppConstants.HABIT_ACTIVE_LIMIT) menu_actions.push(<MenuItem key="new" primaryText="New Habit" onClick={this.show_creator.bind(this)} leftIcon={<FontIcon className="material-icons">add</FontIcon>} />)
-    menu_actions.push(<Link to="/app/habit/history"><MenuItem key="list" primaryText="All Habits" leftIcon={<FontIcon className="material-icons">list</FontIcon>} /></Link>)
+    menu_actions.push(<Link key="list" to="/app/habit/history"><MenuItem primaryText="All Habits" leftIcon={<FontIcon className="material-icons">list</FontIcon>} /></Link>)
     return (
       <div className="HabitWidget" id="HabitWidget">
         <div className="row">
