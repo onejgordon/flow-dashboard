@@ -1,16 +1,18 @@
 var React = require('react');
-
 var AppConstants = require('constants/AppConstants');
 import PropTypes from 'prop-types';
 import {Bar, Line} from "react-chartjs-2";
+import {Toggle} from 'material-ui'
 import connectToStores from 'alt-utils/lib/connectToStores';
 var util = require('utils/util');
 var api = require('utils/api');
-
+import {changeHandler} from 'utils/component-utils';
 
 @connectToStores
+@changeHandler
 export default class AnalysisHabits extends React.Component {
     static propTypes = {
+        end_date: PropTypes.object,
         loaded: PropTypes.bool,
         days: PropTypes.number
     }
@@ -23,6 +25,9 @@ export default class AnalysisHabits extends React.Component {
         this.state = {
             habitdays: {},
             habits: [],
+            form: {
+                count_scaled: false
+            }
         };
         this.ROLLING_WINDOW = 7;
     }
@@ -44,15 +49,16 @@ export default class AnalysisHabits extends React.Component {
     }
 
     fetch_data() {
-        let today = new Date();
+        let {end_date} = this.props;
         let start = new Date();
         start.setDate(start.getDate() - this.props.days);
         let params = {
             date_start: util.printDateObj(start, 'UTC'),
-            date_end: util.printDateObj(today, 'UTC'),
+            date_end: util.printDateObj(end_date, 'UTC'),
             with_habits: 1
         }
         api.get("/api/analysis", params, (res) => {
+            console.log(res)
             this.setState({
                 iso_dates: res.dates,
                 habits: res.habits,
@@ -62,11 +68,11 @@ export default class AnalysisHabits extends React.Component {
         });
     }
 
-    habit_day_checked(iso_date, habit) {
-        let {habitdays} = this.state;
+    habit_day_count_value(iso_date, habit) {
+        let {habitdays, form} = this.state;
         let id = `habit:${habit.id}_day:${iso_date}`;
-        if (habitdays[id]) return habitdays[id].done;
-        return false;
+        if (habitdays[id]) return form.count_scaled ? habitdays[id].count : (habitdays[id].done ? 1 : 0);
+        return 0;
     }
 
     habit_data() {
@@ -75,12 +81,12 @@ export default class AnalysisHabits extends React.Component {
         let day_counts = {}; // iso_date -> # of habits done
         habits.forEach((h) => {
             let data = iso_dates.map((iso_date) => {
-                let checked = this.habit_day_checked(iso_date, h) ? 1 : 0;
-                if (checked) {
+                let count_value = this.habit_day_count_value(iso_date, h)
+                if (count_value) {
                     if (!day_counts[iso_date]) day_counts[iso_date] = 0;
                     day_counts[iso_date] += 1;
                 }
-                return checked;
+                return count_value;
             });
             let dataset = {
                 label: h.name,
@@ -140,6 +146,7 @@ export default class AnalysisHabits extends React.Component {
 
     render() {
         let {loaded} = this.props;
+        let {form} = this.state
         if (!this.have_data()) return <div className="empty">Loading</div>
         let {habit_data, day_counts} = this.habit_data();
         let {trend_data, total_weekly_target} = this.trend_data(day_counts);
@@ -178,6 +185,12 @@ export default class AnalysisHabits extends React.Component {
             <div>
 
                 <h4>Habits</h4>
+
+                <div className="row">
+                    <div className="col-sm-4 col-sm-offset-8">
+                        <Toggle label="Scale by habit count" labelPosition="right" toggled={form.count_scaled} onToggle={this.changeHandlerToggle.bind(this, 'form', 'count_scaled')} />
+                    </div>
+                </div>
 
                 <Bar data={habit_data} options={habitOptions} width={1000} height={450}/>
 

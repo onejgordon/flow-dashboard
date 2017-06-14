@@ -155,7 +155,23 @@ class TaskAPI(handlers.JsonRequestHandler):
         '''
         action = self.request.get('action')
         res = {}
-        if action == 'archive_complete':
+        if action == 'create_common':
+            common_tasks = self.user.get_setting_prop(['tasks', 'common_tasks'])
+            if common_tasks:
+                task_put = []
+                for ct in common_tasks:
+                    title = ct.get('title')
+                    if title:
+                        task_put.append(Task.Create(self.user, title))
+                if task_put:
+                    ndb.put_multi(task_put)
+                    self.message = "Created %d task(s)" % len(task_put)
+                    res['tasks'] = [t.json() for t in task_put]
+                    self.success = True
+            else:
+                self.message = "You haven't configured any common tasks"
+
+        elif action == 'archive_complete':
             recent = Task.Recent(self.user, limit=20)
             to_archive = []
             for t in recent:
@@ -236,6 +252,31 @@ class HabitAPI(handlers.JsonRequestHandler):
         })
 
     @authorized.role('user')
+    def increment(self, d):
+        '''
+        Increment completions for a habit with a countable daily target
+        '''
+        from constants import HABIT_DONE_REPLIES
+        habit_id = self.request.get_range('habit_id')
+        day_iso = self.request.get('date')
+        cancel = self.request.get_range('cancel') == 1
+        habit = Habit.get_by_id(habit_id, parent=self.user.key)
+        hd = None
+        if habit:
+            marked_done, hd = HabitDay.Increment(habit, tools.fromISODate(day_iso), cancel=cancel)
+            if marked_done:
+                self.message = random.choice(HABIT_DONE_REPLIES)
+            else:
+                if cancel:
+                    self.message = "Undone - count reset to %s" % hd.count
+                else:
+                    self.message = "Count increased to %s" % hd.count
+            self.success = True
+        self.set_response({
+            'habitday': hd.json() if hd else None
+        })
+
+    @authorized.role('user')
     def commit(self, d):
         '''
         Mark done/not-done for a habit day
@@ -262,7 +303,7 @@ class HabitAPI(handlers.JsonRequestHandler):
         params = tools.gets(self,
                             strings=['name', 'description', 'color', 'icon'],
                             booleans=['archived'],
-                            integers=['tgt_weekly'],
+                            integers=['tgt_weekly', 'tgt_daily'],
                             supportTextBooleans=True
                             )
         habit = None
@@ -1053,7 +1094,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         today = datetime.today()
         habitdays = []
         goals = []
-        logging.debug([dt_start, dt_end])
+        logging.debug("Analysis range - %s - %s" % (dt_start, dt_end))
         journals, iso_dates = MiniJournal.Fetch(self.user, dt_start, dt_end)
         if with_habits:
             habits = Habit.Active(self.user)
@@ -1402,8 +1443,8 @@ class ReportAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def serve(self, d):
         import cloudstorage as gcs
-        rkey = self.request.get('rkey')
-        r = Report.GetAccessible(rkey, self.user, urlencoded_key=True)
+        rid = self.request.get('rid')
+        r = self.user.get(Report, rid)
         if r:
             if r.is_done() and r.gcs_files:
                 gcsfn = r.gcs_files[0]
@@ -1428,8 +1469,8 @@ class ReportAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def delete(self, d):
-        rkey = self.request.get('rkey')
-        r = Report.GetAccessible(rkey, self.user, urlencoded_key=True)
+        rid = self.request.get('rid')
+        r = self.user.get(Report, rid)
         if r:
             r.clean_delete(self_delete=True)
             self.message = "Report deleted"

@@ -1,9 +1,10 @@
 var React = require('react');
 import { IconButton, IconMenu, MenuItem, Dialog,
-  RaisedButton, TextField, FontIcon, FlatButton } from 'material-ui';
+  RaisedButton, TextField, FontIcon, FlatButton, Avatar,
+  Toggle } from 'material-ui';
 var util = require('utils/util');
 var api = require('utils/api');
-import {clone, pick} from 'lodash';
+import {clone, pick, merge} from 'lodash';
 import {Link} from 'react-router'
 import {cyanA400} from 'material-ui/styles/colors';
 var AppConstants = require('constants/AppConstants')
@@ -36,14 +37,15 @@ export default class HabitWidget extends React.Component {
           habit_analysis: null,
           form: {},
           working: false,
-          on_mobile: util.user_agent_mobile()
+          on_mobile: util.user_agent_mobile(),
+          cancellable_habitday: null
       };
       this.MOBILE_SHOW_DAYS = 2
       this.SHOW_MATERIAL_ICONS = ['check_circle', 'group_work', 'add', 'directions_run',
                                   'spa', 'lightbulb_outline', 'access_alarm', 'fitness_center',
                                   'lock', 'stars', 'visibility', 'play_circle_filled',
                                   'brightness_low', 'monetization_on']
-
+      this.CANCELLABLE_INTERVAL_ID = null
   }
 
   componentDidMount() {
@@ -56,7 +58,7 @@ export default class HabitWidget extends React.Component {
 
   save_habit() {
     let {form} = this.state;
-    let params = pick(form, ['id', 'name', 'description', 'tgt_weekly', 'icon', 'color']);
+    let params = pick(form, ['id', 'name', 'description', 'tgt_weekly', 'tgt_daily', 'icon', 'color']);
     this.setState({working: true}, () => {
       api.post("/api/habit", params, (res) => {
         if (res.habit) {
@@ -86,20 +88,43 @@ export default class HabitWidget extends React.Component {
   update_habitday_in_state(hd) {
     let {habitdays} = this.state;
     habitdays[hd.id] = hd;
-    this.setState({habitdays});
+    this.setState({habitdays})
   }
 
-  day_action(habit, iso_day, action) {
+  day_action(habit, iso_day, action, _params) {
+    let hd_id = this.make_id(habit.id, iso_day)
     let params = {
-      habitday_id: this.make_id(habit.id, iso_day),
+      habitday_id: hd_id,
       habit_id: habit.id,
       date: iso_day
     }
+    if (_params) merge(params, _params)
     api.post(`/api/habit/${action}`, params, (res) => {
       if (res.habitday) {
-        this.update_habitday_in_state(res.habitday);
+        this.update_habitday_in_state(res.habitday, );
       }
     });
+    return hd_id
+  }
+
+  clear_cancellable() {
+    if (this.CANCELLABLE_INTERVAL_ID) window.clearTimeout(this.CANCELLABLE_INTERVAL_ID)
+    this.setState({cancellable_habitday: null})
+  }
+
+  increment_day(habit, iso_day, opts) {
+    util.play_audio('complete.mp3');
+    let _params
+    let cancelling = opts && opts.cancel
+    if (cancelling) _params = {cancel: 1}
+    let hd_id = this.day_action(habit, iso_day, 'increment', _params);
+    if (!cancelling) {
+      // Set this day as cancellable, and schedule reset for 5s from now
+      this.setState({cancellable_habitday: hd_id})
+      this.CANCELLABLE_INTERVAL_ID = window.setTimeout(() => {
+        this.clear_cancellable()
+      }, 3000)
+    } else this.clear_cancellable()
   }
 
   toggle_day(habit, iso_day) {
@@ -213,58 +238,7 @@ export default class HabitWidget extends React.Component {
     }
   }
 
-  render_habit(h) {
-    let {commitments, days} = this.props;
-    let {habitdays} = this.state;
-    let _progress;
-    let cursor = new Date();
-    let today = new Date();
-    let today_iso = util.iso_from_date(today);
-    let res = [];
-    let done_in_week = 0;
-    var done = false, is_committed = false;
-    let n_committed = 0, n_committed_done = 0, col_num = 1;
-    let last_run = false;
-    cursor.setDate(cursor.getDate() - days + 1);
-    while (!last_run) {
-      let iso_day = util.iso_from_date(cursor);
-      last_run = iso_day == today_iso;
-      let id = this.make_id(h.id, iso_day);
-      let in_week = this.day_in_current_habit_week(cursor);
-      if (habitdays[id]) {
-        let hd = habitdays[id];
-        done = hd.done;
-        is_committed = hd.committed;
-      } else {
-        done = false;
-        is_committed = false;
-      }
-      let icon = 'check';
-      if (done) icon = h.icon || 'check_circle';
-      if (in_week) {
-        if (done) {
-          done_in_week += 1;
-          if (is_committed) n_committed_done += 1;
-        }
-        if (is_committed) n_committed += 1;
-      }
-      let st = {};
-      if (done) st.color = h.color || cyanA400;
-      else if (is_committed) st.color = AppConstants.COMMIT_COLOR;
-      if (!in_week) st.opacity = 0.6;
-      let tt = done ? "Mark Not Done" : "Mark Done";
-      if (days - col_num < this.show_days()) {
-        res.push(<td key={iso_day}>
-          <IconButton iconClassName="material-icons"
-              onClick={this.toggle_day.bind(this, h, iso_day)}
-              tooltip={tt}
-              iconStyle={st}>{icon}
-          </IconButton></td>);
-      }
-      cursor.setDate(cursor.getDate() + 1);
-      col_num += 1
-    }
-    let st = {color: h.color || "#FFFFFF" };
+  render_target_progress(h, done_in_week) {
     if (h.tgt_weekly) {
       let target_reached = done_in_week >= h.tgt_weekly;
       let target_near = h.tgt_weekly - done_in_week == 1;
@@ -278,8 +252,80 @@ export default class HabitWidget extends React.Component {
         cls = "target-near";
         _icon = <i className="glyphicon glyphicon-flash" title="One more!"></i>
       }
-      _progress = <span className={"target " + cls}>{done_in_week} / {h.tgt_weekly} { _icon }</span>
+      return <span className={"target " + cls}>{done_in_week} / {h.tgt_weekly} { _icon }</span>
     }
+  }
+
+  render_habit(h) {
+    let {commitments, days} = this.props;
+    let {habitdays, cancellable_habitday} = this.state;
+    let cursor = new Date();
+    let today = new Date();
+    let today_iso = util.iso_from_date(today);
+    let res = [];
+    var done = false, is_committed = false;
+    let n_committed = 0, n_committed_done = 0, col_num = 1;
+    let today_col = false
+    let done_in_week = 0
+    let hd
+    cursor.setDate(cursor.getDate() - days + 1);
+    while (!today_col) {
+      let iso_day = util.iso_from_date(cursor);
+      today_col = iso_day == today_iso;
+      let id = this.make_id(h.id, iso_day);
+      let in_week = this.day_in_current_habit_week(cursor);
+      let count = 0
+      if (habitdays[id]) {
+        hd = habitdays[id];
+        done = hd.done;
+        if (hd.count) count = hd.count
+        is_committed = hd.committed;
+      } else {
+        done = false;
+        is_committed = false;
+      }
+      let countable = today_col && h.tgt_daily
+      if (in_week) {
+        if (done) {
+          done_in_week += 1;
+          if (is_committed) n_committed_done += 1;
+        }
+        if (is_committed) n_committed += 1;
+      }
+      let st = {};
+      if (done) st.color = h.color || cyanA400;
+      else if (is_committed) st.color = AppConstants.COMMIT_COLOR;
+      if (!in_week) st.opacity = 0.6;
+      if (days - col_num < this.show_days()) {
+        let tt = done ? "Mark Not Done" : "Mark Done";
+        let icon = 'check'
+        if (done) icon = h.icon || 'check_circle';
+        let cancel = hd && hd.id == cancellable_habitday
+        let handle_click
+        if (countable) {
+          if (!cancel) icon = 'exposure_plus_1'
+          else {
+            icon = 'undo'
+            st.color = '#FC0035'
+          }
+          tt = cancel ? "Undo completion" : `${count} completion(s)`
+          let opts = {cancel: cancel}
+          handle_click = this.increment_day.bind(this, h, iso_day, opts)
+        } else {
+          handle_click = this.toggle_day.bind(this, h, iso_day)
+        }
+        res.push(<td key={iso_day}>
+          <IconButton iconClassName="material-icons"
+              onClick={handle_click}
+              tooltip={tt}
+              iconStyle={st}>{icon}
+          </IconButton></td>);
+      }
+      cursor.setDate(cursor.getDate() + 1);
+      col_num += 1
+    }
+    let st = {color: h.color || "#FFFFFF" };
+    let _progress = this.render_target_progress(h, done_in_week)
     let _commitment;
     if (commitments) _commitment = (
         <td className="text-center">
@@ -315,10 +361,6 @@ export default class HabitWidget extends React.Component {
     this.setState({form});
   }
 
-  show_creator() {
-    this.setState({editor_open: true});
-  }
-
   set_new_habit_icon(ic) {
     let {form} = this.state;
     form.icon = ic;
@@ -331,6 +373,18 @@ export default class HabitWidget extends React.Component {
 
   dismiss_editor() {
     this.setState({editor_open: false})
+  }
+
+  show_creator() {
+    this.setState({editor_open: true, form: {}});
+  }
+
+
+  handle_daily_toggle() {
+    let {form} = this.state
+    let daily_enabled = form.tgt_daily > 0
+    form.tgt_daily = daily_enabled ? 0 : 2
+    this.setState({form})
   }
 
   render_icon_chooser() {
@@ -369,7 +423,7 @@ export default class HabitWidget extends React.Component {
       <MenuItem key="gr" primaryText="Refresh" onClick={this.fetch_current.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
     ]
     if (this.count_habits() < AppConstants.HABIT_ACTIVE_LIMIT) menu_actions.push(<MenuItem key="new" primaryText="New Habit" onClick={this.show_creator.bind(this)} leftIcon={<FontIcon className="material-icons">add</FontIcon>} />)
-    menu_actions.push(<Link to="/app/habit/history"><MenuItem key="list" primaryText="All Habits" leftIcon={<FontIcon className="material-icons">list</FontIcon>} /></Link>)
+    menu_actions.push(<Link key="list" to="/app/habit/history"><MenuItem primaryText="All Habits" leftIcon={<FontIcon className="material-icons">list</FontIcon>} /></Link>)
     return (
       <div className="HabitWidget" id="HabitWidget">
         <div className="row">
@@ -397,21 +451,31 @@ export default class HabitWidget extends React.Component {
             onRequestClose={this.dismiss_editor.bind(this)}
             actions={actions}>
 
-            <TextField placeholder="Habit name"
-                       name="name"
-                       value={form.name || ''}
-                       onChange={this.changeHandler.bind(this, 'form', 'name')}
-                       fullWidth autoFocus />
+            <div className="row">
+              <div className="col-sm-6">
+
+                <TextField floatingLabelText="Habit name"
+                           name="name"
+                           value={form.name || ''}
+                           onChange={this.changeHandler.bind(this, 'form', 'name')}
+                           fullWidth autoFocus />
+              </div>
+              <div className="col-sm-6">
+                <TextField floatingLabelText="Weekly Target (# of days complete per week)"
+                           name="target"
+                           value={form.tgt_weekly || ''}
+                           onChange={this.changeHandler.bind(this, 'form', 'tgt_weekly')}
+                           type="number"
+                           minValue={0}
+                           maxValue={7}
+                           fullWidth />
+              </div>
+            </div>
+
             <TextField placeholder="Description"
                        name="description"
                        value={form.description || ''}
                        onChange={this.changeHandler.bind(this, 'form', 'description')}
-                       fullWidth />
-            <TextField placeholder="Weekly Target (# of completions per week)"
-                       name="target"
-                       value={form.tgt_weekly || ''}
-                       onChange={this.changeHandler.bind(this, 'form', 'tgt_weekly')}
-                       type="number"
                        fullWidth />
 
             <div className="row">
@@ -428,6 +492,23 @@ export default class HabitWidget extends React.Component {
                            onChange={this.changeHandler.bind(this, 'form', 'icon')}
                            fullWidth />
                 { this.render_icon_chooser() }
+
+                <label>Countable Habits</label>
+
+                <p>To track multiple completions of a habit each day, you can enable counting by setting a daily target. When the daily target is reached, the habit will be marked as done.
+                Note that the weekly target is still counted out of 7 (count 1 for each daily target reached).</p>
+
+                <Toggle label="Show counter towards daily target" toggled={form.tgt_daily > 0} onToggle={this.handle_daily_toggle.bind(this)} />
+
+                <div hidden={!form.tgt_daily || form.tgt_daily == 0}>
+                  <TextField floatingLabelText="Daily Target (# of completions)"
+                         name="tgt_daily"
+                         value={form.tgt_daily || ''}
+                         onChange={this.changeHandler.bind(this, 'form', 'tgt_daily')}
+                         type="number"
+                         fullWidth />
+                </div>
+
               </div>
             </div>
 

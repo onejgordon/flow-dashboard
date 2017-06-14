@@ -165,6 +165,9 @@ export default class Settings extends React.Component {
         let goal_pref_atts = [
             { name: 'slots', title: 'Maximum number of goals to enter per period', type: 'number', default_value: AppConstants.GOAL_DEFAULT_SLOTS }
         ];
+        let common_task_atts = [
+            { name: 'title', title: 'Task title', type: 'text' }
+        ]
         let subtab_title = findItemById(this.SUBTABS, subtab, 'value').label;
         _content = (
             <div className="row">
@@ -235,12 +238,29 @@ export default class Settings extends React.Component {
                         <div hidden={subtab != "tasks"}>
                             <h3>Configure Tasks</h3>
 
-                            <ReactJsonEditor
-                                array={false} data={get(settings, ['tasks', 'preferences'], {})}
-                                attributes={task_pref_atts}
-                                onChange={this.handle_settings_change.bind(this, ['tasks', 'preferences'])}
-                                editButtonLabel="Edit Task Preferences"
-                                />
+                            <div className="row">
+                                <div className="col-sm-6">
+                                    <ReactJsonEditor
+                                        array={false} data={get(settings, ['tasks', 'preferences'], {})}
+                                        attributes={task_pref_atts}
+                                        onChange={this.handle_settings_change.bind(this, ['tasks', 'preferences'])}
+                                        editButtonLabel="Edit Task Preferences"
+                                        />
+                                </div>
+                                <div className="col-sm-6">
+                                    <p>To reduce the repetition of adding common tasks that recur frequently, you can configure
+                                    a list of common tasks. These can be added in a batch from the task widget's menu.</p>
+
+                                    <ReactJsonEditor title="Common Tasks"
+                                        array={true} data={get(settings, ['tasks', 'common_tasks'], [])}
+                                        attributes={common_task_atts}
+                                        icon="playlist_add_check"
+                                        onChange={this.handle_settings_change.bind(this, ['tasks', 'common_tasks'])}
+                                        addButtonLabel="Add Common Task"
+                                        primaryProp="title" />
+
+                                </div>
+                            </div>
                         </div>
 
                         <div hidden={subtab != "goals"}>

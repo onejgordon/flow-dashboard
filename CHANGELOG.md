@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## Version 0-27
+
+### Added
+
+* Define common tasks in task settings to easily add batches of common/recurring tasks
+
 ## Version 0-26
 
 ### Added
@@ -18,6 +24,7 @@ All notable changes to this project will be documented in this file.
 * Support up to 10 active habits (limit increased)
 * Sort habits by name
 * Clickable shortened links in task list
+* Optionally define habits as countable with daily target
 
 ## Version 0-25
 

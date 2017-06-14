@@ -179,7 +179,7 @@ export default class ReactJSONEditor extends React.Component {
         content = (
           <div>
             <label>Raw JSON</label>
-            <TextField name="raw" value={form.raw} onChange={this.handleTargetChange.bind(this, 'raw')} multiLine fullWidth />
+            <TextField name="raw" value={form.raw} onChange={this.handleTargetChange.bind(this, 'raw')} multiLine fullWidth autoFocus />
           </div>
           )
       } else {
