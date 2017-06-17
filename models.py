@@ -935,6 +935,9 @@ class Snapshot(ndb.Model):
         metrics = tools.getJson(self.metrics, {})
         return metrics.get(prop)
 
+    def has_data(self):
+        return bool(self.metrics)
+
 
 class Event(ndb.Model):
     """

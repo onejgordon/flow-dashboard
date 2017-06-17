@@ -790,7 +790,7 @@ class SnapshotAPI(handlers.JsonRequestHandler):
         limit = self.request.get_range('limit', default=500)
         snapshots = Snapshot.Recent(self.user, limit=limit)
         self.set_response({
-            'snapshots': [s.json() for s in snapshots if s]
+            'snapshots': [s.json() for s in snapshots if (s and s.has_data())]
             }, success=True, debug=True)
 
     @authorized.role('user')
