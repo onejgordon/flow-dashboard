@@ -923,9 +923,10 @@ class Snapshot(ndb.Model):
                     if len(act_list) > 1:
                         activity_sub = act_list[1]
                     break
-        return Snapshot(dt_created=date, place=place, people=people if people else [],
-                        activity=activity, activity_sub=activity_sub, metrics=json.dumps(metrics) if metrics else None,
-                        location=location, parent=user.key)
+        if metrics:
+            return Snapshot(dt_created=date, place=place, people=people if people else [],
+                            activity=activity, activity_sub=activity_sub, metrics=json.dumps(metrics),
+                            location=location, parent=user.key)
 
     @staticmethod
     def Recent(user, limit=500):

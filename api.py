@@ -804,11 +804,15 @@ class SnapshotAPI(handlers.JsonRequestHandler):
             lists=['people']
         )
         snap = Snapshot.Create(self.user, **params)
-        snap.put()
-        self.success = True
+        if snap:
+            snap.put()
+            self.success = True
+            self.message = "Snapshot submitted!"
+        else:
+            self.message = "Error submitting snapshot - no metrics?"
         self.set_response({
             'snapshot': snap.json() if snap else None
-        }, message="Snapshot submitted!", debug=True)
+        }, debug=True)
 
 
 class TrackingAPI(handlers.JsonRequestHandler):
