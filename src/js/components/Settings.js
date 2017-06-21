@@ -127,7 +127,8 @@ export default class Settings extends React.Component {
             { name: 'tag_segment_chart', title: 'Tag Segment Chart?', type: 'checkbox' },
             { name: 'chart_default', title: 'Enabled by Default in Chart', type: 'checkbox' },
             { name: 'color', title: 'Chart Series Color (hex)', type: 'text' },
-            { name: 'parse_tags', title: 'Enable @mentions and #hashtags', type: 'checkbox' }
+            { name: 'parse_tags', title: 'Enable @mentions and #hashtags', type: 'checkbox' },
+            { name: 'value_reverse', title: 'Reverse values (lower is better)', type: 'checkbox', default_value: false },
         ];
         let flashcard_atts = [
             { name: 'id', title: 'Unique Card ID', type: 'text' },

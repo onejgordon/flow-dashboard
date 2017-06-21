@@ -33,10 +33,13 @@ export default class JournalLI extends React.Component {
     let responses = questions.map((q, i) => {
       let q_response = data[q.name];
       let q_response_rendered = "N/A";
+      let reverse = q.value_reverse || false;
       let rt = q.response_type;
+      let min_color = reverse ? "#4FECF9" : "#FC004E"
+      let color = reverse ? "#FC004E" : "#4FECF9"
       if (q_response != null) {
         if (rt == 'text') q_response_rendered = <div style={{fontFamily: 'monospace'}}>{q_response}</div>;
-        else if (rt == 'number' || rt == 'slider') q_response_rendered = <ProgressLine value={parseFloat(q_response)} total={10} min_color="#FC004E" />
+        else if (rt == 'number' || rt == 'slider') q_response_rendered = <ProgressLine value={parseFloat(q_response)} total={10} color={color} min_color={min_color} />
       }
       return (
         <div className="col-sm-4" key={i}>
@@ -48,10 +51,11 @@ export default class JournalLI extends React.Component {
     return (
       <Paper style={{padding: "10px", marginTop: "8px"}}>
 
-        <h3 style={{paddingTop: "0px", marginTop: "0px", display: 'inline-block'}}>{ journal.iso_date }</h3>
-        <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
-          <MenuItem key="edit" primaryText="Edit" onClick={this.handle_edit_click.bind(this)} leftIcon={<FontIcon className="material-icons">edit</FontIcon>} />
-        </IconMenu>
+        <h3 style={{paddingTop: "0px", marginTop: "0px", display: 'inline-block'}}>
+          { journal.iso_date }
+          <IconButton tooltip="Edit" onClick={this.handle_edit_click.bind(this)} iconClassName="material-icons">edit</IconButton>
+        </h3>
+
 
         <div className="row">
           { responses }
