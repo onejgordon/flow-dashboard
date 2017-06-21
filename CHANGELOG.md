@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 * Define common tasks in task settings to easily add batches of common/recurring tasks
+* Reverse-valued journal questions for easier trend analysis on journal history
 
 ## Version 0-26
 

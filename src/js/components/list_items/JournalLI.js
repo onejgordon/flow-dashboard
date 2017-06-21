@@ -1,5 +1,5 @@
 var React = require('react');
-import {Paper, IconMenu, IconButton, MenuItem, FontIcon} from 'material-ui';
+import {Paper, IconButton} from 'material-ui';
 import PropTypes from 'prop-types';
 import {changeHandler} from 'utils/component-utils';
 var ProgressLine = require('components/common/ProgressLine');
