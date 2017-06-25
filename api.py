@@ -463,6 +463,7 @@ class EventAPI(handlers.JsonRequestHandler):
         if ev:
             ev.key.delete()
             self.success = True
+            self.message = "Event deleted"
         self.set_response()
 
 
@@ -890,10 +891,10 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
             u = User.GetByEmail(_email)
             if not u:
                 u = User.Create(email=_email, name=name)
-                u.put()
             if u:
+                u.login_dt = datetime.now()
+                u.put()
                 self.update_session_user(u)
-                self.login_dt = datetime.now()
                 self.success = True
                 self.message = "Signed in"
         else:
