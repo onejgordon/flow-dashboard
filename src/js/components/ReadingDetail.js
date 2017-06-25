@@ -38,7 +38,9 @@ export default class ReadingDetail extends React.Component {
       if (r) {
         let form = {
           notes: r.notes,
-          tags: r.tags.join(', ')
+          tags: r.tags.join(', '),
+          title: r.title,
+          author: r.author
         }
         this.setState({form: form, editing: false});
       }
@@ -57,7 +59,9 @@ export default class ReadingDetail extends React.Component {
     let {form} = this.state;
     let params = {
       notes: form.notes,
-      tags: form.tags
+      tags: form.tags,
+      title: form.title,
+      author: form.author
     }
     this.update_readable(readable, params);
   }
@@ -76,7 +80,9 @@ export default class ReadingDetail extends React.Component {
   }
 
   dismiss() {
-    if (this.props.onDismiss) this.props.onDismiss();
+    this.setState({editing: false}, () => {
+      if (this.props.onDismiss) this.props.onDismiss();
+    })
   }
 
   render() {
@@ -91,7 +97,7 @@ export default class ReadingDetail extends React.Component {
       actions = [
         <RaisedButton primary={true} label="Save" onClick={this.save.bind(this)} disabled={!editing} />,
         <FlatButton label="Edit" onClick={this.setState.bind(this, {editing: true})} disabled={editing} />,
-        <FlatButton label="Close" onClick={this.dismiss.bind(this)} disabled={editing} />,
+        <FlatButton label="Close" onClick={this.dismiss.bind(this)} />,
       ]
       let params = {
         readable_id: readable.id
@@ -104,11 +110,25 @@ export default class ReadingDetail extends React.Component {
             <b>Source URL:</b> <Link target="_blank" to={readable.source_url}>{ readable.source_url || '--' }</Link><br/>
           </div>
 
+          <div hidden={!editing}>
+            <div className="row">
+              <div className="col-sm-6">
+                <TextField floatingLabelText="Title" value={form.title || ''}
+                           onChange={this.changeHandler.bind(this, 'form', 'title')}
+                           disabled={!editing} fullWidth />
+              </div>
+              <div className="col-sm-6">
+                <TextField floatingLabelText="Author" value={form.author || ''}
+                           onChange={this.changeHandler.bind(this, 'form', 'author')}
+                           disabled={!editing} fullWidth />
+              </div>
+            </div>
+          </div>
+
           <TextField floatingLabelText="Tags" value={form.tags || ''}
                      onChange={this.changeHandler.bind(this, 'form', 'tags')}
                      disabled={!editing} />
 
-          <h4>Notes</h4>
           <div style={{fontSize: '15px'}}>
             <TextField multiLine={true}
                        value={ form.notes || '' }

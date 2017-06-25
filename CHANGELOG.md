@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 
 * Define common tasks in task settings to easily add batches of common/recurring tasks
 * Reverse-valued journal questions for easier trend analysis on journal history
+* Ability to delete events
+* Edit title & author of books/articles
 
 ## Version 0-26
 
