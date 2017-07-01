@@ -370,7 +370,7 @@ class Project(ndb.Model):
         if 'milestones' in params:
             milestones = params.get('milestones', [])
             if milestones is not None:
-                self.milestones = [str(x) if x else "" for x in milestones]
+                self.milestones = [x if x else "" for x in milestones]
 
     def set_progress(self, progress):
         regression = progress < self.progress

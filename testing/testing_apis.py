@@ -103,7 +103,11 @@ class APITestCase(BaseTestCase):
         self.assertEqual(goal.get('text')[0], "Get it done")
 
         # Update
-        response = self.post_json("/api/goal", {'id': goal.get('id'), 'text': json.dumps(['New goal 1', u'New goal 2 with unicode. ありがとう'])}, headers=self.api_headers)
+        params = {
+            'id': goal.get('id'),
+            'text': json.dumps(['New goal 1', u'New goal 2 with unicode. ありがとう'])
+        }
+        response = self.post_json("/api/goal", params, headers=self.api_headers)
         goal = response.get('goal')
         self.assertEqual(goal.get('text')[0], 'New goal 1')
         self.assertEqual(goal.get('text')[1], u'New goal 2 with unicode. ありがとう')
@@ -143,10 +147,16 @@ class APITestCase(BaseTestCase):
         self.assertEqual(prj.get('title'), "New Project")
 
         # Update
-        response = self.post_json("/api/project", {'id': prj.get('id'), 'title': 'New Name', 'due': '2018-01-01'}, headers=self.api_headers)
+        params = {
+            'id': prj.get('id'),
+            'title': 'New Name', 'due': '2018-01-01',
+            'milestones': json.dumps(["Milestone 1", "", "", "ありがとう", "", "", "", "", "", ""])
+        }
+        response = self.post_json("/api/project", params, headers=self.api_headers)
         prj = response.get('project')
         self.assertEqual(prj.get('title'), 'New Name')
         self.assertEqual(prj.get('due'), '2018-01-01')
+        self.assertEqual(prj.get('milestones')[0], 'Milestone 1')
 
         # Delete
         response = self.post_json("/api/project/delete", {'id': prj.get('id')}, headers=self.api_headers)
