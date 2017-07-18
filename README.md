@@ -172,3 +172,7 @@ with TensorFlow, etc.
 ## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](.github/CONTRIBUTING.md)
+
+## License
+
+MIT License
