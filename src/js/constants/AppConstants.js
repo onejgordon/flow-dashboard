@@ -5,7 +5,7 @@ var AppConstants = {
     AUTHOR_URL: "http://jgordon.io",
     PERSISTENCE: "bootstrap",
     USER_STORAGE_KEY: 'flowUser',
-    HABIT_WEEK_START: 0, // Sunday (d.getDay())
+    DEFAULT_WEEK_START: 0, // Sunday (d.getDay())
     HABIT_ACTIVE_LIMIT: 10,
     JOURNAL_START_HOUR: 21, // Default
     JOURNAL_END_HOUR: 4, // Default
@@ -25,6 +25,15 @@ var AppConstants = {
     ],
     // Habits
     COMMIT_COLOR: '#F9D23D',
+    WEEKDAYS: [
+      {value: 0, label: "Sunday"},
+      {value: 1, label: "Monday"},
+      {value: 2, label: "Tuesday"},
+      {value: 3, label: "Wednesday"},
+      {value: 4, label: "Thursday"},
+      {value: 5, label: "Friday"},
+      {value: 6, label: "Saturday"}
+    ],
     TIMEZONES: [
       {label: "UTC", value: "UTC"},
       {label: "(GMT-11:00) Niue", value: "Pacific/Niue"},

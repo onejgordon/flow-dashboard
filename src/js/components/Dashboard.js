@@ -116,7 +116,7 @@ export default class Dashboard extends React.Component {
 
                 <ProjectViewer />
 
-                <HabitWidget />
+                <HabitWidget user={user} />
 
                 <div className="row">
                     <div className="col-sm-6">
