@@ -130,6 +130,20 @@ class Timeline extends React.Component {
         });
     }
 
+    delete_event() {
+        let {editing_index, events} = this.state;
+        let event = events[editing_index]
+        let params = {
+            id: event.id
+        }
+        api.post("/api/event/delete", params, () => {
+            if (editing_index >= 0) events.splice(editing_index, 1);
+            this.setState({events: events, editing_index: null}, () => {
+                this.refs.rlt.got_events(events);
+            })
+        })
+    }
+
     new_event() {
         this.setState({form: {}, editing_index: -1});
     }
@@ -164,6 +178,7 @@ class Timeline extends React.Component {
         let events = this.state.events;
         let dialog_actions = [
             <RaisedButton label="Save" onClick={this.save_event.bind(this)} primary={true} />,
+            <FlatButton label="Delete" style={{color: 'red'}} onClick={this.delete_event.bind(this)} />,
             <FlatButton label="Cancel" onClick={this.setState.bind(this, {editing_index: null})} />
         ]
         return (

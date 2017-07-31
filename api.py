@@ -463,6 +463,7 @@ class EventAPI(handlers.JsonRequestHandler):
         if ev:
             ev.key.delete()
             self.success = True
+            self.message = "Event deleted"
         self.set_response()
 
 
@@ -639,7 +640,7 @@ class QuoteAPI(handlers.JsonRequestHandler):
         term = self.request.get('term')
         self.success, self.message, quotes = Quote.Search(self.user, term)
         data = {
-            'quotes': [q.json() for q in quotes]
+            'quotes': [q.json() for q in quotes if q]
         }
         self.set_response(data)
 
@@ -670,6 +671,7 @@ class QuoteAPI(handlers.JsonRequestHandler):
         id = self.request.get('id')
         quote = self.user.get(Quote, id=id)
         if quote:
+            quote.update_sd(delete=True)
             quote.key.delete()
             self.success = True
             self.message = "Quote deleted"
@@ -789,7 +791,7 @@ class SnapshotAPI(handlers.JsonRequestHandler):
         limit = self.request.get_range('limit', default=500)
         snapshots = Snapshot.Recent(self.user, limit=limit)
         self.set_response({
-            'snapshots': [s.json() for s in snapshots if s]
+            'snapshots': [s.json() for s in snapshots if (s and s.has_data())]
             }, success=True, debug=True)
 
     @authorized.role('user')
@@ -803,11 +805,15 @@ class SnapshotAPI(handlers.JsonRequestHandler):
             lists=['people']
         )
         snap = Snapshot.Create(self.user, **params)
-        snap.put()
-        self.success = True
+        if snap:
+            snap.put()
+            self.success = True
+            self.message = "Snapshot submitted!"
+        else:
+            self.message = "Error submitting snapshot - no metrics?"
         self.set_response({
             'snapshot': snap.json() if snap else None
-        }, message="Snapshot submitted!", debug=True)
+        }, debug=True)
 
 
 class TrackingAPI(handlers.JsonRequestHandler):
@@ -885,10 +891,10 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
             u = User.GetByEmail(_email)
             if not u:
                 u = User.Create(email=_email, name=name)
-                u.put()
             if u:
+                u.login_dt = datetime.now()
+                u.put()
                 self.update_session_user(u)
-                self.login_dt = datetime.now()
                 self.success = True
                 self.message = "Signed in"
         else:

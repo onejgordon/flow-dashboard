@@ -370,7 +370,7 @@ class Project(ndb.Model):
         if 'milestones' in params:
             milestones = params.get('milestones', [])
             if milestones is not None:
-                self.milestones = [str(x) if x else "" for x in milestones]
+                self.milestones = [x if x else "" for x in milestones]
 
     def set_progress(self, progress):
         regression = progress < self.progress
@@ -923,9 +923,10 @@ class Snapshot(ndb.Model):
                     if len(act_list) > 1:
                         activity_sub = act_list[1]
                     break
-        return Snapshot(dt_created=date, place=place, people=people if people else [],
-                        activity=activity, activity_sub=activity_sub, metrics=json.dumps(metrics) if metrics else None,
-                        location=location, parent=user.key)
+        if metrics:
+            return Snapshot(dt_created=date, place=place, people=people if people else [],
+                            activity=activity, activity_sub=activity_sub, metrics=json.dumps(metrics),
+                            location=location, parent=user.key)
 
     @staticmethod
     def Recent(user, limit=500):
@@ -934,6 +935,9 @@ class Snapshot(ndb.Model):
     def get_data_value(self, prop):
         metrics = tools.getJson(self.metrics, {})
         return metrics.get(prop)
+
+    def has_data(self):
+        return bool(self.metrics)
 
 
 class Event(ndb.Model):
