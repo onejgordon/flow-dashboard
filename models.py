@@ -1010,7 +1010,7 @@ class Goal(ndb.Model):
     Annual/monthly goals (currently captured in timeline gsheet)
 
     """
-    date = ndb.DateProperty()  # Date for (first day of month or year)
+    date = ndb.DateProperty()  # Date for (first day of month or year, None if longterm)
     dt_created = ndb.DateTimeProperty(auto_now_add=True)
     text = ndb.TextProperty(repeated=True)  # Can have multiple goals for period
     assessments = ndb.IntegerProperty(indexed=False, repeated=True)  # 1-5 rating for each goal
@@ -1054,8 +1054,8 @@ class Goal(ndb.Model):
             monthly_id = ndb.Key('Goal', datetime.strftime(date, "%Y-%m"), parent=user.key)
             keys.append(monthly_id)
         if which in ["all", "longterm"]:
-            monthly_id = ndb.Key('Goal', datetime.strftime(date, "longterm"), parent=user.key)
-            keys.append(monthly_id)
+            longterm_id = ndb.Key('Goal', datetime.strftime(date, "longterm"), parent=user.key)
+            keys.append(longterm_id)
         goals = ndb.get_multi(keys)
         return [g for g in goals]
 
