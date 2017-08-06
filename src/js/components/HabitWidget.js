@@ -1,10 +1,10 @@
 var React = require('react');
 import { IconButton, IconMenu, MenuItem, Dialog,
-  RaisedButton, TextField, FontIcon, FlatButton, Avatar,
+  RaisedButton, TextField, FontIcon, FlatButton,
   Toggle } from 'material-ui';
 var util = require('utils/util');
 var api = require('utils/api');
-import {clone, pick, merge} from 'lodash';
+import {clone, pick, merge, get} from 'lodash';
 import {Link} from 'react-router'
 import {cyanA400} from 'material-ui/styles/colors';
 var AppConstants = require('constants/AppConstants')
@@ -19,7 +19,8 @@ export default class HabitWidget extends React.Component {
 
   static propTypes = {
     days: PropTypes.number,
-    commitments: PropTypes.bool
+    commitments: PropTypes.bool,
+    user: PropTypes.object
   }
 
   static defaultProps = {
@@ -147,8 +148,10 @@ export default class HabitWidget extends React.Component {
   }
 
   get_habit_week_start() {
+    let {user} = this.props
+    let week_start_int = user ? get(user, ['settings', 'weekday_start'], AppConstants.DEFAULT_WEEK_START) : 0
     let today = new Date();
-    let since_start = today.getDay() - AppConstants.HABIT_WEEK_START;
+    let since_start = today.getDay() - week_start_int
     if (since_start < 0) since_start += 7;
     today.setDate(today.getDate() - since_start);
     let latest_start = today;

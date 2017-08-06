@@ -47,6 +47,8 @@ export default class Settings extends React.Component {
             { value: "more", label: "More" },
             { value: "advanced", label: "Advanced" },
         ]
+
+        this.changeWeekdayStart = this.handle_settings_change.bind(this, ['weekday_start'], null)
     }
 
     static getStores() {
@@ -113,6 +115,7 @@ export default class Settings extends React.Component {
         let _content;
         let {form, settings, subtab} = this.state;
         let {user} = this.props;
+        let weekday_start = get(settings, ['weekday_start'], AppConstants.DEFAULT_WEEK_START)
         let unsaved = this.state.lastSave < this.state.lastChange;
         let question_atts = [
             { name: 'name', title: 'Variable Name', type: 'text' },
@@ -199,6 +202,21 @@ export default class Settings extends React.Component {
                                         placeholder="Select timezone"
                                         simpleValue
                                       />
+
+                                    <div className="vpad">
+                                        <label>Week Start</label>
+                                        <p>You can configure how Flow decides the start and end of each week, for example, to calculate weekly habit targets</p>
+
+                                        <Select
+                                            options={AppConstants.WEEKDAYS}
+                                            value={weekday_start}
+                                            cancelable={false}
+                                            onChange={this.changeWeekdayStart}
+                                            placeholder="Select start of week"
+                                            simpleValue
+                                          />
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
