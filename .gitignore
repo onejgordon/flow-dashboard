@@ -18,4 +18,5 @@ include/*
 client_secret.json
 .coverage
 yarn-error.log
+package-lock.json
 yarn.lock
