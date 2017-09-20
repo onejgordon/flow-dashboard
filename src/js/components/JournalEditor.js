@@ -137,6 +137,7 @@ export default class JournalEditor extends React.Component {
       let focus = i == 0;
       if (!q.response_type || q.response_type == 'text') _response = <TextField name={q.name} ref={q.name} value={val || ''} onChange={this.changeHandler.bind(this, q.name)} fullWidth={true} autoFocus={focus} />
       else if (q.response_type == 'slider' || q.response_type == 'number') _response = <Slider name={q.name} value={val} onChange={this.changeHandlerSlider.bind(this, q.name)} max={10} min={1} defaultValue={5} step={1} autoFocus={focus} />
+      else if (q.response_type == 'number_oe') _response = <TextField name={q.name} ref={q.name} type='number' value={val || ''} onChange={this.changeHandler.bind(this, q.name)} fullWidth={true} autoFocus={focus} />
       return (
         <div key={i}>
           <p className="lead">{ q.text }</p>
