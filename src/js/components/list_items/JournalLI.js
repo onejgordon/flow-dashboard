@@ -38,7 +38,7 @@ export default class JournalLI extends React.Component {
       let min_color = reverse ? "#4FECF9" : "#FC004E"
       let color = reverse ? "#FC004E" : "#4FECF9"
       if (q_response != null) {
-        if (rt == 'text') q_response_rendered = <div style={{fontFamily: 'monospace'}}>{q_response}</div>;
+        if (rt == 'text' || rt == 'number_oe') q_response_rendered = <div style={{fontFamily: 'monospace'}}>{q_response}</div>;
         else if (rt == 'number' || rt == 'slider') q_response_rendered = <ProgressLine value={parseFloat(q_response)} total={10} color={color} min_color={min_color} />
       }
       return (

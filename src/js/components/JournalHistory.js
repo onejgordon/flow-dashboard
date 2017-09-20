@@ -29,7 +29,7 @@ export default class JournalHistory extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        let filter_change = prevState.form.form != this.state.form;
+        let filter_change = prevState.form != this.state.form;
         if (filter_change) this.refs.journals.refresh();
     }
 
