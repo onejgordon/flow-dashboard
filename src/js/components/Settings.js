@@ -123,8 +123,9 @@ export default class Settings extends React.Component {
             { name: 'text', title: 'Question Text', type: 'text' },
             { name: 'response_type', title: 'Response Type', type: 'dropdown', options: [
                 { value: 'text', label: "Text" },
+                { value: 'slider', label: "Slider" },
                 { value: 'number', label: "Number" },
-                { value: 'slider', label: "Slider" }
+                { value: 'number_oe', label: "Number (Free Input Box)" }
                 ], default_value: 'text' },
             { name: 'chart', title: 'Is Charted', type: 'checkbox' },
             { name: 'tag_segment_chart', title: 'Tag Segment Chart?', type: 'checkbox' },

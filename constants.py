@@ -32,7 +32,7 @@ DEFAULT_USER_SETTINGS = {
                 'name': "day_rating",
                 'label': "Rating",
                 'text': "How was the day?",
-                'response_type': "number",
+                'response_type': "slider",
                 'chart': True,
                 'chart_default': True,
                 'tag_segment_chart': True,
@@ -105,10 +105,11 @@ class JOURNAL():
     PATTERNS = {
         'text': PTN_TEXT_RESPONSE,
         'number': PTN_NUM_RESPONSE,
+        'number_oe': PTN_NUM_RESPONSE,  # For input box entry
         'slider': PTN_NUM_RESPONSE
     }
 
-    NUMERIC_RESPONSES = ['number', 'slider']
+    NUMERIC_RESPONSES = ['number', 'slider', 'number_oe']
 
     INVALID_REPLY = "I couldn't understand your answer."
     INVALID_SUFFIX_NUMERIC = "I'm expecting a number between 1 and 10."
