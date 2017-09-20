@@ -21,8 +21,8 @@ PRODUCTION_MODE = not os.environ.get(
 ROOT_DIRECTORY = os.path.dirname(__file__)
 
 if not PRODUCTION_MODE:
-    from google.appengine.tools.devappserver2.python import sandbox
-    sandbox._WHITE_LIST_C_MODULES += ['_ctypes', 'gestalt']
+    # from google.appengine.tools.devappserver2.python import sandbox
+    # sandbox._WHITE_LIST_C_MODULES += ['_ctypes', 'gestalt']
     TEMPLATE_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'src')
 else:
     TEMPLATE_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'dist')
