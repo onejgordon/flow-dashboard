@@ -56,6 +56,7 @@ class UserSearchable(ndb.Model):
 
     def update_sd(self, delete=False, index_put=True):
         index = self.get_index()
+        sd = None
         try:
             doc_id = self.get_doc_id()
             if doc_id:
