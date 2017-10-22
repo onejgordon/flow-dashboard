@@ -334,8 +334,8 @@ class ConversationAgent(object):
             habits = Habit.Active(self.user)
             for h in habits:
                 if item_name.lower() in h.name.lower():
-                    # TODO: Timezone?
-                    done, hd = HabitDay.Toggle(h, datetime.today().date(), force_done=True)
+                    d = self.user.local_time().date()
+                    done, hd = HabitDay.Toggle(h, d, force_done=True)
                     encourage = random.choice(HABIT_DONE_REPLIES)
                     speech = "%s '%s' is marked as complete." % (encourage, h.name)
                     handled = True
