@@ -574,7 +574,7 @@ class Habit(ndb.Model):
 
     @staticmethod
     def All(user):
-        return Habit.query(ancestor=user.key).fetch(limit=20)
+        return Habit.query(ancestor=user.key).fetch(limit=50)
 
     @staticmethod
     def Active(user):
