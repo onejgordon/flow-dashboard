@@ -43,7 +43,7 @@ export default class Auth extends React.Component {
             });
             if (id_token) data.id_token = id_token;
             api.post(provider.uri, data, (res) => {
-                if (res.redirect) window.location = res.redirect;
+                if (res.redirect) window.location.replace(res.redirect);
                 else if (res.error) toastr.error(res.error);
             });
         } else {

@@ -27,7 +27,7 @@
     "flux": "^2.1.1",
     "gapi-client": "0.0.3",
     "history": "^1.17.0",
-    "jquery": "^2.1.4",
+    "jquery": "^3.3.1",
     "json5": "^0.5.1",
     "load-google-maps-api": "0.0.3",
     "lodash": "^4.13.1",

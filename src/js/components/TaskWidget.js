@@ -263,10 +263,10 @@ class TaskWidget extends React.Component {
     let can_update = form.title && form.title.length > 0;
     let visible_tasks = tasks.filter((t) => { return !t.archived; });
     let _buttons = [
-      <IconButton key="ref" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.fetch_recent.bind(this)} tooltip="Refresh">refresh</IconButton>,
       <IconButton key="add" iconClassName="material-icons" style={this.IB_ST} iconStyle={this.I_ST} onClick={this.show_task_dialog.bind(this)} tooltip="Add Task (T)">add</IconButton>,
       <IconMenu key="menu" className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
         <MenuItem key="archive" onClick={this.archive_all_done.bind(this)} leftIcon={<FontIcon className="material-icons">archive</FontIcon>} primaryText="Archive Complete" />
+        <MenuItem key="refresh" onClick={this.fetch_recent.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} primaryText="Refresh" />
         <MenuItem key="task_history" onClick={this.goto_task_history.bind(this)} leftIcon={<FontIcon className="material-icons">list</FontIcon>} primaryText="Task History" />
         <MenuItem key="common" onClick={this.add_common_tasks.bind(this)} leftIcon={<FontIcon className="material-icons">playlist_add_check</FontIcon>} primaryText="Add Common Tasks" />
       </IconMenu>

@@ -251,6 +251,10 @@ div.section {
   color: white;
 }
 
+.habitCalendar > .habitDay.ph { 
+  background: none;
+}
+
 .habitCalendar > .habitDay.even_month {
   opacity: 0.5;
 }

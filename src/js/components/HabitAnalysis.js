@@ -91,7 +91,19 @@ export default class HabitAnalysis extends React.Component {
       }
       let cls = "habitDay";
       if (even_month) cls += " even_month";
+      let first_day = i == 0;
+      let day_of_week = cursor.getDay();
+      if (first_day) {
+        let start_offset = 6 - day_of_week;
+        if (start_offset == 6) start_offset = 0;
+        else if (start_offset == 0) start_offset = 6;
+        for (let k=0; k<start_offset; k++) {
+          _squares.push(<span key={`${i}_${k}`} className="habitDay ph"/>)
+        }
+      }
       _squares.push(<span className={cls} key={i} style={day_st} data-tip={iso_date}>{ cursor.getDate() }</span>)
+      let week_carriage_ret = day_of_week == 6;
+      if (week_carriage_ret) _squares.push(<br key={`br_${i}`}/>)
     }
     let completion_rate = util.printPercent(n_done/days);
     let commitments_successful = `${n_committed_done} (${util.printPercent(n_committed_done/n_committed)})`;

@@ -72,7 +72,8 @@ skip_files:
 - ^(.*/)?.*\.less$
 - ^(.*/)?.*/RCS/.*$
 - ^(.*/)?\..*$
-- ^node_modules/.*$
+- ^(node_modules/.*)
+- .*node_modules
 - ^design/.*$
 - ^lib/.*(\.(?!py)).*$
 - ^scripts/.*$

@@ -132,6 +132,7 @@ export default class Private extends React.Component {
     return (
       <div>
         <AppBar
+          className="matui-appbar"
           title={LOGO}
           zDepth={0}
           onTitleTouchTap={this.go_home.bind(this)}
@@ -149,8 +150,7 @@ export default class Private extends React.Component {
         </Drawer>
 
         <div id="container" className="container">
-
-          <div className="app-content row">
+          <div className="app-content">
             { React.cloneElement(this.props.children, { user: user, signing_in: this.state.signing_in }) }
           </div>
         </div>

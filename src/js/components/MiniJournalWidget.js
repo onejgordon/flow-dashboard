@@ -54,9 +54,7 @@ export default class MiniJournalWidget extends React.Component {
   }
 
   componentDidMount() {
-    if (this.in_journal_window()) {
-      this.check_if_not_submitted();
-    }
+    this.maybe_check_if_not_submitted();
     this.notify_checker_id = setInterval(() => {
       this.notify_check();
     }, this.NOTIFY_CHECK_MINS*60*1000);
@@ -109,6 +107,12 @@ export default class MiniJournalWidget extends React.Component {
     }
   }
 
+  maybe_check_if_not_submitted() {
+    if (this.in_journal_window()) {
+      this.check_if_not_submitted();
+    }
+  }
+  
   check_if_not_submitted() {
     // If not yet submitted for day, show dialog
     api.get("/api/journal/today", {}, (res) => {
@@ -298,6 +302,7 @@ export default class MiniJournalWidget extends React.Component {
             <div className="col-sm-6">
               <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
                 <Link to="/app/journal/history"><MenuItem key="hist" primaryText="Journal History" leftIcon={<FontIcon className="material-icons">list</FontIcon>} /></Link>
+                <MenuItem key="refresh" primaryText="Refresh" onClick={this.check_if_not_submitted.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
               </IconMenu>
             </div>
           </div>

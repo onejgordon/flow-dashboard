@@ -116,12 +116,12 @@ export default class TaskLI extends React.Component {
     let rightIcon;
     if (menu.length == 1) {
       let mi = menu[0];
-      rightIcon = <IconButton tooltip={mi.label} onClick={mi.click} iconClassName="material-icons">{mi.icon}</IconButton>
+      rightIcon = <IconButton tooltip={mi.label} onTouchTap={mi.click} iconClassName="material-icons">{mi.icon}</IconButton>
     } else if (menu.length > 1) {
       rightIcon = (
         <IconMenu iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
           { menu.map((mi, i) => {
-            return <MenuItem key={i} leftIcon={<FontIcon className="material-icons">{mi.icon}</FontIcon>} onClick={mi.click}>{mi.label}</MenuItem>
+            return <MenuItem key={i} leftIcon={<FontIcon className="material-icons">{mi.icon}</FontIcon>} onTouchTap={mi.click}>{mi.label}</MenuItem>
           }) }
         </IconMenu>
       );
