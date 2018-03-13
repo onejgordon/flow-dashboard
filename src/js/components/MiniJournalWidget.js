@@ -32,12 +32,8 @@ export default class MiniJournalWidget extends React.Component {
 
   constructor(props) {
       super(props);
-      let form = {}
-      this.props.questions.forEach((q) => {
-        if (q.response_type == 'slider' || q.response_type == 'number') form[q.name] = 5;
-      });
       this.state = {
-        form: form,
+        form: this.initial_form_state(),
         tasks: [""],
         open: false,
         all_activities: [],
@@ -62,6 +58,14 @@ export default class MiniJournalWidget extends React.Component {
 
   componentWillUnmount() {
     if (this.notify_checker_id) clearInterval(this.notify_checker_id);
+  }
+
+  initial_form_state() {
+    let form = {}
+    this.props.questions.forEach((q) => {
+      if (q.response_type == 'slider' || q.response_type == 'number') form[q.name] = 5;
+    });
+    return form;
   }
 
   journal_form_change(form_data) {
@@ -161,7 +165,7 @@ export default class MiniJournalWidget extends React.Component {
       params.tasks = JSON.stringify(tasks)
     }
     api.post("/api/journal/submit", params, (res) => {
-      this.setState({submitted: true, open: false})
+      this.setState({submitted: true, open: false, form: this.initial_form_state()})
     });
   }
 
@@ -302,7 +306,7 @@ export default class MiniJournalWidget extends React.Component {
             <div className="col-sm-6">
               <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
                 <Link to="/app/journal/history"><MenuItem key="hist" primaryText="Journal History" leftIcon={<FontIcon className="material-icons">list</FontIcon>} /></Link>
-                <MenuItem key="refresh" primaryText="Refresh" onClick={this.check_if_not_submitted.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
+                <MenuItem key="refresh" primaryText="Refresh" onClick={this.maybe_check_if_not_submitted.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
               </IconMenu>
             </div>
           </div>
