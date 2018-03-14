@@ -82,7 +82,7 @@ export default class About extends React.Component {
                             </div>
                             <div className="center-block">
                                 <img src="/images/gassistant_512.png" width="120" />
-                                <p className="lead" style={{fontSize: "1.45em"}}>You can also interact with Flow via <a href="https://assistant.google.com/services/a/uid/000000832a6c27e4?hl=en-GB" target="_blank">Google Assitant</a>, and therefore via Google Home or Assistant on Android devices. Try saying "Ok Google, Talk to Flow Dashboard", or "Hey Google at Flow Dashboard, mark run as complete".</p>
+                                <p className="lead" style={{fontSize: "1.45em"}}>You can also interact with Flow via <a href="https://assistant.google.com/services/a/uid/000000832a6c27e4?hl=en-GB" target="_blank">Google Assitant</a>, and therefore via Google Home or Assistant on mobile. Try saying "Ok Google, Talk to Flow Dashboard", or "Hey Google at Flow Dashboard, mark run as complete".</p>
                             </div>
                         </div>
 
