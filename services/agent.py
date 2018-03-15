@@ -378,7 +378,7 @@ class ConversationAgent(object):
 
     def _habit_status(self):
         habits = Habit.All(self.user)
-        today = datetime.today().date()
+        today = self.user.local_time().date()
         habitday_keys = [ndb.Key('HabitDay', HabitDay.ID(h, today), parent=self.user.key) for h in habits]
         habitdays = ndb.get_multi(habitday_keys)
         n_habits_done = 0
