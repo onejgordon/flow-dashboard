@@ -63,7 +63,7 @@ export default class GoalViewer extends React.Component {
   update_goal(params) {
     api.post("/api/goal", params, (res) => {
       let g = res.goal;
-      let st = {};
+      let st = {assessment_showing: false};
       if (g.annual) st.annual = g;
       else if (g.monthly) st.monthly = g;
       else if (g.longterm) st.longterm = g;
@@ -196,7 +196,10 @@ export default class GoalViewer extends React.Component {
       value = today.getDate();
       total = util.daysInMonth(date.getMonth()+1, date.getFullYear());
     }
-    let in_assessment_window = g && this.in_assessment_window() && !g.annual && !g.assessment;
+    let in_assessment_window = g && this.in_assessment_window() && !g.annual;
+    let not_yet_assessed = g && !g.assessment;
+    let action = not_yet_assessed ? "New" : "Updated"
+    let assess_prompt = not_yet_assessed ? "The month is almost over, how did you do?" : "Want to update your assessment?"
     if (g) {
       goal_list = (
         <ul className="goalList">
@@ -231,10 +234,10 @@ export default class GoalViewer extends React.Component {
         { create_prompt }
 
         <div hidden={!in_assessment_window || assessment_showing}>
-          <p className="lead">The month is almost over, how did you do? <FlatButton label="submit assessment" onClick={this.show_assessment.bind(this)} /></p>
+          <p className="lead">{ assess_prompt } <FlatButton label={`submit ${action} assessment`} onClick={this.show_assessment.bind(this)} /></p>
         </div>
         <div hidden={!assessment_showing || !in_assessment_window}>
-          <RaisedButton label={`Save Assessment`} onClick={this.save_assessment.bind(this, g)} primary={true} />
+          <RaisedButton label={`Save ${action} Assessment`} onClick={this.save_assessment.bind(this, g)} primary={true} />
         </div>
       </div>
     );

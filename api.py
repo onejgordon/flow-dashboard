@@ -356,7 +356,11 @@ class GoalAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        goals = Goal.Recent(self.user)
+        year = self.request.get_range('year')
+        if year:
+            goals = Goal.Year(self.user, year)
+        else:
+            goals = Goal.Recent(self.user)
         self.set_response({
             'goals': [goal.json() for goal in goals]
         }, success=True)

@@ -41,6 +41,8 @@ export default class Analysis extends React.Component {
             questions: questions,
             chart_enabled_questions: chart_enabled
         };
+
+        this.handle_update = this.handle_update.bind(this)
     }
 
     static getStores() {
@@ -77,6 +79,12 @@ export default class Analysis extends React.Component {
         });
     }
 
+    handle_update(key, data) {
+        let state = this.state
+        state[key] = data
+        this.setState(state)
+    }
+
     render() {
         let {loaded, goals,
             habits, habitdays, iso_dates,
@@ -111,7 +119,8 @@ export default class Analysis extends React.Component {
                     habitdays: habitdays,
                     iso_dates: iso_dates,
                     end_date: end,
-                    loaded: loaded }) }
+                    loaded: loaded,
+                    onUpdateData: this.handle_update }) }
 
             </div>
         );

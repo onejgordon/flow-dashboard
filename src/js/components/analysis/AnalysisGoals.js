@@ -1,11 +1,16 @@
 var React = require('react');
 import PropTypes from 'prop-types';
 import {Bar} from "react-chartjs-2";
-import {Dialog} from 'material-ui';
+import {Dialog, IconButton} from 'material-ui';
+var Select = require('react-select');
 import connectToStores from 'alt-utils/lib/connectToStores';
 var ProgressLine = require('components/common/ProgressLine');
+var util = require('utils/util');
+var api = require('utils/api');
+import {changeHandler} from 'utils/component-utils';
 
 @connectToStores
+@changeHandler
 export default class AnalysisGoals extends React.Component {
     static propTypes = {
         goals: PropTypes.object
@@ -17,11 +22,15 @@ export default class AnalysisGoals extends React.Component {
     constructor(props) {
         super(props);
         let today = new Date();
-        let start = new Date();
-        start.setDate(today.getDate() - this.INITIAL_RANGE);
         this.state = {
-            goal_detail: null
+            goal_detail: null,
+            goal_year: today.getFullYear(),
+            form: {
+                year: today.getFullYear()
+            }
         };
+
+        this.FIRST_GOAL_YEAR = 2016;
     }
 
     static getStores() {
@@ -44,18 +53,27 @@ export default class AnalysisGoals extends React.Component {
         let {goals} = this.props;
         let points = [];
         let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        let colors = []
         months.forEach((mo, i) => {
             let g = goals[i+1];
             let val = null;
             if (g) val = g.assessment;
             points.push(val);
+            let bgcolor = '#' + util.colorInterpolate({
+                color1: '95000C',
+                color2: '00EB0F',
+                min: 1, 
+                max: 5,
+                value: val || 1
+            })
+            colors.push(bgcolor)
         })
         let data = {
             labels: months,
             datasets: [{
                 label: "Goal Assessment",
                 data: points,
-                backgroundColor: '#F67C5F'
+                backgroundColor: colors
             }]
         };
         return data;
@@ -91,9 +109,22 @@ export default class AnalysisGoals extends React.Component {
         }) }</ul>
     }
 
+    fetch_goal_year() {
+        let {form} = this.state
+        let year = form.year
+        let params = {
+            year: year
+        }
+        api.get("/api/goal", params, (res) => {
+            this.props.onUpdateData('goals', util.lookupDict(res.goals, 'month'))
+            this.setState({goal_year: year})
+        });        
+    }
+
     render() {
         let {goals} = this.props;
-        let {goal_detail} = this.state;
+        let {goal_detail, form, goal_year} = this.state;
+        let showing_year = "--"
         let today = new Date();
         let goalData = this.goal_data();
         let goalOptions = {
@@ -111,10 +142,24 @@ export default class AnalysisGoals extends React.Component {
         let content;
         if (Object.keys(goals).length == 0) content = <div className="empty">No goal assessments yet</div>
         else content = <Bar data={goalData} options={goalOptions} width={1000} height={450}/>
+        let year_cursor = this.FIRST_GOAL_YEAR;
+        let year_opts = []
+        while (year_cursor <= today.getFullYear()) {
+            year_opts.push({value: year_cursor, label: year_cursor})
+            year_cursor += 1;
+        }
         return (
             <div>
 
-                <h4>Goal Assessments ({today.getFullYear()})</h4>
+                <h4>Goal Assessments ({goal_year})</h4>
+
+                <div className="row">
+                    <div className="col-sm-3 col-sm-offset-9">
+                        <label>Year</label>
+                        <Select options={year_opts} value={form.year} onChange={this.changeHandlerVal.bind(this, 'form', 'year')} simpleValue clearable={false} />
+                        <IconButton iconClassName="material-icons" onClick={this.fetch_goal_year.bind(this)}>refresh</IconButton>
+                    </div>
+                </div>
 
                 <p className="lead">Goal assessments (self-assessments of performance towards stated goals on a 1-5 scale) are submitted at the end of each month, from the goals widget on the dashboard.</p>
 
