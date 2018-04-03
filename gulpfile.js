@@ -6,7 +6,7 @@ var watchify = require('watchify');
 var babelify = require('babelify');
 var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
-var gutil = require('gulp-util');
+var log = require('fancy-log');
 var resolutions = require('browserify-resolutions');
 var hash_src = require("gulp-hash-src");
 var assign = require('lodash.assign');
@@ -49,7 +49,7 @@ var b = browserify(bopts)
 gulp.task('watch', function() {
   var w = watchify(b);
   w.on('update', bundle); // on any dep update, runs the bundler
-  w.on('log', gutil.log); // output build logs to terminal
+  w.on('log', log); // output build logs to terminal
 
   var dirs = path.WATCH_DIRS.concat(['src/js/**/*.js']);
   gulp.watch(dirs, ['copy']);
@@ -60,7 +60,7 @@ gulp.task('build_bundle', bundle);
 
 function bundle() {
   var now = new Date();
-  gutil.log(now + ' - built bundle');
+  log(now + ' - built bundle');
 
   var stream = b.bundle().on('error', function(err){
       console.log(err.message);
