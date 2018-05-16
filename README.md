@@ -74,7 +74,8 @@ To avoid conflicts sometimes seen with gcloud and google.cloud python libs it is
 * `pip install -t lib -r requirements.txt`
 * `pip install -r local.requirements.txt`
 * `gcloud components update`
-* `./scripts/server.sh`
+* `cd scripts`
+* `./server.sh`
 
 Make sure dev_appserver.py is in your path, and run `./scripts/server.sh` to start the dev server locally, and `gulp` in another terminal to build JS etc.
 

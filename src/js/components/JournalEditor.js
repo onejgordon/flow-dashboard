@@ -130,7 +130,7 @@ export default class JournalEditor extends React.Component {
       let _tags;
       let _hint;
       let val = form[q.name];
-      if (q.parse_tags) {
+      if (q.parse_tags && q.response_type == 'text') {
         _tags = this.render_tag_suggest(val || "", q.name);
         _hint = <small>You can @mention and #activity tag</small>
       }
