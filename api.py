@@ -1105,8 +1105,8 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         goals = []
         logging.debug("Analysis range - %s - %s" % (dt_start, dt_end))
         journals, iso_dates = MiniJournal.Fetch(self.user, dt_start, dt_end)
+        habits = Habit.Active(self.user)
         if with_habits:
-            habits = Habit.Active(self.user)
             habitdays = HabitDay.Range(self.user, habits, dt_start, dt_end)
         if with_tracking:
             tracking_days = TrackingDay.Range(self.user, dt_start, dt_end)
@@ -1125,7 +1125,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
                     keyprop="key_id",
                     valueTransform=lambda hd: hd.json())
 
-            }, success=True)
+            }, success=True, debug=True)
 
 
 class IntegrationsAPI(handlers.JsonRequestHandler):

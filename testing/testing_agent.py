@@ -78,6 +78,10 @@ class AgentTestCase(BaseTestCase):
         speech, data, end_convo = self.ca.respond_to_action('input.task_add', parameters={'task_name': 'go to the gym'})
         self.assertTrue("Task added" in speech, speech)
 
+        # Empty task name, error
+        speech, data, end_convo = self.ca.respond_to_action('input.task_add', parameters={'task_name': ''})
+        self.assertTrue("Sorry" in speech, speech)
+
         recent_tasks = Task.Recent(self.u)
         self.assertEqual(len(recent_tasks), 2)  # First added in setup
         self.assertEqual(recent_tasks[0].title, "Go to the gym")

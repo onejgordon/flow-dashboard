@@ -314,9 +314,12 @@ class ConversationAgent(object):
         return text
 
     def _add_task(self, task_name):
-        task = Task.Create(self.user, task_name)
-        task.put()
-        return self._comply_banter() + ". Task added."
+        if task_name:
+            task = Task.Create(self.user, task_name)
+            task.put()
+            return self._comply_banter() + ". Task added."
+        else:
+            return "Sorry, I couldn't add your task. Try saying: 'Add task finish report'"
 
     def _habit_add(self, habit):
         h = Habit.Create(self.user)

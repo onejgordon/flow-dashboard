@@ -41,7 +41,7 @@
     "react-addons-create-fragment": "^15.4.2",
     "react-addons-pure-render-mixin": "^15.4.2",
     "react-addons-update": "^15.4.2",
-    "react-chartjs-2": "^2.0.5",
+    "react-chartjs-2": "^2.7.2",
     "react-color": "^2.1.0",
     "react-dom": "^15.4.2",
     "react-g-analytics": "^0.2.6",

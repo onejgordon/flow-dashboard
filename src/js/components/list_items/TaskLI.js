@@ -66,7 +66,8 @@ export default class TaskLI extends React.Component {
 
   render_title(t) {
     let url_regex = /(ftp|http|https):\/\/[^ "]+/g
-    let html = t.title.replace(url_regex, (url) => {
+    let title = t.title || ''
+    let html = title.replace(url_regex, (url) => {
       if (url) return `<a href=${url} target="_blank">${ util.url_summary(url) }</a>`
     })
     return <div dangerouslySetInnerHTML={this.marked_up_title(html)} />;
