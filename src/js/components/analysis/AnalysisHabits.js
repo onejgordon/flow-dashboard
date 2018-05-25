@@ -160,7 +160,8 @@ export default class AnalysisHabits extends React.Component {
                     time: {
                         unit: 'day'
                     },
-                    stacked: true
+                    stacked: true,
+                    barThickness: 30
                 }]
             }
         }

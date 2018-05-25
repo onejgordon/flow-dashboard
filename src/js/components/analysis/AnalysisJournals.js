@@ -14,11 +14,13 @@ import connectToStores from 'alt-utils/lib/connectToStores';
 @connectToStores
 export default class AnalysisJournals extends React.Component {
     static propTypes = {
-        journals: PropTypes.array
+        journals: PropTypes.array,
+        habits: PropTypes.array
     }
 
     static defaultProps = {
-        journals: []
+        journals: [],
+        habits: []
     }
 
     constructor(props) {
@@ -40,6 +42,7 @@ export default class AnalysisJournals extends React.Component {
             questions: questions,
             color_scale_question: chartable.length > 0 ? chartable[0] : null,
             chart_enabled_questions: chart_enabled,
+            chart_enabled_habits: [], // Ids
             map_showing: false,
             google_maps: null // Holder for Google Maps object
         };
@@ -65,6 +68,12 @@ export default class AnalysisJournals extends React.Component {
         this.setState({chart_enabled_questions});
     }
 
+    toggle_habit(h) {
+        let {chart_enabled_habits} = this.state;
+        util.toggleInList(chart_enabled_habits, h.id);
+        this.setState({chart_enabled_habits});
+    }
+
     render_journal_series_selection() {
         let {chart_enabled_questions, questions} = this.state;
         let all_selectable_series = questions.filter((q) => {
@@ -76,8 +85,16 @@ export default class AnalysisJournals extends React.Component {
         });
     }
 
+    render_habit_selection() {
+        let {chart_enabled_habits} = this.state
+        return this.props.habits.map((h, i) => {
+            let checked = chart_enabled_habits.indexOf(h.id) > -1;
+            return <Checkbox key={i} name={h.name} label={h.name} checked={checked} onCheck={this.toggle_habit.bind(this, h)} />
+        });
+    }
+
     journal_data() {
-        let {chart_enabled_questions, questions, journal_tag_segment} = this.state;
+        let {chart_enabled_questions, chart_enabled_habits, questions, journal_tag_segment} = this.state;
         let {journals} = this.props;
         let labels = [];
         let chart_questions = questions.filter((q) => {
@@ -100,6 +117,10 @@ export default class AnalysisJournals extends React.Component {
                 pointBackgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`
             }
         });
+        datasets = datasets.concat(chart_enabled_habits.map((habit_id, i) => {
+            // TODO
+            return {}
+        }))
         if (journal_tag_segment) {
             let tag_data = journals.map((j, i) => {
                 let tagged = j.tags.indexOf(journal_tag_segment.id) > -1
@@ -315,12 +336,20 @@ export default class AnalysisJournals extends React.Component {
         return (
             <div>
 
-                <h4>Journals</h4>
-
-                <div>
-                { this.render_journal_series_selection() }
+                <div className="row">
+                    <div className="col-sm-6">
+                        <h4>Journals</h4>
+                        <div>
+                        { this.render_journal_series_selection() }
+                        </div>
+                    </div>
+                    <div className="col-sm-6">
+                        <h4>Show Habits</h4>
+                        <div>
+                        { this.render_habit_selection() }
+                        </div>
+                    </div>
                 </div>
-
                 <Line data={journalData} options={journalOptions} width={1000} height={450}/>
 
                 <AutoComplete

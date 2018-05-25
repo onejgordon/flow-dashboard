@@ -6,7 +6,6 @@ var api = require('utils/api');
 import {get} from 'lodash';
 import {Link} from 'react-router';
 import connectToStores from 'alt-utils/lib/connectToStores';
-var UserStore = require('stores/UserStore');
 
 @connectToStores
 export default class Analysis extends React.Component {
@@ -72,6 +71,7 @@ export default class Analysis extends React.Component {
                 journals: res.journals,
                 iso_dates: res.dates,
                 tasks: res.tasks,
+                habits: res.habits,
                 tracking_days: res.tracking_days,
                 goals: util.lookupDict(res.goals, 'month'),
                 loaded: true
@@ -90,8 +90,6 @@ export default class Analysis extends React.Component {
             habits, habitdays, iso_dates,
             tracking_days,
             journals, tasks, end} = this.state;
-        let today = new Date();
-        let admin = UserStore.admin();
         if (!loaded) return null;
         return (
             <div>
@@ -125,6 +123,6 @@ export default class Analysis extends React.Component {
             </div>
         );
     }
-};
+}
 
 module.exports = Analysis;
