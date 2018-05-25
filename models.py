@@ -470,18 +470,18 @@ class Task(ndb.Model):
         return q.fetch(limit=limit)
 
     @staticmethod
-    def Create(user, title, due=None):
+    def Create(user, title, due=None, tomorrow=False):
         if not due:
             tz = user.get_timezone()
             local_now = tools.local_time(tz)
             task_prefs = user.get_setting_prop(['tasks', 'preferences'], {})
             same_day_hour = tools.safe_number(task_prefs.get('same_day_hour', 16), default=16, integer=True)
             due_hour = tools.safe_number(task_prefs.get('due_hour', 22), default=22, integer=True)
-            schedule_for_same_day = local_now.hour < same_day_hour
+            schedule_for_same_day = not tomorrow and local_now.hour < same_day_hour
             dt_due = local_now
             if due_hour > 23:
                 due_hour = 0
-                dt_due += timedelta(days=1)
+                schedule_for_same_day = False
             if due_hour < 0:
                 due_hour = 0
             time_due = time(due_hour, 0)

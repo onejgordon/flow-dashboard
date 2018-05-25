@@ -113,15 +113,16 @@ class TaskAPI(handlers.JsonRequestHandler):
         id = self.request.get_range('id')
         params = tools.gets(self,
             strings=['title'],
-            booleans=['archived', 'wip'],
+            booleans=['archived', 'wip', 'tomorrow'],
             integers=['status', 'timer_last_start', 'timer_target_ms', 'timer_pending_ms',
                       'timer_total_ms', 'timer_complete_sess', 'project_id']
         )
+        logging.debug(params)
         task = None
         if id:
             task = self.user.get(Task, id=id)
         elif 'title' in params:
-            task = Task.Create(self.user, None)
+            task = Task.Create(self.user, None, tomorrow=params.get('tomorrow'))
         if task:
             self.message = task.Update(**params)
             self.success = True

@@ -1,7 +1,7 @@
 var React = require('react');
 import { IconButton, List,
   IconMenu, FontIcon, MenuItem, TextField, AutoComplete,
-  FlatButton, Dialog } from 'material-ui';
+  FlatButton, Dialog, Checkbox } from 'material-ui';
 import PropTypes from 'prop-types';
 import {browserHistory} from 'react-router';
 var ProjectStore = require('stores/ProjectStore');
@@ -37,8 +37,10 @@ class TaskWidget extends React.Component {
       super(props);
       this.state = {
           tasks: [],
-          form: {},
-          project_selector_showing: false
+          form: {
+            tomorrow: !this.task_same_day()
+          },
+          project_selector_showing: false,
       };
       this.I_ST = {
         fontSize: 20
@@ -52,6 +54,8 @@ class TaskWidget extends React.Component {
       }
       this.TASK_COLOR = "#DF00FF"
       this.START_TIMER_ON_WIP = true
+
+      this.tomorrowCheck = this.changeHandlerToggle.bind(this, 'form', 'tomorrow')
   }
 
   static getStores() {
@@ -67,6 +71,14 @@ class TaskWidget extends React.Component {
 
   componentDidMount() {
     this.fetch_recent();
+  }
+
+  task_same_day() {
+    let {user} = this.props;
+    let now = new Date();
+    let hr = get(user.settings, ['tasks', 'same_day_hour'], 16)
+    let same_day = now.getHours() <= hr
+    return same_day
   }
 
   fetch_recent() {
@@ -116,7 +128,7 @@ class TaskWidget extends React.Component {
 
   save_task() {
     let {form} = this.state;
-    this.task_update(form, {title: form.title, project_id: form.project_id})
+    this.task_update(form, {title: form.title, project_id: form.project_id, tomorrow: form.tomorrow ? 1 : 0})
   }
 
   handle_task_changed(task, additional_updates) {
@@ -152,7 +164,7 @@ class TaskWidget extends React.Component {
 
   show_task_dialog(t) {
     TaskActions.openTaskDialog()
-    let st = {form: {}}
+    let st = {form: {tomorrow: !this.task_same_day()}}
     if (t) st.form = clone(t)
     this.setState(st)
   }
@@ -270,7 +282,6 @@ class TaskWidget extends React.Component {
         <MenuItem key="task_history" onClick={this.goto_task_history.bind(this)} leftIcon={<FontIcon className="material-icons">list</FontIcon>} primaryText="Task History" />
         <MenuItem key="common" onClick={this.add_common_tasks.bind(this)} leftIcon={<FontIcon className="material-icons">playlist_add_check</FontIcon>} primaryText="Add Common Tasks" />
       </IconMenu>
-
     ]
     let morning = now.getHours() <= 12;
     let exclamation = morning ? "Set the top two or three tasks for today." : "All clear!"
@@ -308,6 +319,16 @@ class TaskWidget extends React.Component {
     }
     let wip_task = this.wip_task();
     let timezone = user ? user.timezone || "UTC" : "UTC"
+    let _for_future_section
+    if (!editing) _for_future_section = (
+      <div style={{paddingTop: "20px", opacity: 0.6}}>
+        <Checkbox
+          label="Set task for tomorrow"
+          checked={form.tomorrow}
+          onCheck={this.tomorrowCheck}
+        />
+      </div>
+      )
     return (
       <div className="TaskWidget" id="TaskWidget">
 
@@ -353,6 +374,7 @@ class TaskWidget extends React.Component {
                 { _project_section }
               </div>
             </div>
+            { _for_future_section }
           </div>
         </Dialog>
 
