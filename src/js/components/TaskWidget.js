@@ -171,6 +171,7 @@ class TaskWidget extends React.Component {
 
   dismiss_task_dialog() {
     TaskActions.closeTaskDialog()
+    this.setState({form: {}})
   }
 
   project_input_update(searchText) {

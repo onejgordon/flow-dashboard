@@ -77,7 +77,8 @@ To avoid conflicts sometimes seen with gcloud and google.cloud python libs it is
 * `cd scripts`
 * `./server.sh`
 
-Make sure dev_appserver.py is in your path, and run `./scripts/server.sh` to start the dev server locally, and `gulp` in another terminal to build JS etc.
+Make sure dev_appserver.py is in your path, and run `server.sh` (in scripts/) to start the dev server locally.
+Then run `gulp` in another terminal to build JS etc.
 
 Visit localhost:8080 to run the app, and localhost:8000 to view the local dev server console.
 
