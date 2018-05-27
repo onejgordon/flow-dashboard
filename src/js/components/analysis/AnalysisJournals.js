@@ -72,7 +72,7 @@ export default class AnalysisJournals extends React.Component {
         });
         return all_selectable_series.map((q, i) => {
             let checked = chart_enabled_questions.indexOf(q.name) > -1;
-            return <Checkbox key={i} name={q.name} label={q.label} checked={checked} onCheck={this.toggle_series.bind(this, q.name)} />
+            return <Checkbox key={i} name={q.name} label={q.label || q.name || "Unlabeled question"} checked={checked} onCheck={this.toggle_series.bind(this, q.name)} />
         });
     }
 
@@ -239,7 +239,7 @@ export default class AnalysisJournals extends React.Component {
                 yAxes: [{
                     ticks: {
                         max: 10,
-                        min: 1,
+                        min: 0,
                         stepSize: 1
                     }
                 }],
