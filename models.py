@@ -377,7 +377,9 @@ class Project(ndb.Model):
         regression = progress < self.progress
         if not self.progress_ts:
             self.progress_ts = [0 for x in range(10)]  # Initialize
-        self.progress_ts[progress-1] = tools.unixtime()
+        if progress:
+            # Avoid updating last array element
+            self.progress_ts[progress-1] = tools.unixtime()
         if regression:
             clear_index = progress
             while clear_index < 10:
