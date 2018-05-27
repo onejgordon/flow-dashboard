@@ -152,6 +152,7 @@ class AgentTestCase(BaseTestCase):
             ('remind me to clean the closet', 'input.task_add', {'task_name': 'clean the closet'}),
             ('remind me to "mow the lawn"', 'input.task_add', {'task_name': 'mow the lawn'}),
             ('remind me to "sweep the floor"', 'input.task_add', {'task_name': 'sweep the floor'}),
+            ('add task "check out june\'s data"', 'input.task_add', {'task_name': 'check out june\'s data'}),
 
             # View tasks
             ('my tasks', 'input.task_view', None),
@@ -170,7 +171,7 @@ class AgentTestCase(BaseTestCase):
             ('what are habits', 'input.help_habits', None),
             ('learn about journaling', 'input.help_journals', None),
 
-            # Add task
+            # Disconnect
             ('disconnect', 'input.disconnect', None),
         ]
         for v in volley:
