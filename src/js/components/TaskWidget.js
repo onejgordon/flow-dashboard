@@ -37,9 +37,7 @@ class TaskWidget extends React.Component {
       super(props);
       this.state = {
           tasks: [],
-          form: {
-            tomorrow: !this.task_same_day()
-          },
+          form: this.empty_form(),
           project_selector_showing: false,
       };
       this.I_ST = {
@@ -71,6 +69,10 @@ class TaskWidget extends React.Component {
 
   componentDidMount() {
     this.fetch_recent();
+  }
+
+  empty_form() {
+    return {tomorrow: !this.task_same_day()}
   }
 
   task_same_day() {
@@ -119,7 +121,7 @@ class TaskWidget extends React.Component {
     this.setState({working: true}, () => {
       api.post("/api/task", params, (res) => {
         if (res.task) {
-          this.handle_task_changed(res.task, {form: {}, working: false, project_selector_showing: false});
+          this.handle_task_changed(res.task, {form: this.empty_form(), working: false, project_selector_showing: false});
           TaskActions.closeTaskDialog()
         }
       });
@@ -163,15 +165,18 @@ class TaskWidget extends React.Component {
   }
 
   show_task_dialog(t) {
-    TaskActions.openTaskDialog()
-    let st = {form: {tomorrow: !this.task_same_day()}}
+    let st = {form: {}}
     if (t) st.form = clone(t)
-    this.setState(st)
+    st.form.tomorrow = !this.task_same_day()
+    this.setState(st, () => {
+      TaskActions.openTaskDialog()
+    })
   }
 
   dismiss_task_dialog() {
-    TaskActions.closeTaskDialog()
-    this.setState({form: {}})
+    this.setState({form: this.empty_form()}, () => {
+      TaskActions.closeTaskDialog()
+    })
   }
 
   project_input_update(searchText) {
