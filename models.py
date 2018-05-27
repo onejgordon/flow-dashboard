@@ -472,14 +472,18 @@ class Task(ndb.Model):
         return q.fetch(limit=limit)
 
     @staticmethod
-    def Create(user, title, due=None, tomorrow=False):
+    def Create(user, title, due=None, tomorrow=None):
         if not due:
             tz = user.get_timezone()
             local_now = tools.local_time(tz)
             task_prefs = user.get_setting_prop(['tasks', 'preferences'], {})
             same_day_hour = tools.safe_number(task_prefs.get('same_day_hour', 16), default=16, integer=True)
             due_hour = tools.safe_number(task_prefs.get('due_hour', 22), default=22, integer=True)
-            schedule_for_same_day = not tomorrow and local_now.hour < same_day_hour
+            if tomorrow is not None:
+                # Paramter takes precedence
+                schedule_for_same_day = not tomorrow
+            else:
+                schedule_for_same_day = local_now.hour < same_day_hour
             dt_due = local_now
             if due_hour > 23:
                 due_hour = 0
@@ -757,23 +761,24 @@ class JournalTag(ndb.Model):
 
     @staticmethod
     def CreateFromText(user, text):
-        people = re.findall(r'@([a-zA-Z]{3,30})', text)
-        hashtags = re.findall(r'#([a-zA-Z]{3,30})', text)
         new_jts = []
         all_jts = []
-        people_ids = [JournalTag.Key(user, p) for p in people]
-        hashtag_ids = [JournalTag.Key(user, ht, prefix='#') for ht in hashtags]
-        existing_tags = ndb.get_multi(people_ids + hashtag_ids)
-        for existing_tag, key in zip(existing_tags, people_ids + hashtag_ids):
-            if not existing_tag:
-                prefix = key.id()[0]
-                type = JOURNALTAG.HASHTAG if prefix == '#' else JOURNALTAG.PERSON
-                jt = JournalTag(id=key.id(), name=key.id()[1:], type=type, parent=user.key)
-                new_jts.append(jt)
-                all_jts.append(jt)
-            else:
-                all_jts.append(existing_tag)
-        ndb.put_multi(new_jts)
+        if text:
+            people = re.findall(r'@([a-zA-Z]{3,30})', text)
+            hashtags = re.findall(r'#([a-zA-Z]{3,30})', text)
+            people_ids = [JournalTag.Key(user, p) for p in people]
+            hashtag_ids = [JournalTag.Key(user, ht, prefix='#') for ht in hashtags]
+            existing_tags = ndb.get_multi(people_ids + hashtag_ids)
+            for existing_tag, key in zip(existing_tags, people_ids + hashtag_ids):
+                if not existing_tag:
+                    prefix = key.id()[0]
+                    type = JOURNALTAG.HASHTAG if prefix == '#' else JOURNALTAG.PERSON
+                    jt = JournalTag(id=key.id(), name=key.id()[1:], type=type, parent=user.key)
+                    new_jts.append(jt)
+                    all_jts.append(jt)
+                else:
+                    all_jts.append(existing_tag)
+            ndb.put_multi(new_jts)
         return all_jts
 
     def person(self):

@@ -31,7 +31,8 @@ class JournalingTestCase(BaseTestCase):
             ("Fun #PoolParty with @KatyRoth", ["#PoolParty"], ["@KatyRoth"]),
             ("Stressful day at work with @BarackObama", [], ["@BarackObama"]),
             ("Went #Fishing with @JohnKariuki and got #Sick off #Seafood", ["#Fishing", "#Sick", "#Seafood"], ["@JohnKariuki"]),
-            ("Went #Fishing with @BarackObama", ["#Fishing"], ["@BarackObama"])
+            ("Went #Fishing with @BarackObama", ["#Fishing"], ["@BarackObama"]),
+            (None, [], []),
         ]
         for v in volley:
             txt, expected_hashes, expected_people = v
