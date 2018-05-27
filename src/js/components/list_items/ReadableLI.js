@@ -57,7 +57,7 @@ export default class ReadableLI extends React.Component {
   }
 
   goto_url(url) {
-    window.open(url, "_blank");
+    if (url != null) window.open(url, "_blank");
   }
 
   get_link_url(r) {
