@@ -142,16 +142,20 @@ export default class AnalysisJournals extends React.Component {
         journals.forEach((j) => {
             let has_tag = j.tags.indexOf(tag.id) > -1;
             variables.forEach((v) => {
-                let val = j.data[v.name];
+                let val = parseFloat(j.data[v.name])
+                console.log(v.name)
+                console.log("Type: " + typeof val + " val: " + val)
                 if (!aggregate[v.name]) aggregate[v.name] = {
                     with: [],
                     without: []
                 }
                 if (val != null) {
-                    if (has_tag) {
-                        aggregate[v.name].with.push(val);
-                    } else {
-                        aggregate[v.name].without.push(val);
+                    if (!isNaN(val)) {
+                        if (has_tag) {
+                            aggregate[v.name].with.push(val);
+                        } else {
+                            aggregate[v.name].without.push(val);
+                        }
                     }
                 }
             })
@@ -168,7 +172,7 @@ export default class AnalysisJournals extends React.Component {
         journal_segments[tag.id] = {
             data_with_tag: data_with,
             data_without_tag: data_without,
-            labels: variables.map((v) => { return v.label; })
+            labels: variables.map((v) => { return v.label || v.name; })
         }
         this.setState({journal_tag_segment: tag, journal_segments: journal_segments});
     }
@@ -232,7 +236,7 @@ export default class AnalysisJournals extends React.Component {
         let {journal_tag_segment, journal_segments, map_showing } = this.state;
         let {loaded} = this.props;
         if (!loaded) return null;
-        let _journals_segmented, _map;
+        let _journals_segmented
         let journalData = this.journal_data();
         let journalOptions = {
             scales: {
@@ -260,7 +264,7 @@ export default class AnalysisJournals extends React.Component {
                         {
                             ticks: {
                                 max: 10,
-                                min: 1,
+                                min: 0,
                                 stepSize: 1
                             }
                         }
@@ -285,7 +289,7 @@ export default class AnalysisJournals extends React.Component {
                                 backgroundColor: '#CCC'
                             }
                         ]
-                        }} />
+                        }} width={1000} height={450} />
 
                 </div>
             );
@@ -335,12 +339,6 @@ export default class AnalysisJournals extends React.Component {
                     />
 
                 { _journals_segmented }
-
-                <div hidden={true}>
-                    <FlatButton label="Show Map" onClick={this.show_map.bind(this)} disabled />
-                </div>
-
-                { _map }
 
             </div>
         );
