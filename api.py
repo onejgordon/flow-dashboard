@@ -1126,7 +1126,7 @@ class AnalysisAPI(handlers.JsonRequestHandler):
                     keyprop="key_id",
                     valueTransform=lambda hd: hd.json())
 
-            }, success=True, debug=True)
+            }, success=True)
 
 
 class IntegrationsAPI(handlers.JsonRequestHandler):
