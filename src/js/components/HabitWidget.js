@@ -120,7 +120,7 @@ export default class HabitWidget extends React.Component {
     if (cancelling) _params = {cancel: 1}
     let hd_id = this.day_action(habit, iso_day, 'increment', _params);
     if (!cancelling) {
-      // Set this day as cancellable, and schedule reset for 5s from now
+      // Set this day as cancellable, and schedule reset for 3s from now
       this.setState({cancellable_habitday: hd_id})
       this.CANCELLABLE_INTERVAL_ID = window.setTimeout(() => {
         this.clear_cancellable()
@@ -262,9 +262,12 @@ export default class HabitWidget extends React.Component {
   render_habit(h) {
     let {commitments, days} = this.props;
     let {habitdays, cancellable_habitday} = this.state;
-    let cursor = new Date();
-    let today = new Date();
-    let today_iso = util.iso_from_date(today);
+    let cursor = new Date()
+    let today = new Date()
+    let yest = new Date()
+    yest.setDate(yest.getDate() - 1)
+    let today_iso = util.iso_from_date(today)
+    let yest_iso = util.iso_from_date(yest)
     let res = [];
     var done = false, is_committed = false;
     let n_committed = 0, n_committed_done = 0, col_num = 1;
@@ -275,6 +278,7 @@ export default class HabitWidget extends React.Component {
     while (!today_col) {
       let iso_day = util.iso_from_date(cursor);
       today_col = iso_day == today_iso;
+      let yest_col = iso_day == yest_iso
       let id = this.make_id(h.id, iso_day);
       let in_week = this.day_in_current_habit_week(cursor);
       let count = 0
@@ -287,7 +291,7 @@ export default class HabitWidget extends React.Component {
         done = false;
         is_committed = false;
       }
-      let countable = today_col && h.tgt_daily
+      let countable = (today_col || yest_col) && h.tgt_daily
       if (in_week) {
         if (done) {
           done_in_week += 1;
