@@ -45,6 +45,7 @@ export default class AnalysisJournals extends React.Component {
         };
 
         this.TAG_COLOR = '#3FE0F2'
+        this.TAG_BG_COLOR = `rgba(0, .4, 1, 0.3)`
     }
 
     static getStores() {
@@ -102,15 +103,21 @@ export default class AnalysisJournals extends React.Component {
         });
         if (journal_tag_segment) {
             let tag_data = journals.map((j, i) => {
-                let tagged = j.tags.indexOf(journal_tag_segment.id) > -1
-                return tagged ? 1 : null
+                let all_text = ''
+                Object.values(j.data).forEach((val) => {
+                    if (typeof val == 'string') all_text += ' ' + val
+                })
+                let re = new RegExp(journal_tag_segment.id, 'gi')
+                let tag_count = (all_text.match(re) || []).length;
+                if (tag_count == 0) tag_count = null  // Hide data point if tag not present
+                return tag_count
             })
             datasets.push({
                 label: `Tagged '${journal_tag_segment.name}'`,
                 data: tag_data,
                 pointRadius: 7,
                 pointHoverRadius: 9,
-                backgroundColor: this.TAG_COLOR,
+                backgroundColor: this.TAG_BG_COLOR,
                 pointBackgroundColor: this.TAG_COLOR
             })
         }
@@ -143,8 +150,6 @@ export default class AnalysisJournals extends React.Component {
             let has_tag = j.tags.indexOf(tag.id) > -1;
             variables.forEach((v) => {
                 let val = parseFloat(j.data[v.name])
-                console.log(v.name)
-                console.log("Type: " + typeof val + " val: " + val)
                 if (!aggregate[v.name]) aggregate[v.name] = {
                     with: [],
                     without: []
