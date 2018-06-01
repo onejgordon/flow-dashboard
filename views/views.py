@@ -1,6 +1,7 @@
 import django_version
 import authorized
 import handlers
+import tools
 
 
 class App(handlers.BaseRequestHandler):
@@ -13,6 +14,7 @@ class App(handlers.BaseRequestHandler):
         # }
         d = kwargs.get('d')
         d['constants'] = {
+            'dev': tools.on_dev_server()
         }
         d['alt_bootstrap'] = {
             "UserStore": {

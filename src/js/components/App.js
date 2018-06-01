@@ -10,7 +10,7 @@ var UserActions = require('actions/UserActions');
 var UserStore = require('stores/UserStore');
 var ReactTooltip = require('react-tooltip');
 import connectToStores from 'alt-utils/lib/connectToStores';
-import {G_OAUTH_CLIENT_ID, GOOGLE_API_KEY} from 'constants/client_secrets';
+import {G_OAUTH_CLIENT_ID, DEV_G_OAUTH_CLIENT_ID, DEV_GOOGLE_API_KEY, GOOGLE_API_KEY} from 'constants/client_secrets';
 var api = require('utils/api');
 var toastr = require('toastr');
 
@@ -45,7 +45,7 @@ export default class Private extends React.Component {
   init_google() {
     gapi.client.init({
       apiKey: GOOGLE_API_KEY,
-      client_id: G_OAUTH_CLIENT_ID,
+      client_id: constants.dev ? DEV_G_OAUTH_CLIENT_ID || G_OAUTH_CLIENT_ID : G_OAUTH_CLIENT_ID,
       scope: 'profile'
     }).then(() => {
       gapi.auth2.getAuthInstance().isSignedIn.listen(this.signinChanged.bind(this));
