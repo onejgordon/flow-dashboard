@@ -28,7 +28,8 @@ class ProjectAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        projects = Project.Fetch(self.user)
+        page, max, offset = tools.paging_params(self.request)
+        projects = Project.Fetch(self.user, limit=max, offset=offset)
         self.set_response({
             'projects': [p.json() for p in projects]
         }, success=True)

@@ -9,6 +9,7 @@ var ProjectLI = require('components/list_items/ProjectLI');
 var ProjectAnalysis = require('components/ProjectAnalysis');
 var ProjectStore = require('stores/ProjectStore');
 var util = require('utils/util');
+import {browserHistory} from 'react-router';
 import connectToStores from 'alt-utils/lib/connectToStores';
 
 @connectToStores
@@ -145,6 +146,10 @@ export default class ProjectViewer extends React.Component {
     this.setState({form})
   }
 
+  goto_archive() {
+    browserHistory.push('/app/project/history');
+  }
+
   render_milestone_toggles() {
     let toggles = []
     for (let i = 0; i < 10; i++) {
@@ -241,6 +246,7 @@ export default class ProjectViewer extends React.Component {
               <IconMenu className="pull-right" iconButtonElement={<IconButton iconClassName="material-icons">more_vert</IconButton>}>
                 <MenuItem key="gr" primaryText="Refresh" onClick={this.fetch_projects.bind(this)} leftIcon={<FontIcon className="material-icons">refresh</FontIcon>} />
                 <MenuItem key="new" primaryText="New Project" onClick={this.open_editor.bind(this, null)} leftIcon={<FontIcon className="material-icons">add</FontIcon>} />
+                <MenuItem key="archived" primaryText="Project History" onClick={this.goto_archive.bind(this, null)} leftIcon={<FontIcon className="material-icons">list</FontIcon>} />
               </IconMenu>
             </div>
           </div>

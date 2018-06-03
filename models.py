@@ -343,8 +343,8 @@ class Project(ndb.Model):
         return Project.query(ancestor=user.key).filter(Project.archived == False).order(Project.starred).order(-Project.dt_created).fetch(limit=20)
 
     @staticmethod
-    def Fetch(user):
-        return Project.query(ancestor=user.key).order(-Project.dt_created).fetch(limit=20)
+    def Fetch(user, limit=30, offset=0):
+        return Project.query(ancestor=user.key).order(-Project.dt_created).fetch(limit=limit, offset=offset)
 
     @staticmethod
     def Create(user):
