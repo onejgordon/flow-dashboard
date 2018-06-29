@@ -4,7 +4,7 @@
 from datetime import datetime, timedelta, time
 from google.appengine.ext import ndb
 from google.appengine.api import mail, search
-from constants import EVENT, USER, TASK, READABLE, JOURNALTAG, REPORT, NEW_USER_NOTIFICATIONS, HABIT
+from constants import EVENT, USER, TASK, READABLE, JOURNALTAG, REPORT, NEW_USER_NOTIFICATIONS, HABIT, JOURNAL
 import tools
 import json
 import random
@@ -842,7 +842,7 @@ class MiniJournal(ndb.Model):
 
     @staticmethod
     def CurrentSubmissionDate():
-        HOURS_BACK = 8
+        HOURS_BACK = JOURNAL.HOURS_BACK
         now = datetime.now()
         return (now - timedelta(hours=HOURS_BACK)).date()
 

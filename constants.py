@@ -96,6 +96,7 @@ class JOURNAL():
     # Timing
     START_HOUR = 21
     END_HOUR = 4
+    HOURS_BACK = 8
 
     # Patterns
     PTN_TEXT_RESPONSE = '.*'

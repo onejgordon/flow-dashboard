@@ -12,7 +12,7 @@ import {changeHandler} from 'utils/component-utils';
 var JournalEditor = require('components/JournalEditor');
 var api = require('utils/api');
 var toastr = require('toastr');
-import {clone, merge} from 'lodash';
+import {clone, merge, without} from 'lodash';
 
 @changeHandler
 export default class MiniJournalWidget extends React.Component {
@@ -33,6 +33,7 @@ export default class MiniJournalWidget extends React.Component {
   constructor(props) {
       super(props);
       this.state = {
+        today_data: {},
         form: this.initial_form_state(),
         tasks: [""],
         open: false,
@@ -116,12 +117,14 @@ export default class MiniJournalWidget extends React.Component {
       this.check_if_not_submitted();
     }
   }
-  
+
   check_if_not_submitted() {
     // If not yet submitted for day, show dialog
     api.get("/api/journal/today", {}, (res) => {
       let not_submitted = !res.journal || (res.journal && !res.journal.data);
-      this.setState({submitted: !not_submitted}, () => {
+      let st = {submitted: !not_submitted}
+      if (res.journal != null) st.today_data = res.journal.data
+      this.setState(st, () => {
         if (not_submitted) this.open_journal_dialog();
       });
     });
@@ -129,6 +132,7 @@ export default class MiniJournalWidget extends React.Component {
 
   open_journal_dialog() {
     let {include_location} = this.props;
+    let {today_data} = this.state
     if (include_location) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(this.got_location.bind(this), (failure) => {
@@ -140,7 +144,7 @@ export default class MiniJournalWidget extends React.Component {
         });
       } else toastr.error(`Browser doesn't support geolocation`);
     }
-    this.setState({open: true});
+    this.setState({open: true, form: clone(today_data)});
   }
 
   got_location(position) {
@@ -151,7 +155,7 @@ export default class MiniJournalWidget extends React.Component {
   }
 
   submit() {
-    let {position, tasks, historical, historical_date} = this.state;
+    let {position, tasks, historical, historical_date, historical_incomplete_dates} = this.state;
     let _form = this.state.form;
     let form = clone(_form);
     let params = this.refs.je.get_params();
@@ -165,12 +169,20 @@ export default class MiniJournalWidget extends React.Component {
       params.tasks = JSON.stringify(tasks)
     }
     api.post("/api/journal/submit", params, (res) => {
-      this.setState({submitted: true, open: false, form: this.initial_form_state()})
+      let st = {submitted: true, open: false, historical: false, historical_date: null}
+      if (historical && historical_date != null) {
+        st.form = this.initial_form_state()
+        let incomplete_dates = without(historical_incomplete_dates, historical_date)
+        st.historical_incomplete_dates = incomplete_dates
+      } else {
+        st.today_data = res.journal.data
+      }
+      this.setState(st)
     });
   }
 
   dismiss() {
-    this.setState({open: false});
+    this.setState({open: false, historical: false, historical_date: null});
   }
 
   render_location() {
@@ -214,14 +226,29 @@ export default class MiniJournalWidget extends React.Component {
     });
   }
 
+  current_submission_date() {
+    // Submission date for non-historical journals submitted now
+    let d = new Date()
+    d.setHours(d.getHours() - AppConstants.JOURNAL_HOURS_BACK)
+    return d
+  }
+
+  get_journal_date() {
+    let {historical, historical_date} = this.state;
+    let d
+    if (historical && historical_date != null) d = util.date_from_iso(historical_date)
+    else d = this.current_submission_date()
+    return d
+  }
+
   render_history_section() {
     let {historical, historical_date, historical_incomplete_dates, today} = this.state;
     let _selector;
     if (historical) {
-      let today = util.printDateObj(new Date);
-      let opts = [<MenuItem value={today} primaryText={`Today (${today})`} />];
+      let today = util.printDateObj(this.current_submission_date());
+      let opts = [<MenuItem key='today' value={today} primaryText={`Today (${today})`} />];
       opts = opts.concat(historical_incomplete_dates.map((iso) => {
-        return <MenuItem value={iso} primaryText={iso} />
+        return <MenuItem key={iso} value={iso} primaryText={iso} />
       }));
       _selector = (
         <DropDownMenu value={historical_date || today} onChange={this.changeHandlerDropDown.bind(this, null, 'historical_date')}>
@@ -274,17 +301,19 @@ export default class MiniJournalWidget extends React.Component {
     let {questions} = this.props;
     let in_window = this.in_journal_window();
     let actions = [
-      <RaisedButton label="Submit" primary={true} onClick={this.submit.bind(this)} />,
-      <FlatButton label="Later" onClick={this.dismiss.bind(this)} />
+      <RaisedButton label="Save Journal" primary={true} onClick={this.submit.bind(this)} />,
+      <FlatButton label="Dismiss" onClick={this.dismiss.bind(this)} />
     ]
-    let _cta;
-    if (!submitted) _cta = in_window ? <small><div><a href="javascript:void(0)" onClick={this.open_journal_dialog.bind(this)}>Submit now</a></div></small> : <small><div>You can submit at {this.props.window_start_hr}:00. <Link to="/app/settings">Configure journal timing</Link>.</div></small>;
+    let _cta = in_window ? <small><div><a href="javascript:void(0)" onClick={this.open_journal_dialog.bind(this)}>{ submitted ? "Update journal" : "Fill journal" }</a></div></small> : <small><div>You can submit at {this.props.window_start_hr}:00. <Link to="/app/settings">Configure journal timing</Link>.</div></small>;
     let _status = (
-      <p className="lead">{ submitted ? "Journal submitted" : "Journal not yet submitted" }. { _cta }</p>
+      <p className="lead">{ submitted ? "Journal submitted, but you can still make edits" : "Journal not yet submitted" }. { _cta }</p>
     )
+
+    let journal_date = util.iso_from_date(this.get_journal_date())
+    let title = `Submit Daily Journal (${journal_date})`
     return (
       <div>
-        <MobileDialog title="Submit Daily Journal"
+        <MobileDialog title={title}
           open={open} onRequestClose={this.dismiss.bind(this)}
           autoDetectWindowHeight={true} autoScrollBodyContent={true}
           actions={actions}>
