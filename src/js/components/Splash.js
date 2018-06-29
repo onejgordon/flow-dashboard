@@ -3,6 +3,7 @@ var AppConstants = require('constants/AppConstants');
 import {Link} from 'react-router';
 import GoogleLogin from 'react-google-login';
 import {RaisedButton, Snackbar} from 'material-ui';
+import {G_OAUTH_CLIENT_ID, DEV_G_OAUTH_CLIENT_ID, DEV_GOOGLE_API_KEY, GOOGLE_API_KEY} from 'constants/client_secrets';
 var client_secrets = require('constants/client_secrets');
 
 export default class Splash extends React.Component {
@@ -27,6 +28,7 @@ export default class Splash extends React.Component {
         let {user, signing_in} = this.props;
         let snack_message = "Signing you in...";
         let cta = user ? `Welcome back to ${SITENAME}` : `Welcome to ${SITENAME}`;
+        let oauth_client_id = constants.dev ? client_secrets.DEV_G_OAUTH_CLIENT_ID || client_secrets.G_OAUTH_CLIENT_ID : client_secrets.G_OAUTH_CLIENT_ID
         return (
             <div>
 
@@ -43,7 +45,7 @@ export default class Splash extends React.Component {
                     <div hidden={user}>
 
                         <GoogleLogin
-                            clientId={client_secrets.G_OAUTH_CLIENT_ID}
+                            clientId={oauth_client_id}
                             buttonText="Sign In"
                             scope="profile email"
                             onSuccess={this.success.bind(this)}

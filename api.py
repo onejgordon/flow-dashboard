@@ -1053,7 +1053,8 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
             json_response = json.loads(g_response.content)
             if 'aud' in json_response:
                 aud = json_response['aud']
-                if aud == secrets.GOOGLE_CLIENT_ID:
+                client_id = secrets.DEV_GOOGLE_CLIENT_ID if tools.on_dev_server() else secrets.GOOGLE_CLIENT_ID
+                if aud == client_id:
                     success = True
                     email = json_response.get("email", None)
                     name = json_response.get("name", None)
