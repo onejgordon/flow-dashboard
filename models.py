@@ -1421,17 +1421,9 @@ class Quote(UserSearchable):
                     if len(readables) == 1:
                         # Non-ambiguous result, link it
                         r = readables[0]
-                        self.readable = r.key
-                        return r
-            # else:
-            #     # Lookup via slug query
-            #     slug = self.source_slug()
-            #     if slug:
-            #         r = Readable.GetBySlug(user, slug)
-            #         if r:
-            #             self.readable = r.key
-            #             return r
-
+                        if r:
+                            self.readable = r.key
+                            return r
 
 class Report(ndb.Model):
     """
