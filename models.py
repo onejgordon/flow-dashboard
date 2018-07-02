@@ -160,13 +160,13 @@ class User(ndb.Model):
         return u
 
     @staticmethod
-    def SyncActive(sync_integration_id, limit=100):
+    def SyncActive(sync_integration_id, limit=200):
         multi = type(sync_integration_id) is list
         if multi:
             fltr = User.sync_services.IN(sync_integration_id)
         else:
             fltr = User.sync_services == sync_integration_id
-        return User.query().filter(fltr).fetch(limit=limit)
+        return [u for u in User.query().filter(fltr).fetch(limit=limit) if not u.inactive()]
 
     @staticmethod
     def Create(email=None, g_id=None, name=None, password=None):
@@ -220,6 +220,14 @@ class User(ndb.Model):
     @classmethod
     def get_search_index(cls, user_key, kind):
         return search.Index(name="FTS_UID:%s_%s" % (user_key.id(), kind))
+
+    def inactive(self):
+        '''
+        Consider users inactive (disable sync) when no login for 6 months
+        '''
+        if not self.login_dt:
+            return True
+        return (datetime.now() - self.login_dt).days >= 6 * 30
 
     def admin(self):
         return self.level == USER.ADMIN
