@@ -43,7 +43,7 @@ export default class MiniJournalWidget extends React.Component {
         historical_date: null,
         historical_incomplete_dates: [],
         position: null, // {lat, lon}
-        submitted: false
+        submitted_date: null
       };
       this.MAX_TASKS = 3;
       this.NOTIFY_CHECK_MINS = 5;
@@ -107,7 +107,7 @@ export default class MiniJournalWidget extends React.Component {
 
   should_notify() {
     let d = new Date();
-    if (!this.state.submitted && d.getMinutes() <= this.NOTIFY_CHECK_MINS) {
+    if (!this.state.submitted_date != null && d.getMinutes() <= this.NOTIFY_CHECK_MINS) {
       return this.in_journal_window();
     }
   }
@@ -122,7 +122,7 @@ export default class MiniJournalWidget extends React.Component {
     // If not yet submitted for day, show dialog
     api.get("/api/journal/today", {}, (res) => {
       let not_submitted = !res.journal || (res.journal && !res.journal.data);
-      let st = {submitted: !not_submitted}
+      let st = {submitted_date: not_submitted ? null : res.journal.iso_date}
       if (res.journal != null) st.today_data = res.journal.data
       this.setState(st, () => {
         if (not_submitted) this.open_journal_dialog();
@@ -169,7 +169,7 @@ export default class MiniJournalWidget extends React.Component {
       params.tasks = JSON.stringify(tasks)
     }
     api.post("/api/journal/submit", params, (res) => {
-      let st = {submitted: true, open: false, historical: false, historical_date: null}
+      let st = {submitted_date: util.iso_from_date(this.current_submission_date()), open: false, historical: false, historical_date: null}
       if (historical && historical_date != null) {
         st.form = this.initial_form_state()
         let incomplete_dates = without(historical_incomplete_dates, historical_date)
@@ -226,6 +226,11 @@ export default class MiniJournalWidget extends React.Component {
     });
   }
 
+  submitted() {
+    let {submitted_date} = this.state
+    return submitted_date != null && submitted_date == util.iso_from_date(this.current_submission_date())
+  }
+
   current_submission_date() {
     // Submission date for non-historical journals submitted now
     let d = new Date()
@@ -273,7 +278,7 @@ export default class MiniJournalWidget extends React.Component {
 
   render_tasks() {
     let {tomorrow_top_tasks} = this.props;
-    let {form, tasks} = this.state;
+    let {tasks} = this.state;
     if (!tomorrow_top_tasks) return null;
     else {
       let _tasks = tasks.map((task, i) => {
@@ -297,16 +302,17 @@ export default class MiniJournalWidget extends React.Component {
   }
 
   render() {
-    let {form, open, submitted} = this.state;
+    let {form, open, submitted_date} = this.state;
     let {questions} = this.props;
     let in_window = this.in_journal_window();
     let actions = [
       <RaisedButton label="Save Journal" primary={true} onClick={this.submit.bind(this)} />,
       <FlatButton label="Dismiss" onClick={this.dismiss.bind(this)} />
     ]
+    let submitted = this.submitted()
     let _cta = in_window ? <small><div><a href="javascript:void(0)" onClick={this.open_journal_dialog.bind(this)}>{ submitted ? "Update journal" : "Fill journal" }</a></div></small> : <small><div>You can submit at {this.props.window_start_hr}:00. <Link to="/app/settings">Configure journal timing</Link>.</div></small>;
     let _status = (
-      <p className="lead">{ submitted ? "Journal submitted, but you can still make edits" : "Journal not yet submitted" }. { _cta }</p>
+      <p className="lead">{ submitted ? `Journal submitted for ${submitted_date}, but you can still make edits` : "Journal not yet submitted" }. { _cta }</p>
     )
 
     let journal_date = util.iso_from_date(this.get_journal_date())
