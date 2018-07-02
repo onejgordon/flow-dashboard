@@ -771,7 +771,7 @@ class JournalTag(ndb.Model):
     def CreateFromText(user, text):
         new_jts = []
         all_jts = []
-        if text:
+        if text and isinstance(text, basestring):
             people = re.findall(r'@([a-zA-Z]{3,30})', text)
             hashtags = re.findall(r'#([a-zA-Z]{3,30})', text)
             people_ids = [JournalTag.Key(user, p) for p in people]
@@ -780,8 +780,8 @@ class JournalTag(ndb.Model):
             for existing_tag, key in zip(existing_tags, people_ids + hashtag_ids):
                 if not existing_tag:
                     prefix = key.id()[0]
-                    type = JOURNALTAG.HASHTAG if prefix == '#' else JOURNALTAG.PERSON
-                    jt = JournalTag(id=key.id(), name=key.id()[1:], type=type, parent=user.key)
+                    tag_type = JOURNALTAG.HASHTAG if prefix == '#' else JOURNALTAG.PERSON
+                    jt = JournalTag(id=key.id(), name=key.id()[1:], type=tag_type, parent=user.key)
                     new_jts.append(jt)
                     all_jts.append(jt)
                 else:
