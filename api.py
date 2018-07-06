@@ -782,7 +782,7 @@ class JournalAPI(handlers.JsonRequestHandler):
                         tasks.append(task)
                 ndb.put_multi(tasks)
             self.success = True
-            self.message = "Journal submitted!"
+            self.message = "Journal saved!"
         else:
             self.message = "Malformed request - data param required"
         self.set_response({

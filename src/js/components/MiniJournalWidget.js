@@ -43,7 +43,7 @@ export default class MiniJournalWidget extends React.Component {
         historical_date: null,
         historical_incomplete_dates: [],
         position: null, // {lat, lon}
-        submitted_date: null
+        submitted_date: null  // ISO date (str)
       };
       this.MAX_TASKS = 3;
       this.NOTIFY_CHECK_MINS = 5;
@@ -74,9 +74,12 @@ export default class MiniJournalWidget extends React.Component {
   }
 
   notify_check() {
+    let {submitted_date} = this.state
     if (this.should_notify()) {
       util.notify("Flow Reminder", "Submit your daily journal", "jrnl_remind");
       this.open_journal_dialog();
+    } else if (submitted_date != util.iso_from_date(this.current_submission_date())) {
+      this.setState({today_data: {}})
     }
   }
 
