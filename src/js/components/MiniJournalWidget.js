@@ -110,9 +110,7 @@ export default class MiniJournalWidget extends React.Component {
 
   should_notify() {
     let d = new Date();
-    if (!this.state.submitted_date != null && d.getMinutes() <= this.NOTIFY_CHECK_MINS) {
-      return this.in_journal_window();
-    }
+    return !this.submitted() && d.getMinutes() <= this.NOTIFY_CHECK_MINS && this.in_journal_window()
   }
 
   maybe_check_if_not_submitted() {
