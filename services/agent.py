@@ -360,13 +360,36 @@ class ConversationAgent(object):
             speech = "I couldn't tell what habit or task you completed."
         return speech
 
+    def _habit_increment_report(self, item_name):
+        '''
+        Count 1 increment of a habit with a daily repetition target
+        '''
+        handled = False
+        speech = None
+        if item_name:
+            habits = Habit.Active(self.user)
+            for h in habits:
+                if item_name.lower() in h.name.lower():
+                    d = self.user.local_time().date()
+                    done, hd = HabitDay.Increment(h, d)
+                    encourage = random.choice(HABIT_DONE_REPLIES)
+                    speech = "%s The count of '%s' has been increased to %d." % (encourage, h.name, hd.count)
+                    handled = True
+                    break
+            if not handled:
+                speech = "I'm not sure what you mean by '%s'." % item_name
+        else:
+            speech = "I couldn't tell what habit you completed a repetition of."
+        return speech
+
     def _habit_commit(self, habit_param_raw):
         handled = False
         speech = None
         if habit_param_raw:
             habits = Habit.Active(self.user)
             for h in habits:
-                if habit_param_raw.lower() in h.name.lower():
+                # TODO: Flexible fuzzy match?
+                if habit_param_raw.lower() in h.name.lower() or h.name.lower() in habit_param_raw.lower():
                     # TODO: Timezone?
                     hd = HabitDay.Commit(h, datetime.today().date())
                     encourage = random.choice(HABIT_COMMIT_REPLIES)
@@ -439,6 +462,8 @@ class ConversationAgent(object):
                 speech = self._goals_set()
             elif action == 'input.habit_or_task_report':
                 speech = self._habit_or_task_report(parameters.get('habit_or_task'))
+            elif action == 'input.habit_increment_report':
+                speech = self._habit_increment_report(parameters.get('habit_or_task'))
             elif action == 'input.habit_commit':
                 speech = self._habit_commit(parameters.get('habit'))
             elif action == 'input.task_add':
@@ -520,6 +545,7 @@ class ConversationAgent(object):
                 (r'(?:mark|set) [HABIT_OR_TASK_PATTERN] (?:done|complete|finished)', 'input.habit_or_task_report'),
                 (r'(?:habit|task)(?: done| complete| finished):? [HABIT_OR_TASK_PATTERN]', 'input.habit_or_task_report'),
                 (r'(?:i finished|just finished|completed|task done|habit done) [HABIT_OR_TASK_PATTERN]', 'input.habit_or_task_report'),
+                (r'(?:increment|increment habit|i (?:finished|completed) one (?:repetition|completion|iteration|instance) of|count one (?:repetition|completion|iteration|instance) of) [HABIT_OR_TASK_PATTERN]', 'input.habit_increment_report'),
                 (r'(?:add habit|new habit|create habit)[:-]? [HABIT_PATTERN]', 'input.habit_add'),
                 (r'(?:commit to|promise to|i will|planning to|going to) [HABIT_PATTERN] (?:today|tonight|this evening|later)', 'input.habit_commit'),
                 (r'(?:my habits|view habits|habit progress|habits today)', 'input.habit_status'),

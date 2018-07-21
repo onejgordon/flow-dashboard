@@ -133,6 +133,7 @@ class AgentTestCase(BaseTestCase):
             ('set run as complete', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
             ('habit complete: run', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
             ('habit done run', 'input.habit_or_task_report', {'habit_or_task': 'run'}),
+            ('increment run', 'input.habit_increment_report', {'habit_or_task': 'run'}),
 
             # Habit commitments
             ('i will run tonight', 'input.habit_commit', {'habit': 'run'}),
