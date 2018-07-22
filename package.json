@@ -31,10 +31,10 @@
     "jquery": "^3.3.1",
     "json5": "^0.5.1",
     "load-google-maps-api": "0.0.3",
-    "lodash": "^4.13.1",
+    "lodash": "^4.17.10",
     "lodash.assign": "^4.0.0",
     "material-ui": "^0.16.7",
-    "moment": "^2.10.6",
+    "moment": "^2.22.2",
     "moment-timezone": "^0.4.0",
     "pace-js": "^1.0.2",
     "react": "^15.6.2",
@@ -42,7 +42,7 @@
     "react-addons-pure-render-mixin": "^15.6.2",
     "react-addons-update": "^15.6.2",
     "react-chartjs-2": "^2.7.2",
-    "react-color": "^2.1.0",
+    "react-color": "^2.14.1",
     "react-dom": "^15.6.2",
     "react-g-analytics": "^0.2.6",
     "react-google-login": "^2.8.7",
@@ -70,14 +70,14 @@
     "gulp-hash-src": "^0.1.6",
     "gulp-html-replace": "^1.4.3",
     "gulp-shell": "^0.5.2",
-    "gulp-sourcemaps": "^2.4.0",
+    "gulp-sourcemaps": "^2.6.4",
     "gulp-streamify": "1.0.2",
     "gulp-uglify": "^2.0.1",
     "jest-cli": "^18.1.0",
     "react-native-clean-project": "^1.0.4",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.0.0",
-    "watchify": "^3.9.0"
+    "watchify": "^3.11.0"
   },
   "browser": {
     "bootstrap": "./node_modules/bootstrap/dist/js/bootstrap.js"

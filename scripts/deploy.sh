@@ -55,7 +55,7 @@ git pull
 # production versions only contain digits, hf and - (dash)
 production_version=false
 # note: keep in sync with constants.PROD_VERSION_REGEX
-if [[ $version =~ ^[0-9hf\-]+[a-z]?$ ]]; then
+if [[ $version =~ ^[0-9\-]+[a-z]?$ ]]; then
 	production_version=true
 	env="production"
 	# if deploying to production, it is compulsory to deploy all services
