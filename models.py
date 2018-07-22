@@ -586,6 +586,9 @@ class Habit(ndb.Model):
     def slug_name(self):
         return tools.strip_symbols(self.name.replace(' ','')).lower().strip()
 
+    def has_daily_count(self):
+        return self.tgt_daily is not None and self.tgt_daily > 0
+
     @staticmethod
     def All(user):
         return Habit.query(ancestor=user.key).fetch(limit=50)
