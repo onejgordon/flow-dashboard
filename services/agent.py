@@ -341,7 +341,7 @@ class ConversationAgent(object):
                     encourage = random.choice(HABIT_DONE_REPLIES)
                     if h.has_daily_count():
                         done, hd = HabitDay.Increment(h, d)
-                        speech = "%s The count of '%s' has been increased to %d (%d to go)." % (encourage, h.name, hd.count, hd.tgt_daily - hd.count)
+                        speech = "%s The count of '%s' has been increased to %d (%d to go)." % (encourage, h.name, hd.count, h.tgt_daily - hd.count)
                     else:
                         done, hd = HabitDay.Toggle(h, d, force_done=True)
                         speech = "%s '%s' is marked as complete." % (encourage, h.name)
