@@ -2,7 +2,7 @@ var React = require('react');
 import PropTypes from 'prop-types';
 import {Bar} from "react-chartjs-2";
 import {Dialog, IconButton} from 'material-ui';
-var Select = require('react-select');
+import Select from 'react-select'
 import connectToStores from 'alt-utils/lib/connectToStores';
 var ProgressLine = require('components/common/ProgressLine');
 var util = require('utils/util');
@@ -62,7 +62,7 @@ export default class AnalysisGoals extends React.Component {
             let bgcolor = '#' + util.colorInterpolate({
                 color1: '95000C',
                 color2: '00EB0F',
-                min: 1, 
+                min: 1,
                 max: 5,
                 value: val || 1
             })
@@ -118,7 +118,7 @@ export default class AnalysisGoals extends React.Component {
         api.get("/api/goal", params, (res) => {
             this.props.onUpdateData('goals', util.lookupDict(res.goals, 'month'))
             this.setState({goal_year: year})
-        });        
+        });
     }
 
     render() {

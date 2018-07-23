@@ -49,7 +49,7 @@
     "react-input-autosize": "1.1.0",
     "react-life-timeline": "^1.0.11",
     "react-router": "^2.8.1",
-    "react-select": "^1.0.0-rc.1",
+    "react-select": "^1.2.1",
     "react-tap-event-plugin": "2.0.0",
     "react-tooltip": "^3.2.2",
     "react-transition-group": "^1.1.3",

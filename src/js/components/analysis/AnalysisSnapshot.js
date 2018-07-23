@@ -7,7 +7,7 @@ var util = require('utils/util');
 import {Paper} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 var moment = require('moment')
-var Select = require('react-select');
+import Select from 'react-select'
 import {merge} from 'lodash';
 
 @connectToStores

@@ -1,7 +1,7 @@
 var React = require('react');
 var util = require('utils/util');
 import {Bar, Line} from "react-chartjs-2";
-var Select = require('react-select');
+import Select from 'react-select'
 import {changeHandler} from 'utils/component-utils';
 import connectToStores from 'alt-utils/lib/connectToStores';
 
@@ -113,6 +113,7 @@ export default class AnalysisTasks extends React.Component {
         ]
         return (
             <div>
+
 
                 <h4>Top Tasks</h4>
 

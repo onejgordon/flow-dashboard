@@ -16,7 +16,7 @@ var mui = require('material-ui'),
   RaisedButton = mui.RaisedButton,
   Dialog = mui.Dialog;
 
-var Select = require('react-select');
+import Select from 'react-select'
 
 class EditForm extends React.Component {
   static defaultProps = {

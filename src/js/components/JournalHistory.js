@@ -7,7 +7,7 @@ import {clone, get} from 'lodash';
 var FetchedList = require('components/common/FetchedList');
 var JournalEditor = require('components/JournalEditor');
 var api = require('utils/api');
-var Select = require('react-select');
+import Select from 'react-select'
 
 @changeHandler
 export default class JournalHistory extends React.Component {
