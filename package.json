@@ -93,5 +93,8 @@
         "jquery:jQuery"
       ]
     }
+  },
+  "resolutions": {
+    "natives": "1.1.3"
   }
 }

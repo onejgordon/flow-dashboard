@@ -145,7 +145,8 @@ export default class MiniJournalWidget extends React.Component {
         });
       } else toastr.error(`Browser doesn't support geolocation`);
     }
-    this.setState({open: true, form: clone(today_data)});
+    let no_today_data = Object.keys(today_data).length == 0
+    this.setState({open: true, form: no_today_data ? this.initial_form_state() : clone(today_data)});
   }
 
   got_location(position) {
