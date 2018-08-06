@@ -1085,7 +1085,7 @@ class Goal(ndb.Model):
             g.date = tools.fromISODate(id + "-01")
         elif g.annual(id=id) and not g.date:
             first_of_year = datetime(int(id), 1, 1)
-            date = first_of_year
+            g.date = first_of_year
         return g
 
     @staticmethod
