@@ -1112,6 +1112,15 @@ class Goal(ndb.Model):
             id = self.key.id()
         return len(id) == 4
 
+    def year(self):
+        '''If annual, return year'''
+        if self.annual():
+            if self.date:
+                return self.date.year
+            else:
+                # If date property missing (prior bug failed to set)
+                return self.key.id()
+
     def monthly(self, id=None):
         if not id:
             id = self.key.id()

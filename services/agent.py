@@ -285,7 +285,7 @@ class ConversationAgent(object):
             speech = "Goals for %s. " % datetime.strftime(g.date, "%B %Y")
         elif annual:
             g = annual
-            speech = "Goals for %s. " % g.date.year
+            speech = "Goals for %s. " % g.year()
         if g:
             if g.text:
                 for i, text in enumerate(g.text):
