@@ -614,13 +614,18 @@ class QuoteAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def batch_create(self, d):
-        quotes = json.loads(self.request.get('quotes'))
+        try:
+            quotes = json.loads(self.request.get('quotes'))
+        except Exception, e:
+            quotes = []
+            self.message = "Check JSON syntax"
         dbp = []
         for q in quotes:
             if 'dt_added' in q and isinstance(q['dt_added'], basestring):
                 q['dt_added'] = tools.fromISODate(q['dt_added'])
             q = Quote.Create(self.user, **q)
-            dbp.append(q)
+            if q:
+                dbp.append(q)
         if dbp:
             ndb.put_multi(dbp)
             self.success = True
