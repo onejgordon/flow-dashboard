@@ -21,3 +21,4 @@ yarn-error.log
 package-lock.json
 yarn.lock
 genzai-app-*.json
+.python-version

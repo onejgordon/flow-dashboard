@@ -9,5 +9,5 @@ elif [ "$1" == "clean" ]; then
 	dev_appserver.py app.yaml --log_level=debug --clear_datastore=yes --enable_host_checking
 else
 	echo "Starting server..."
-	dev_appserver.py app.yaml --log_level=debug --enable_host_checking
+	dev_appserver.py app.yaml --log_level=debug --enable_host_checking --enable_console
 fi
