@@ -3,3 +3,4 @@ funcsigs==1.0.2
 pbr==1.10.0
 mock==2.0.0
 WebTest==2.0.21
+pycrypto==2.6
