@@ -641,6 +641,17 @@ class FacebookAgent(ConversationAgent):
             self.reply = "Alright %s, you've successfully connected with Flow!" % self.user.first_name()
             self.message_data = self._quick_replies([("Learn about Flow", "GET_STARTED")])
 
+    def handle_error(self, response):
+        logging.warning(response.content)
+        data = tools.getJson(response.content)
+        error = data.get('error', {})
+        code = error.get('code')
+        subcode = error.get('error_subcode')
+        if code == 190 and subcode == 460:
+            # Error validating access token: The session has been invalidated because the user
+            # changed their password or Facebook has changed the session for security reasons.
+            pass
+
     def send_response(self):
         if self.fb_id and (self.reply or self.message_data):
             message_object = {}
@@ -665,7 +676,7 @@ class FacebookAgent(ConversationAgent):
                                           method="POST")
                 logging.debug(response.status_code)
                 if response.status_code != 200:
-                    logging.warning(response.content)
+                    self.handle_error(response)
             return body
 
 
