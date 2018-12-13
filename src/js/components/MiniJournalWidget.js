@@ -74,12 +74,12 @@ export default class MiniJournalWidget extends React.Component {
   }
 
   notify_check() {
-    let {submitted_date} = this.state
+    let {submitted_date, open} = this.state
     if (this.should_notify()) {
       util.notify("Flow Reminder", "Submit your daily journal", "jrnl_remind");
       this.open_journal_dialog();
     } else if (submitted_date != util.iso_from_date(this.current_submission_date())) {
-      this.setState({today_data: {}})
+      if (!open) this.setState({today_data: {}})  // Clear prior journal's form data (if dialog not open)
     }
   }
 
