@@ -29,10 +29,10 @@ export default class GoalViewer extends React.Component {
           set_goal_form: null,  // Which goal to show form for (date str or 'longterm')
           form: {},
           assessment_form: [],
-          assessment_showing: false
+          assessment_showing: null // 'month' or 'year'
       };
       this.ASSESS_LABELS = ["Very Poorly", "Poorly", "OK", "Well", "Very Well"];
-      this.ASSESSMENT_DAY = 26;
+      this.ASSESSMENT_DAY = 19; // 26;
       this.GOAL_M_FORMAT = "YYYY-MM";
       this.GOAL_M_LABEL_FORMAT = "MMM YYYY";
   }
@@ -63,7 +63,7 @@ export default class GoalViewer extends React.Component {
   update_goal(params) {
     api.post("/api/goal", params, (res) => {
       let g = res.goal;
-      let st = {assessment_showing: false};
+      let st = {assessment_showing: null};
       if (g.annual) st.annual = g;
       else if (g.monthly) st.monthly = g;
       else if (g.longterm) st.longterm = g;
@@ -101,9 +101,11 @@ export default class GoalViewer extends React.Component {
     this.setState({set_goal_form: null, set_goal_label: null});
   }
 
-  in_assessment_window() {
+  in_assessment_window(annual) {
     let today = new Date();
-    return today.getDate() >= this.ASSESSMENT_DAY;
+    let day_in_window = today.getDate() >= this.ASSESSMENT_DAY
+    if (!annual) return day_in_window
+    else return day_in_window && today.getMonth() == 11  // End of December
   }
 
   fetch_current() {
@@ -113,8 +115,15 @@ export default class GoalViewer extends React.Component {
     });
   }
 
-  show_assessment() {
-    this.setState({assessment_showing: true});
+  show_assessment(g) {
+    let kind = g.annual ? 'annual' : 'monthly'
+    let assessments = g.assessments || []
+    if (assessments.length == 0 && g.text != 0) {
+      for (let i=0; i<g.text.length; i++) {
+        assessments.push(1)
+      }
+    }
+    this.setState({assessment_showing: kind, assessment_form: assessments})
   }
 
   show_longterm() {
@@ -181,32 +190,37 @@ export default class GoalViewer extends React.Component {
 
   render_goal(g, type) {
     let {assessment_form, assessment_showing} = this.state;
-    let goal_list, create_prompt;
-    let today = new Date();
+    let goal_list, create_prompt, assess_prompt
     let date_printed = "";
     let date = new Date();
     let value = 0;
     let total = 100;
+    let this_assessment_showing = assessment_showing == type
     if (type == 'annual') {
       date_printed = date.getFullYear();
-      value = util.dayOfYear(today);
+      value = util.dayOfYear(date);
       total = 365;
     } else {
-      date_printed = util.printDate(date.getTime(), "MMMM YYYY");
-      value = today.getDate();
+      date_printed = util.printDate(date.getTime(), "MMMM YYYY")
+      value = date.getDate();
       total = util.daysInMonth(date.getMonth()+1, date.getFullYear());
     }
-    let in_assessment_window = g && this.in_assessment_window() && !g.annual;
-    let not_yet_assessed = g && !g.assessment;
-    let action = not_yet_assessed ? "New" : "Updated"
-    let assess_prompt = not_yet_assessed ? "The month is almost over, how did you do?" : "Want to update your assessment?"
+    let in_assessment_window = g && this.in_assessment_window(g && g.annual)
+    let not_yet_assessed = g && !g.assessment
+    let action = not_yet_assessed ? "Create" : "Update"
     if (g) {
+      let assess_goal_label = g.annual ? date.getFullYear() : "The month"
+      assess_prompt = not_yet_assessed ? `${assess_goal_label} is almost over, how did you do?` : "Want to update your assessment?"
       goal_list = (
         <ul className="goalList">
           { g.text.map((txt, j) => {
-            let _assessment;
-            let val = assessment_form[j] || 1;
-            if (assessment_showing && in_assessment_window) _assessment = <Slider name='assessment'
+            let _assessment
+            let current_score = g.assessments[j]
+            let val = assessment_form[j] || current_score;
+            if (current_score != null) {
+              txt = `${txt} [${current_score}/5]`
+            }
+            if (this_assessment_showing && in_assessment_window) _assessment = <Slider name='assessment'
                                                        value={val}
                                                        onChange={this.handle_assessment_change.bind(this, j)}
                                                        max={5} min={1} defaultValue={1} step={1} />
@@ -223,7 +237,7 @@ export default class GoalViewer extends React.Component {
     } else {
       create_prompt = (
         <div className="empty"><a href="javascript:void(0)" onClick={this.show_goal_dialog.bind(this, g, type)}>Set goals</a> for { date_printed }</div>
-        );
+      )
     }
     return (
       <div className="goal col-sm-6" key={type}>
@@ -233,14 +247,14 @@ export default class GoalViewer extends React.Component {
         { goal_list }
         { create_prompt }
 
-        <div hidden={!in_assessment_window || assessment_showing}>
-          <p className="lead">{ assess_prompt } <FlatButton label={`submit ${action} assessment`} onClick={this.show_assessment.bind(this)} /></p>
+        <div hidden={!in_assessment_window || this_assessment_showing}>
+          <p className="lead">{ assess_prompt } <FlatButton label={`${action} ${type} assessment`} onClick={this.show_assessment.bind(this, g)} /></p>
         </div>
-        <div hidden={!assessment_showing || !in_assessment_window}>
-          <RaisedButton label={`Save ${action} Assessment`} onClick={this.save_assessment.bind(this, g)} primary={true} />
+        <div hidden={!this_assessment_showing || !in_assessment_window}>
+          <RaisedButton label={`Save Assessment`} onClick={this.save_assessment.bind(this, g)} primary={true} />
         </div>
       </div>
-    );
+    )
   }
 
   render() {

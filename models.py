@@ -208,12 +208,12 @@ class User(ndb.Model):
         if 'sync_services' in params:
             self.sync_services = params.get('sync_services')
 
-    def get(self, cls, id=None):
+    def get(self, cls, id=None, str_id=False):
         '''
         Get entity accessible to user (child of user)
         '''
         if id:
-            if isinstance(id, basestring) and id.isdigit():
+            if isinstance(id, basestring) and id.isdigit() and not str_id:
                 id = int(id)
             return cls.get_by_id(id, parent=self.key)
 
@@ -1059,8 +1059,14 @@ class Goal(ndb.Model):
     def Year(user, year):
         jan_1 = datetime(year, 1, 1).date()
         goals = Goal.query(ancestor=user.key).filter(Goal.date >= jan_1).fetch(limit=13)
-        return sorted(filter(lambda g: g.date.year == year and not g.annual(), goals),
-                      key=lambda g: g.date)
+        months = sorted(filter(lambda g: g.date.year == year and not g.annual(), goals),
+                        key=lambda g: g.date)
+        year = filter(lambda g: g.date.year == year and g.annual(), goals)
+        if year:
+            year = year[0]
+        else:
+            year = None
+        return (months, year)
 
     @staticmethod
     def Current(user, which="all"):

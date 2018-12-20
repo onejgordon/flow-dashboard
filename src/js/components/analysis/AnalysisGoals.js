@@ -13,12 +13,15 @@ import {changeHandler} from 'utils/component-utils';
 @changeHandler
 export default class AnalysisGoals extends React.Component {
     static propTypes = {
-        goals: PropTypes.object
+        month_goals: PropTypes.object,
+        year_goal: PropTypes.object
     }
 
     static defaultProps = {
-        goals: {}
-    };
+        month_goals: {},
+        year_goal: {}
+    }
+
     constructor(props) {
         super(props);
         let today = new Date();
@@ -50,14 +53,17 @@ export default class AnalysisGoals extends React.Component {
     }
 
     goal_data() {
-        let {goals} = this.props;
+        let {month_goals, year_goal} = this.props;
+        let {goal_year} = this.state
         let points = [];
-        let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        let periods = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", goal_year];
         let colors = []
-        months.forEach((mo, i) => {
-            let g = goals[i+1];
+        periods.forEach((mo, i) => {
+            let g
+            if (i < 12) g = month_goals[i+1];
+            else g = year_goal
             let val = null;
-            if (g) val = g.assessment;
+            if (g) val = g.assessment.toFixed(2);
             points.push(val);
             let bgcolor = '#' + util.colorInterpolate({
                 color1: '95000C',
@@ -69,7 +75,7 @@ export default class AnalysisGoals extends React.Component {
             colors.push(bgcolor)
         })
         let data = {
-            labels: months,
+            labels: periods,
             datasets: [{
                 label: "Goal Assessment",
                 data: points,
@@ -80,11 +86,13 @@ export default class AnalysisGoals extends React.Component {
     }
 
     handle_chart_click(event, els) {
-        let {goals} = this.props;
+        let {month_goals, year_goal} = this.props;
         let idx = els[0]._index;
         if (idx) {
-            let g = goals[idx+1];
-            if (g) this.setState({goal_detail: g});
+            let g
+            if (idx == 12) g = year_goal
+            else g = month_goals[idx+1]
+            if (g) this.setState({goal_detail: g})
         }
     }
 
@@ -117,14 +125,14 @@ export default class AnalysisGoals extends React.Component {
         }
         api.get("/api/goal", params, (res) => {
             this.props.onUpdateData('goals', util.lookupDict(res.goals, 'month'))
+            this.props.onUpdateData('year_goal', res.year_goal)
             this.setState({goal_year: year})
         });
     }
 
     render() {
-        let {goals} = this.props;
+        let {month_goals} = this.props;
         let {goal_detail, form, goal_year} = this.state;
-        let showing_year = "--"
         let today = new Date();
         let goalData = this.goal_data();
         let goalOptions = {
@@ -140,7 +148,7 @@ export default class AnalysisGoals extends React.Component {
             onClick: this.handle_chart_click.bind(this)
         }
         let content;
-        if (Object.keys(goals).length == 0) content = <div className="empty">No goal assessments yet</div>
+        if (Object.keys(month_goals).length == 0) content = <div className="empty">No goal assessments yet</div>
         else content = <Bar data={goalData} options={goalOptions} width={1000} height={450}/>
         let year_cursor = this.FIRST_GOAL_YEAR;
         let year_opts = []

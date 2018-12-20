@@ -30,7 +30,8 @@ export default class Analysis extends React.Component {
             end: end,
             iso_dates: [],
             journals: [],
-            goals: {},
+            month_goals: {},
+            year_goal: {},
             habits: [],
             tasks: [],
             productivity: [],
@@ -73,7 +74,8 @@ export default class Analysis extends React.Component {
                 iso_dates: res.dates,
                 tasks: res.tasks,
                 tracking_days: res.tracking_days,
-                goals: util.lookupDict(res.goals, 'month'),
+                month_goals: util.lookupDict(res.month_goals, 'month'),
+                year_goal: res.year_goal,
                 loaded: true
             });
         });
@@ -86,7 +88,7 @@ export default class Analysis extends React.Component {
     }
 
     render() {
-        let {loaded, goals,
+        let {loaded, month_goals, year_goal,
             habits, habitdays, iso_dates,
             tracking_days,
             journals, tasks, end} = this.state;
@@ -111,7 +113,8 @@ export default class Analysis extends React.Component {
 
                 { React.cloneElement(this.props.children, {
                     user: this.props.user,
-                    goals: goals,
+                    month_goals: month_goals,
+                    year_goal: year_goal,
                     journals: journals,
                     tasks: tasks,
                     tracking_days: tracking_days,
