@@ -1056,17 +1056,12 @@ class Goal(ndb.Model):
         return goals
 
     @staticmethod
-    def Year(user, year):
+    def Year(user, year, with_annual=False):
         jan_1 = datetime(year, 1, 1).date()
         goals = Goal.query(ancestor=user.key).filter(Goal.date >= jan_1).fetch(limit=13)
-        months = sorted(filter(lambda g: g.date.year == year and not g.annual(), goals),
-                        key=lambda g: g.date)
-        year = filter(lambda g: g.date.year == year and g.annual(), goals)
-        if year:
-            year = year[0]
-        else:
-            year = None
-        return (months, year)
+        sorted_goals = sorted(filter(lambda g: g.date.year == year and (with_annual or not g.annual()), goals),
+                              key=lambda g: g.date)
+        return sorted_goals
 
     @staticmethod
     def Current(user, which="all"):

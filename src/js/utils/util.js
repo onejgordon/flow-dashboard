@@ -20,6 +20,12 @@ var util = {
         audio.play();
     },
 
+    goal_id(year, month) {
+        if (month == null) return year
+        if (month < 10) month = '0' + month
+        return `${year}-${month}`
+    },
+
     notify(message, body, tag, icon) {
       let opts = {
         body: body,

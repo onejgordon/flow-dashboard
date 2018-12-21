@@ -359,14 +359,14 @@ class GoalAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def list(self, d):
         year = self.request.get_range('year')
-        year_goal = None
+        include_annual = self.request.get_range('include_annual') == 1
+        annual = None
         if year:
-            goals, year_goal = Goal.Year(self.user, year)
+            goals = Goal.Year(self.user, year, with_annual=include_annual)
         else:
             goals = Goal.Recent(self.user)
         self.set_response({
-            'goals': [goal.json() for goal in goals],
-            'year_goal': year_goal.json() if year_goal else None
+            'goals': [goal.json() for goal in goals]
         }, success=True)
 
     @authorized.role('user')
@@ -1121,15 +1121,14 @@ class AnalysisAPI(handlers.JsonRequestHandler):
         if with_tracking:
             tracking_days = TrackingDay.Range(self.user, dt_start, dt_end)
         if with_goals:
-            month_goals, year_goal = Goal.Year(self.user, today.year)
+            goals = Goal.Year(self.user, today.year, with_annual=True)
         if with_tasks:
             tasks = Task.DueInRange(self.user, dt_start, dt_end + timedelta(days=1), limit=100)
         self.set_response({
             'dates': iso_dates,
             'journals': [j.json() for j in journals if j],
             'habits': [h.json() for h in habits],
-            'month_goals': [g.json() for g in month_goals],
-            'year_goal': year_goal.json(),
+            'goals': [g.json() for g in goals],
             'tasks': [t.json() for t in tasks],
             'tracking_days': [p.json() for p in tracking_days],
             'habitdays': tools.lookupDict(habitdays,
