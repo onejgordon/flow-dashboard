@@ -54,7 +54,7 @@ export default class AnalysisGoals extends React.Component {
             let val = null;
             if (g) {
                 val = g.assessment == null ? null : g.assessment.toFixed(2)
-                if (!g.annual) month_values.push(val)
+                if (!g.annual && val != null) month_values.push(val)
             }
             points.push(val)
             let bgcolor = '#' + util.colorInterpolate({

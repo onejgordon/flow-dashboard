@@ -32,7 +32,7 @@ export default class GoalViewer extends React.Component {
           assessment_showing: null // 'month' or 'year'
       };
       this.ASSESS_LABELS = ["Very Poorly", "Poorly", "OK", "Well", "Very Well"];
-      this.ASSESSMENT_DAY = 19; // 26;
+      this.ASSESSMENT_DAY = 24
       this.GOAL_M_FORMAT = "YYYY-MM";
       this.GOAL_M_LABEL_FORMAT = "MMM YYYY";
   }
@@ -103,9 +103,10 @@ export default class GoalViewer extends React.Component {
 
   in_assessment_window(annual) {
     let today = new Date();
-    let day_in_window = today.getDate() >= this.ASSESSMENT_DAY
+    let d = today.getDate()
+    let day_in_window = d >= this.ASSESSMENT_DAY
     if (!annual) return day_in_window
-    else return day_in_window && today.getMonth() == 11  // End of December
+    else return d >= 15 && today.getMonth() == 11  // Second half of December
   }
 
   fetch_current() {
