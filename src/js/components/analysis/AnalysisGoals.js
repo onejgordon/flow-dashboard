@@ -53,7 +53,7 @@ export default class AnalysisGoals extends React.Component {
             let g = goals[id]
             let val = null;
             if (g) {
-                val = g.assessment.toFixed(2);
+                val = g.assessment == null ? null : g.assessment.toFixed(2)
                 if (!g.annual) month_values.push(val)
             }
             points.push(val)
