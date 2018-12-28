@@ -360,7 +360,6 @@ class GoalAPI(handlers.JsonRequestHandler):
     def list(self, d):
         year = self.request.get_range('year')
         include_annual = self.request.get_range('include_annual') == 1
-        annual = None
         if year:
             goals = Goal.Year(self.user, year, with_annual=include_annual)
         else:

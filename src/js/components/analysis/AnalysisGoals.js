@@ -53,10 +53,10 @@ export default class AnalysisGoals extends React.Component {
             let g = goals[id]
             let val = null;
             if (g) {
-                val = g.assessment == null ? null : g.assessment.toFixed(2)
+                val = g.assessment
                 if (!g.annual && val != null) month_values.push(val)
             }
-            points.push(val)
+            points.push(val != null ? val.toFixed(2) : null)
             let bgcolor = '#' + util.colorInterpolate({
                 color1: '95000C',
                 color2: '00EB0F',
@@ -66,23 +66,24 @@ export default class AnalysisGoals extends React.Component {
             })
             colors.push(bgcolor)
         })
-        let datasets = [
+        let datasets = []
+        if (month_values.length > 0) {
+            let monthly_avg = util.average(month_values).toFixed(2)
+            datasets.push({
+                label: "Monthly Assessment Average",
+                type: 'line',
+                data: Array(12).fill(monthly_avg),
+                borderColor: `rgba(255, 255, 255, 0.8)`,
+                backgroundColor: `rgba(255, 255, 255, 0.0)`
+            })
+        }
+        datasets.push(
             {
                 label: "Goal Assessment",
                 data: points,
                 backgroundColor: colors
             }
-        ]
-        let monthly_avg = util.average(month_values)
-        if (month_values.length > 0) {
-            datasets.push({
-                label: "Monthly Assessment Average",
-                type: 'line',
-                data: Array(13).fill(monthly_avg),
-                borderColor: `rgba(255, 255, 255, 0.8)`,
-                backgroundColor: `rgba(255, 255, 255, 0.1)`
-            })
-        }
+        )
         let data = {
             labels: periods,
             datasets: datasets
