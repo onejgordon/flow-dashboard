@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf8 -*-
 
-# Generate via os.urandom(48)
+# To generate, run in Python:
+# import os
+# os.urandom(48)
 COOKIE_KEY = ''
 
 # GCP project info
@@ -19,26 +21,28 @@ GOOGLE_PROJECT_NO = 0
 GOOGLE_CLIENT_ID = "######.XXXXXXXXXXXX.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET = "XXXXXXXXX"
 
-# Create a new API key from GCP console
+# Create a new API key from GCP console (optional)
 G_MAPS_API_KEY = "XXXXXXXX"
 
-# AES Cypher Key (generate with os.urandom(16))
+# AES Cypher Key (generate similarly to above with os.urandom(16))
 AES_CYPHER_KEY = '16 byte key ....'
 
-# Good Reads
+# Good Reads (optional)
 GR_API_KEY = ""
 GR_SECRET = ""
 
-# Pocket
+# Pocket (optional)
 POCKET_CONSUMER_KEY = ""
 
-# Evernote
+# Evernote (optional)
 EVERNOTE_CONSUMER_KEY = ""
 EVERNOTE_CONSUMER_SECRET = ""
 EVERNOTE_DEV_TOKEN = ""
 
+# Facebook (optional)
 FB_ACCESS_TOKEN = ""
 FB_VERIFY_TOKEN = ""
 
+# Dialogflow (Previously API.AI, optional)
 API_AI_AUTH_KEY = ""
 API_AI_FB_CALLBACK = ""
