@@ -1,5 +1,5 @@
 
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta, time, date
 from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
     Readable, TrackingDay, Event, JournalTag, Report, Quote, Snapshot
 from constants import READABLE, GOAL
@@ -717,6 +717,20 @@ class JournalAPI(handlers.JsonRequestHandler):
             iso_date = tools.iso_date(cursor)
             journal_keys.append(ndb.Key('MiniJournal', iso_date, parent=self.user.key))
             cursor -= timedelta(days=1)
+        journals = ndb.get_multi(journal_keys)
+        self.set_response({
+            'journals': [j.json() for j in journals if j]
+            }, success=True)
+
+    @authorized.role('user')
+    def year(self, d):
+        year = self.request.get_range('year')
+        journal_keys = []
+        cursor = date(year, 1, 1)
+        for i in range(365):
+            iso_date = tools.iso_date(cursor)
+            journal_keys.append(ndb.Key('MiniJournal', iso_date, parent=self.user.key))
+            cursor += timedelta(days=1)
         journals = ndb.get_multi(journal_keys)
         self.set_response({
             'journals': [j.json() for j in journals if j]

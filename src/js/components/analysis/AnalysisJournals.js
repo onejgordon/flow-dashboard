@@ -1,20 +1,27 @@
 var React = require('react');
 var util = require('utils/util');
-import {FlatButton, AutoComplete,
+import {AutoComplete, FlatButton,
     Checkbox, DropDownMenu, MenuItem} from 'material-ui';
+var AppConstants = require('constants/AppConstants');
+var YearSelector = require('components/common/YearSelector');
 import PropTypes from 'prop-types';
 import {Bar, Line} from "react-chartjs-2";
 var api = require('utils/api');
 import {get} from 'lodash';
 import {GOOGLE_API_KEY} from 'constants/client_secrets';
 var EntityMap = require('components/common/EntityMap');
+import Select from 'react-select'
+var ReactTooltip = require('react-tooltip');
 import loadGoogleMapsAPI from 'load-google-maps-api';
 import connectToStores from 'alt-utils/lib/connectToStores';
+import {changeHandler} from 'utils/component-utils';
 
 @connectToStores
+@changeHandler
 export default class AnalysisJournals extends React.Component {
     static propTypes = {
-        journals: PropTypes.array
+        journals: PropTypes.array,
+        annual_viewer_journals: PropTypes.array
     }
 
     static defaultProps = {
@@ -34,6 +41,7 @@ export default class AnalysisJournals extends React.Component {
         });
         this.state = {
             tags: [],
+            form: {},
             tags_loading: false,
             journal_tag_segment: null,
             journal_segments: {}, // tag.id -> { data: [], labels: [] }
@@ -41,11 +49,16 @@ export default class AnalysisJournals extends React.Component {
             color_scale_question: chartable.length > 0 ? chartable[0] : null,
             chart_enabled_questions: chart_enabled,
             map_showing: false,
-            google_maps: null // Holder for Google Maps object
+            google_maps: null, // Holder for Google Maps object
+            annual_viewer_journals: [],
+            data_ranges: {}
         };
 
         this.TAG_COLOR = '#3FE0F2'
         this.TAG_BG_COLOR = `rgba(0, .4, 1, 0.3)`
+        this.ANNUAL_VIEWER_COLOR_RANGE = ["CC0000", "00FF00"]
+        this.MONTH_LETTERS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
+        this.fetch_annual_journals = this.fetch_annual_journals.bind(this)
     }
 
     static getStores() {
@@ -58,6 +71,12 @@ export default class AnalysisJournals extends React.Component {
 
     componentDidMount() {
 
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        let {form} = this.state
+        let annual_key_change = form.annual_viewer_key != prevState.form.annual_viewer_key
+        if (annual_key_change) ReactTooltip.rebuild()
     }
 
     toggle_series(series) {
@@ -74,6 +93,13 @@ export default class AnalysisJournals extends React.Component {
         return all_selectable_series.map((q, i) => {
             let checked = chart_enabled_questions.indexOf(q.name) > -1;
             return <Checkbox key={i} name={q.name} label={q.label || q.name || "Unlabeled question"} checked={checked} onCheck={this.toggle_series.bind(this, q.name)} />
+        });
+    }
+
+    numeric_questions() {
+        let {questions} = this.state;
+        return questions.filter((q) => {
+            return AppConstants.NUMERIC_QUESTION_TYPES.indexOf(q.response_type) > -1;
         });
     }
 
@@ -237,8 +263,127 @@ export default class AnalysisJournals extends React.Component {
         });
     }
 
+    fetch_annual_journals() {
+        let {form} = this.state
+        let open_ended_numeric = this.numeric_questions().filter((q) => q.response_type == 'number_oe')
+        if (!form.annual_viewer_key) {
+            let qs = this.numeric_questions()
+            if (qs.length > 0) {
+                form.annual_viewer_key = qs[0].name
+            }
+        }
+        let today = new Date()
+        let year = form.annual_viewer_year || today.getFullYear()
+        api.get("/api/journal/year", {year: year}, (res) => {
+            let data_ranges = {}
+            this.numeric_questions().forEach((q) => {
+                let min, max
+                if (q.response_type == 'number_oe') {
+                    // Open range, need to find max and min from fetched data
+                    let values = res.journals.map((jrnl) => jrnl.data[q.name])
+                    min = Math.min(values)
+                    max = Math.max(values)
+                } else {
+                    // Fixed range
+                    min = 1
+                    max = 10
+                }
+                data_ranges[q.name] = {
+                    min: min,
+                    max: max,
+                    reverse: q.value_reverse
+                }
+            })
+            this.setState({annual_viewer_journals: res.journals, form: form, data_ranges: data_ranges}, () => {
+                ReactTooltip.rebuild()
+            })
+        })
+    }
+
+    render_annual_viewer() {
+        let {form, annual_viewer_journals, data_ranges} = this.state
+        let options = this.numeric_questions().map((q) => {
+            return {value: q.name, label: q.text}
+        })
+        let yr = form.annual_viewer_year || (new Date().getFullYear())
+        let jan_1 = util.date_from_iso(`${yr}-01-01`)
+        let cursor = jan_1
+        let grid = []
+        let last_month = null
+        let have_data = annual_viewer_journals.length > 0
+        let key = form.annual_viewer_key
+        if (have_data) {
+            let idx = 0
+            let min_val = data_ranges[key].min
+            let max_val = data_ranges[key].max
+            while (cursor.getFullYear() == yr) {
+                if (cursor.getMonth() != last_month) {
+                    // New month
+                    grid.push(<span className="monthLabel">{ this.MONTH_LETTERS[cursor.getMonth()] }</span>)
+                    last_month = cursor.getMonth()
+                }
+                let jrnl = annual_viewer_journals[idx]
+                let have_date = jrnl != null && jrnl.iso_date == util.iso_from_date(cursor)
+                let st = {}
+                let iso_date = util.iso_from_date(cursor)
+                let tip = iso_date
+                if (have_date) {
+                    let val = key == null ? 0 : jrnl.data[key]
+                    let low_value_idx = data_ranges[key].reverse ? 1 : 0
+                    let hi_value_idx = data_ranges[key].reverse ? 0 : 1
+                    st.backgroundColor = '#' + util.colorInterpolate({
+                        color1: this.ANNUAL_VIEWER_COLOR_RANGE[low_value_idx],
+                        color2: this.ANNUAL_VIEWER_COLOR_RANGE[hi_value_idx],
+                        min: min_val,
+                        max: max_val,
+                        value: val
+                    })
+                    idx += 1
+                    tip += `: ${val}`
+                } else {
+                    st.opacity = 0.5
+                }
+                grid.push(<span key={iso_date} className="square" data-tip={tip} style={st}></span>)
+                cursor.setDate(cursor.getDate() + 1)
+            }
+        }
+        let title = "Annual Viewer"
+        if (have_data) title += ` (${yr})`
+        return (
+            <div className="JournalAnnualView">
+                <h5 className="sectionBreak">{title}</h5>
+                <div className="row">
+                    <div className="col-sm-4">
+                        <YearSelector first_year={2016} year={form.annual_viewer_year} onChange={this.changeHandlerVal.bind(this, 'form', 'annual_viewer_year')} />
+                    </div>
+                    <div className="col-sm-4">
+                        <FlatButton onClick={this.fetch_annual_journals} label="Load Journal Data" />
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-sm-4" hidden={!have_data}>
+                        <label>Results for Question</label>
+                        <Select options={options}
+                                name="annual_viewer_key"
+                                onChange={this.changeHandlerVal.bind(this, 'form', 'annual_viewer_key')}
+                                value={form.annual_viewer_key}
+                                clearable={false}
+                                simpleValue />
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="grid">
+                        { grid }
+                    </div>
+                </div>
+
+            </div>
+        )
+    }
+
     render() {
-        let {journal_tag_segment, journal_segments, map_showing } = this.state;
+        let {journal_tag_segment, journal_segments, map_showing } = this.state
         let {loaded} = this.props;
         if (!loaded) return null;
         let _journals_segmented
@@ -278,7 +423,7 @@ export default class AnalysisJournals extends React.Component {
             };
             _journals_segmented = (
                 <div>
-                    <h4>Journals Segmented by {journal_tag_segment.id}</h4>
+                    <h4 className="sectionBreak">Journals Segmented by {journal_tag_segment.id}</h4>
 
                     <Bar options={segmented_opts} data={{
                         labels: segmented_data.labels,
@@ -332,6 +477,8 @@ export default class AnalysisJournals extends React.Component {
 
                 <Line data={journalData} options={journalOptions} width={1000} height={450}/>
 
+                <h5 className="sectionBreak">Journals by Tag</h5>
+
                 <AutoComplete
                       hintText="Start typing #tag or @mention..."
                       dataSource={this.state.tags}
@@ -344,6 +491,8 @@ export default class AnalysisJournals extends React.Component {
                     />
 
                 { _journals_segmented }
+
+                { this.render_annual_viewer() }
 
             </div>
         );

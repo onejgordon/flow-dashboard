@@ -2,9 +2,8 @@ var React = require('react');
 import PropTypes from 'prop-types';
 import {Bar} from "react-chartjs-2";
 import {Dialog, IconButton} from 'material-ui';
-import Select from 'react-select'
-import connectToStores from 'alt-utils/lib/connectToStores';
 var ProgressLine = require('components/common/ProgressLine');
+var YearSelector = require('components/common/YearSelector');
 var util = require('utils/util');
 var api = require('utils/api');
 import {changeHandler} from 'utils/component-utils';
@@ -158,12 +157,6 @@ export default class AnalysisGoals extends React.Component {
         let content;
         if (Object.keys(goals).length == 0) content = <div className="empty">No goal assessments yet</div>
         else content = <Bar data={goalData} options={goalOptions} width={1000} height={450}/>
-        let year_cursor = this.FIRST_GOAL_YEAR;
-        let year_opts = []
-        while (year_cursor <= today.getFullYear()) {
-            year_opts.push({value: year_cursor, label: year_cursor})
-            year_cursor += 1;
-        }
         return (
             <div>
 
@@ -172,7 +165,7 @@ export default class AnalysisGoals extends React.Component {
                 <div className="row">
                     <div className="col-sm-3 col-sm-offset-9">
                         <label>Year</label>
-                        <Select options={year_opts} value={form.year} onChange={this.changeHandlerVal.bind(this, 'form', 'year')} simpleValue clearable={false} />
+                        <YearSelector first_year={this.FIRST_GOAL_YEAR} year={form.year} onChange={this.changeHandlerVal.bind(this, 'form', 'year')} />
                         <IconButton iconClassName="material-icons" onClick={this.fetch_goal_year.bind(this)}>refresh</IconButton>
                     </div>
                 </div>
