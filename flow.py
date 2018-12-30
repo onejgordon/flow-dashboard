@@ -72,6 +72,7 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/event/batch', handler=api.EventAPI, handler_method="batch_create", methods=["POST"]),
         webapp2.Route('/api/event/delete', handler=api.EventAPI, handler_method="delete", methods=["POST"]),
         webapp2.Route('/api/journal/today', handler=api.JournalAPI, handler_method="today", methods=["GET"]),
+        webapp2.Route('/api/journal/year', handler=api.JournalAPI, handler_method="year", methods=["GET"]),
         webapp2.Route('/api/journal/submit', handler=api.JournalAPI, handler_method="submit", methods=["POST"]),
         webapp2.Route('/api/journal', handler=api.JournalAPI, handler_method="list", methods=["GET"]),
         webapp2.Route('/api/journal', handler=api.JournalAPI, handler_method="update", methods=["POST"]),

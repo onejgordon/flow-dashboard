@@ -5,12 +5,11 @@ var util = require('utils/util');
 var api = require('utils/api');
 var UserStore = require('stores/UserStore');
 var UserActions = require('actions/UserActions');
-var SimpleAdmin = require('components/common/SimpleAdmin');
 var AsyncActionButton = require('components/common/AsyncActionButton');
 var ReactJsonEditor = require('components/common/ReactJsonEditor');
 import Select from 'react-select';
 import {findItemById} from 'utils/store-utils';
-import {RaisedButton, TextField, DatePicker, FontIcon,
+import {TextField, DatePicker, FontIcon,
     Paper, List, ListItem} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
 import {get, set, clone} from 'lodash';

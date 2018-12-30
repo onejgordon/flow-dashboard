@@ -7,8 +7,10 @@ var AppConstants = {
     USER_STORAGE_KEY: 'flowUser',
     DEFAULT_WEEK_START: 0, // Sunday (d.getDay())
     HABIT_ACTIVE_LIMIT: 20,
+    // Journals
     JOURNAL_START_HOUR: 21, // Default
     JOURNAL_END_HOUR: 4, // Default
+    NUMERIC_QUESTION_TYPES: ['slider', 'number', 'number_oe'],
     GOAL_DEFAULT_SLOTS: 4,
     GOAL_MAX_SLOTS: 10,
     USER_ADMIN: 2,

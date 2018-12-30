@@ -7,6 +7,11 @@ h3 {
     font-size: 1.6em;
 }
 
+h1.sectionBreak, h2.sectionBreak, h3.sectionBreak, h4.sectionBreak, h5.sectionBreak {
+  margin-top: 35px;
+  margin-bottom: 25px;
+}
+
 p.lead {
   font-size: 1.2em;
   color: rgba(255, 255, 255, 0.8);
@@ -251,7 +256,7 @@ div.section {
   color: white;
 }
 
-.habitCalendar > .habitDay.ph { 
+.habitCalendar > .habitDay.ph {
   background: none;
 }
 
@@ -355,6 +360,45 @@ div.section {
   color: #F9D23D;
 }
 
+/* Journals */
+
+.JournalAnnualView {
+  display: block;
+  clear: both;
+  margin-top: 10px;
+}
+
+.JournalAnnualView .grid {
+  display: block;
+  clear: both;
+  margin-top: 20px;
+}
+
+.JournalAnnualView .square {
+  display: block;
+  float: left;
+  width: 15px;
+  height: 15px;
+  margin-right: 3px;
+  margin-bottom: 3px;
+  background-color: gray;
+  opacity: 0.8;
+}
+
+.JournalAnnualView .square:hover {
+  opacity: 1.0;
+}
+
+.JournalAnnualView .monthLabel {
+  clear: left;
+  float: left;
+  font-size: 8px;
+  padding: 2px;
+  height: 15px;
+  width: 20px;
+  text-align: center;
+  display: block;
+}
 
 /* Task HUD */
 
