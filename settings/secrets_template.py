@@ -13,13 +13,17 @@ GOOGLE_PROJECT_NO = 0
 # Create an oauth 2.0 web client ID from GCP console
 # Configure our client ID with, authorized javascript origins:
 # - https://[your-project-id].appspot.com
-# - http://localhost:8080
 # - https://test-dot-[your-project-id].appspot.com (optional, to enable testing on a subversion)
 # And authorised redirect URIs:
 # - https://[your-project-id].appspot.com/api/auth/google/oauth2callback
-# - http://localhost:8080/api/auth/google/oauth2callback
 GOOGLE_CLIENT_ID = "######.XXXXXXXXXXXX.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET = "XXXXXXXXX"
+
+# Create a second oauth 2.0 client ID for use on the dev server. Origins:
+# - http://localhost:8080
+# Redirects:
+# - http://localhost:8080/api/auth/google/oauth2callback
+DEV_GOOGLE_CLIENT_ID = "######.XXXXXXXXXXXX.apps.googleusercontent.com"
 
 # Create a new API key from GCP console (optional)
 G_MAPS_API_KEY = "XXXXXXXX"

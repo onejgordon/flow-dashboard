@@ -67,7 +67,7 @@ Create the following files from the templates. For this step you'll need to crea
 
 ### Run the dev server locally
 
-To avoid conflicts sometimes seen with gcloud and google.cloud python libs it is often helpful to run the dev server in a virtualenv.
+To avoid conflicts sometimes seen with gcloud and google.cloud python libs it is often helpful to run the dev server in a virtualenv. Make sure dev_appserver.py is in your path.
 
 * `virtualenv env`
 * `source env/bin/activate`
@@ -75,12 +75,9 @@ To avoid conflicts sometimes seen with gcloud and google.cloud python libs it is
 * `pip install -r local.requirements.txt`
 * `gcloud components update`
 * `cd scripts`
-* `./server.sh`
-
-Make sure dev_appserver.py is in your path, and run `server.sh` (in scripts/) to start the dev server locally.
-Then run `gulp` in another terminal to build JS etc.
-
-Visit localhost:8080 to run the app, and localhost:8000 to view the local dev server console.
+* `./server.sh` (in scripts/) to start the dev server locally.
+* Run `gulp` in another terminal to build JS etc
+* Visit localhost:8080 to run the app, and localhost:8000 to view the local dev server console.
 
 ### Deploy
 
