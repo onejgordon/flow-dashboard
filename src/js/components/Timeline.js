@@ -161,7 +161,9 @@ class Timeline extends React.Component {
         if (!DOB) return (
             <div>
                 <div className="empty">
-                    To populate your timeline, first enter your birthday.
+                    <p>Use the timeline as a birds eye view of important eras &amp; life events. <a href="https://waitbutwhy.com/2014/05/life-weeks.html" target="_blank">Read Tim Urban</a> on visuals like this.</p>
+
+                    <p>To populate your timeline, first enter your birthday. This date picker UI is fairly counterintuitive: to change the year, click on it.</p>
 
                     <DatePicker autoOk={true}
                         floatingLabelText="Birthday"
@@ -225,7 +227,7 @@ class Timeline extends React.Component {
 
                 <h2>Timeline</h2>
 
-                <h4>Weeks</h4>
+                <h4>Life in Weeks</h4>
 
                 <ReactLifeTimeline
                     ref="rlt"
