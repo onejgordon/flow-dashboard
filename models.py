@@ -847,14 +847,17 @@ class MiniJournal(ndb.Model):
     @staticmethod
     def Get(user, date=None):
         if not date:
-            date = MiniJournal.CurrentSubmissionDate()
+            date = MiniJournal.CurrentSubmissionDate(user=user)
         id = tools.iso_date(date)
         return MiniJournal.get_by_id(id, parent=user.key)
 
     @staticmethod
-    def CurrentSubmissionDate():
+    def CurrentSubmissionDate(user=None):
         HOURS_BACK = JOURNAL.HOURS_BACK
-        now = datetime.now()
+        if user:
+            now = user.local_time()
+        else:
+            now = datetime.now()
         return (now - timedelta(hours=HOURS_BACK)).date()
 
     def Update(self, **params):
