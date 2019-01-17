@@ -9,7 +9,8 @@ export default class AsyncActionButton extends React.Component {
     text_disabled: "Saved",
     text_working: "Saving...",
     text_enabled: "Save",
-    raised: true
+    raised: true,
+    fullWidth: false
   }
 
   getMessage() {
@@ -19,7 +20,7 @@ export default class AsyncActionButton extends React.Component {
   }
 
   render() {
-    let {working, enabled, raised} = this.props;
+    let {working, enabled, raised, fullWidth} = this.props;
     let icon;
     var message = this.getMessage();
     if (working) icon = <i className="fa fa-refresh fa-spin" style={{color: 'gray'}} />
@@ -27,11 +28,13 @@ export default class AsyncActionButton extends React.Component {
                           icon={icon}
                           primary={true}
                           label={message}
-                          onClick={this.props.onClick} />
+                          onClick={this.props.onClick}
+                          fullWidth={fullWidth} />
     else return <FlatButton disabled={working || !enabled}
                           icon={icon}
                           primary={true}
                           label={message}
+                          fullWidth={fullWidth}
                           onClick={this.props.onClick} />
   }
 }

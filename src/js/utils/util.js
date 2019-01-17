@@ -301,8 +301,8 @@ var util = {
         return results == null ? _default || "" : decodeURIComponent(results[1].replace(/\+/g, " "));
     },
 
-    getHash: function() {
-        return window.location.hash.substr(1);
+    getHash: function(default_value) {
+        return window.location.hash.substr(1) || default_value
     },
 
     randomId: function(length) {

@@ -34,7 +34,7 @@ export default class Settings extends React.Component {
             settings: settings,
             saving: false,
             lastSave: util.nowTimestamp(),
-            subtab: "basics"
+            subtab: util.getHash("basics")
         };
 
         this.SUBTABS = [
@@ -59,14 +59,7 @@ export default class Settings extends React.Component {
     }
 
     componentDidMount() {
-        util.set_title("Settings");
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-    }
-
-    gotoTab(tab) {
-        this.setState({tab: tab});
+        util.set_title("Settings")
     }
 
     save_user_settings() {
@@ -103,7 +96,7 @@ export default class Settings extends React.Component {
         return this.SUBTABS.map((st) => {
             let here = st.value == subtab
             let style = {}
-            if (here) style.backgroundColor = '#414641'
+            if (here) style.backgroundColor = '#3885B2'
             return <ListItem primaryText={st.label}
                              style={style}
                              onClick={this.goto_subtab.bind(this, st.value)} />
@@ -179,10 +172,15 @@ export default class Settings extends React.Component {
                     <List>
                         { this.print_subtab_nav() }
                     </List>
+                    <AsyncActionButton
+                            working={this.state.saving}
+                            enabled={unsaved}
+                            fullWidth={true}
+                            onClick={this.save_user_settings.bind(this)} />
                 </div>
                 <div className="col-sm-9">
-                    <Paper style={{padding: "10px", marginTop: "10px"}}>
-                        <h2>{ subtab_title }</h2>
+                    <Paper style={{padding: "15px", marginTop: "10px"}}>
+                        <h2 style={{marginTop: "0px"}}>{ subtab_title }</h2>
                         <div hidden={subtab != "basics"}>
                             <div className="row" style={{padding: '10px'}}>
                                 <div className="col-sm-6">
@@ -345,10 +343,6 @@ export default class Settings extends React.Component {
                         </div>
 
                     </Paper>
-
-                    <div className="clearfix vpad pull-right">
-                        <AsyncActionButton working={this.state.saving} enabled={unsaved} onClick={this.save_user_settings.bind(this)} />
-                    </div>
 
                 </div>
             </div>
