@@ -134,10 +134,9 @@ export default class JournalEditor extends React.Component {
         _tags = this.render_tag_suggest(val || "", q.name);
         _hint = <small>You can @mention and #activity tag</small>
       }
-      let focus = i == 0;
-      if (!q.response_type || q.response_type == 'text') _response = <TextField name={q.name} ref={q.name} value={val || ''} multiLine onChange={this.changeHandler.bind(this, q.name)} fullWidth={true} autoFocus={focus} />
-      else if (q.response_type == 'slider' || q.response_type == 'number') _response = <Slider name={q.name} value={val} onChange={this.changeHandlerSlider.bind(this, q.name)} max={10} min={1} defaultValue={5} step={1} autoFocus={focus} />
-      else if (q.response_type == 'number_oe') _response = <TextField name={q.name} ref={q.name} type='number' value={val || ''} onChange={this.changeHandler.bind(this, q.name)} fullWidth={true} autoFocus={focus} />
+      if (!q.response_type || q.response_type == 'text') _response = <TextField name={q.name} ref={q.name} value={val || ''} multiLine onChange={this.changeHandler.bind(this, q.name)} fullWidth={true} />
+      else if (q.response_type == 'slider' || q.response_type == 'number') _response = <Slider name={q.name} value={val} onChange={this.changeHandlerSlider.bind(this, q.name)} max={10} min={1} defaultValue={5} step={1} />
+      else if (q.response_type == 'number_oe') _response = <TextField name={q.name} ref={q.name} type='number' value={val || ''} onChange={this.changeHandler.bind(this, q.name)} fullWidth={true} />
       return (
         <div key={i}>
           <p className="lead">{ q.text }</p>
