@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import {Link} from 'react-router';
 var AppConstants = require('constants/AppConstants');
 var MobileDialog = require('components/common/MobileDialog');
+var BrowserEncryptionWidget = require('components/common/BrowserEncryptionWidget')
 import { TextField, IconMenu,
   FlatButton, RaisedButton, IconButton, FontIcon,
   DropDownMenu,
@@ -170,6 +171,13 @@ export default class MiniJournalWidget extends React.Component {
     if (tasks) {
       params.tasks = JSON.stringify(tasks)
     }
+    if (this.refs.encryption_widget.is_verified()) {
+      // Do encryption of all text fields
+      this.refs.je.text_questions().forEach((q) => {
+        params[q.name] = this.refs.encryption_widget.encrypt(params[q.name]) // Replace with AES encrypted text
+      })
+      params.encrypted = true
+    }
     api.post("/api/journal/submit", params, (res) => {
       let st = {submitted_date: util.iso_from_date(this.current_submission_date()), open: false, historical: false, historical_date: null}
       if (historical && historical_date != null) {
@@ -308,6 +316,7 @@ export default class MiniJournalWidget extends React.Component {
     let {questions} = this.props;
     let in_window = this.in_journal_window();
     let actions = [
+      <BrowserEncryptionWidget ref="encryption_widget" />,
       <RaisedButton label="Save Journal" primary={true} onClick={this.submit.bind(this)} />,
       <FlatButton label="Dismiss" onClick={this.dismiss.bind(this)} />
     ]

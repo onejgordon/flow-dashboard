@@ -113,6 +113,7 @@ class User(ndb.Model):
     email = ndb.StringProperty()
     pw_sha = ndb.StringProperty(indexed=False)
     pw_salt = ndb.StringProperty(indexed=False)
+    encr_pw_sha = ndb.StringProperty(indexed=False)  # Validation hash of encryption password (which is SHA256 of password)
     create_dt = ndb.DateTimeProperty(auto_now_add=True)
     login_dt = ndb.DateTimeProperty(auto_now_add=True)
     level = ndb.IntegerProperty(default=USER.USER)
@@ -143,7 +144,8 @@ class User(ndb.Model):
             'birthday': tools.iso_date(self.birthday) if self.birthday else None,
             'evernote_id': self.evernote_id,
             'sync_services': self.sync_services,
-            'plugins': self.plugins if self.plugins else []
+            'plugins': self.plugins if self.plugins else [],
+            'encryption_password_set': bool(self.encr_pw_sha)
         }
 
     @staticmethod
@@ -205,6 +207,8 @@ class User(ndb.Model):
             self.evernote_id = params.get('evernote_id')
         if 'password' in params:
             self.setPass(pw=params.get('password'))
+        if 'encr_pw_sha' in params:
+            self.setEncryptionPass(params.get('encr_pw_sha'))
         if 'sync_services' in params:
             self.sync_services = params.get('sync_services')
 
@@ -241,6 +245,13 @@ class User(ndb.Model):
     def checkPass(self, pw):
         pw_salt, pw_sha = tools.getSHA(pw, salt=self.pw_salt)
         return self.pw_sha == pw_sha
+
+    def setEncryptionPass(self, encr_pw_sha):
+        if encr_pw_sha:
+            self.encr_pw_sha = encr_pw_sha
+
+    def checkEncryptionPass(self, encr_pw_sha):
+        return encr_pw_sha and self.encr_pw_sha == encr_pw_sha
 
     def get_timezone(self):
         return self.timezone if self.timezone else "UTC"
@@ -809,13 +820,15 @@ class MiniJournal(ndb.Model):
     data = ndb.TextProperty()  # JSON (keys are data names, values are responses)
     tags = ndb.KeyProperty(repeated=True)  # IDs of JournalTags()
     location = ndb.GeoPtProperty()
+    encrypted = ndb.BooleanProperty(indexed=False)
 
     def json(self):
         res = {
             'id': self.key.id(),
             'iso_date': tools.iso_date(self.date),
             'data': tools.getJson(self.data),
-            'tags': [tag.id() for tag in self.tags]
+            'tags': [tag.id() for tag in self.tags],
+            'encrypted': self.encrypted
         }
         if self.location:
             res.update({
@@ -868,6 +881,8 @@ class MiniJournal(ndb.Model):
             self.location = gp
         if 'tags' in params:
             self.tags = params.get('tags', [])
+        if 'encrypted' in params:
+            self.encrypted = params.get('encrypted')
 
     def parse_tags(self):
         user = self.key.parent().get()

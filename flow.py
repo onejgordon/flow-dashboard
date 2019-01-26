@@ -51,6 +51,7 @@ app = webapp2.WSGIApplication(
         # API
         webapp2.Route('/api/user/me', handler=api.UserAPI, handler_method="update_self", methods=["POST"]),
         webapp2.Route('/api/user', handler=api.UserAPI, handler_method="list", methods=["GET"]),
+        webapp2.Route('/api/user/encryption/validate_password', handler=api.UserAPI, handler_method="validate_encryption_pw", methods=["POST"]),
         webapp2.Route('/api/project/active', handler=api.ProjectAPI, handler_method="active", methods=["GET"]),
         webapp2.Route('/api/project', handler=api.ProjectAPI, handler_method="list", methods=["GET"]),
         webapp2.Route('/api/project', handler=api.ProjectAPI, handler_method="update", methods=["POST"]),

@@ -14,6 +14,7 @@ import {TextField, DatePicker, FontIcon,
 import {changeHandler} from 'utils/component-utils';
 import {get, set, clone} from 'lodash';
 import connectToStores from 'alt-utils/lib/connectToStores';
+var sha256 = require('js-sha256').sha256;
 
 @connectToStores
 @changeHandler
@@ -66,6 +67,11 @@ export default class Settings extends React.Component {
         let params = clone(this.state.form);
         params.settings = JSON.stringify(this.state.settings);
         if (params.birthday) params.birthday = util.printDateObj(params.birthday);
+        if (params.encr_password != null) {
+            let key = sha256(params.encr_password)
+            params.encr_pw_sha = sha256(key)  // Store only hash of key (hash of password)
+            delete params.encr_password
+        }
         this.setState({saving: true}, () => {
             api.post("/api/user/me", params, (res) => {
                 if (res.user) UserActions.storeUser(res.user);
@@ -97,7 +103,9 @@ export default class Settings extends React.Component {
             let here = st.value == subtab
             let style = {}
             if (here) style.backgroundColor = '#3885B2'
-            return <ListItem primaryText={st.label}
+            return <ListItem
+                             key={st.label}
+                             primaryText={st.label}
                              style={style}
                              onClick={this.goto_subtab.bind(this, st.value)} />
         })
@@ -339,7 +347,15 @@ export default class Settings extends React.Component {
                         </div>
 
                         <div hidden={subtab != "advanced"}>
-                            <TextField name="password" floatingLabelText="Update API Password" value={form.password} onChange={this.changeHandler.bind(this, 'form', 'password')} /><br/>
+                            <h3>In-Browser Encryption</h3>
+                            <p>As an extra layer of privacy, you can optionally set an encryption password which will never hit the server, and allows in-browser encryption/decryption of sensitive text fields (e.g. open-ended journal fields). Once set, save or memorize this password as it cannot be shown again. <em>Data previously encrypted can only be recovered with the password used at time of submission.</em></p>
+                            <small>We use a strategy proposed for client-side encryption of health information, see <a href="https://bmcmedinformdecismak.biomedcentral.com/articles/10.1186/1472-6947-11-70">Web-browser encryption of personal health information</a> for details.</small>
+                            <TextField name="encr_password" type="password" floatingLabelText="Update Encryption Password" value={form.encr_password || ''} onChange={this.changeHandler.bind(this, 'form', 'encr_password')} /><br/>
+
+                            <h3>API Access</h3>
+                            <p>Once set, save or memorize this password as it cannot be shown again.</p>
+                            <TextField name="password" type="password" floatingLabelText="Update API Password" value={form.password || ''} onChange={this.changeHandler.bind(this, 'form', 'password')} /><br/>
+
                         </div>
 
                     </Paper>

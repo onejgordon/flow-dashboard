@@ -781,6 +781,7 @@ class JournalAPI(handlers.JsonRequestHandler):
         task_json = tools.getJson(self.request.get('tasks'))  # JSON
         params = tools.gets(self,
             strings=['lat', 'lon', 'tags_from_text'],
+            booleans=['encrypted'],
             json=['data'],
             lists=['tags']
         )
@@ -893,7 +894,7 @@ class UserAPI(handlers.JsonRequestHandler):
     @authorized.role('user')
     def update_self(self, d):
         params = tools.gets(self,
-                            strings=['timezone', 'birthday', 'password'],
+                            strings=['timezone', 'birthday', 'password', 'encr_pw_sha'],
                             lists=['sync_services'],
                             json=['settings'])
         self.user.Update(**params)
@@ -905,6 +906,15 @@ class UserAPI(handlers.JsonRequestHandler):
             'message': message,
             'user': self.user.json()
         }, debug=True)
+
+    @authorized.role('user')
+    def validate_encryption_pw(self, d):
+        encr_pw_sha = self.request.get('encr_pw_sha')
+        self.success = self.user.checkEncryptionPass(encr_pw_sha)
+        message = "Check encryption password" if not self.success else "OK"
+        self.set_response({
+            'message': message
+        })
 
 
 class AuthenticationAPI(handlers.JsonRequestHandler):

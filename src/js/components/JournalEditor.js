@@ -59,6 +59,13 @@ export default class JournalEditor extends React.Component {
     return params;
   }
 
+  text_questions() {
+    let {questions} = this.props;
+    return questions.filter((q) => {
+      return q.response_type == 'text'
+    })
+  }
+
   handle_tag_add(tag, qname) {
     let {form} = this.props;
     let val = form[qname];

@@ -6,6 +6,7 @@ import {changeHandler} from 'utils/component-utils';
 import {clone, get} from 'lodash';
 var FetchedList = require('components/common/FetchedList');
 var JournalEditor = require('components/JournalEditor');
+var BrowserEncryptionWidget = require('components/common/BrowserEncryptionWidget')
 var api = require('utils/api');
 import Select from 'react-select'
 
@@ -80,6 +81,7 @@ export default class JournalHistory extends React.Component {
             { value: 50, label: 50 }
         ]
         let journal_editor_actions = [
+            <BrowserEncryptionWidget />,
             <RaisedButton primary={true} label="Save" onClick={this.save_journal.bind(this)} />,
             <FlatButton label="Dismiss" onClick={this.open_editor.bind(this, null)} />,
         ];
