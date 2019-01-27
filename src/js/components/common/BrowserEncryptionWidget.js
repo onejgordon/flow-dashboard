@@ -43,12 +43,14 @@ export default class BrowserEncryptionWidget extends React.Component {
 
   verify() {
     let {form} = this.state
+    let {onVerify} = this.props
     if (form.password.length > 0) {
       let key = sha256(form.password)
       let sha = sha256(key)
-      api.post("/api/user/encryption/validate_password", {encr_pw_sha: sha}, (res) => {
+      api.post("/api/user/encryption/validate_password", {encr_key_sha: sha}, (res) => {
         this.setState({form_showing: false, form: {password: ''}}, () => {
           UserActions.storeVerifiedEncryptionKey(key)
+          if (onVerify != null) onVerify()
         })
       }, (res) => {
         this.clear()
@@ -112,9 +114,11 @@ export default class BrowserEncryptionWidget extends React.Component {
 }
 
 BrowserEncryptionWidget.defaultProps = {
-  user: null
+  user: null,
+  onVerify: null
 }
 
 BrowserEncryptionWidget.propTypes = {
-  user: PropTypes.object
+  user: PropTypes.object,
+  onVerify: PropTypes.func
 }

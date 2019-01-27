@@ -28,6 +28,7 @@ export default class JournalHistory extends React.Component {
         };
 
         this.maybe_decrypt = this.maybe_decrypt.bind(this)
+        this.refresh = this.refresh.bind(this)
     }
 
     static getStores() {
@@ -54,6 +55,10 @@ export default class JournalHistory extends React.Component {
     get_questions() {
         let {user} = this.props;
         return get(user, 'settings.journals.questions')
+    }
+
+    refresh() {
+        this.refs.journals.refresh()
     }
 
     save_journal() {
@@ -153,7 +158,7 @@ export default class JournalHistory extends React.Component {
                     </div>
                 </Paper>
 
-                <BrowserEncryptionWidget user={user} />
+                <BrowserEncryptionWidget user={user} onVerify={this.refresh} />
 
                 <FetchedList ref="journals"
                             url="/api/journal"

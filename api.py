@@ -910,8 +910,8 @@ class UserAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def validate_encryption_pw(self, d):
-        encr_pw_sha = self.request.get('encr_pw_sha')
-        self.success = self.user.checkEncryptionPass(encr_pw_sha)
+        encr_key_sha = self.request.get('encr_key_sha')
+        self.success = self.user.checkEncryptionPass(encr_key_sha)
         message = "Check encryption password" if not self.success else "OK"
         self.set_response({
             'message': message
