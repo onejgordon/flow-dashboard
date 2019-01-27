@@ -5,7 +5,7 @@ class UserActions {
 
     constructor() {
         // Automatic action
-        this.generateActions('loadLocalUser', 'storeUser');
+        this.generateActions('loadLocalUser', 'storeUser', 'storeVerifiedEncryptionKey');
     }
 
     // Manual actions

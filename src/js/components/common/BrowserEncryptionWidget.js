@@ -2,11 +2,12 @@ var React = require('react');
 import {FlatButton, FontIcon, TextField} from 'material-ui';
 import PropTypes from 'prop-types';
 import {changeHandler} from 'utils/component-utils';
-import connectToStores from 'alt-utils/lib/connectToStores';
 var sha256 = require('js-sha256').sha256;
-var AES = require("crypto-js/aes")
 var api = require('utils/api');
 var UserStore = require('stores/UserStore');
+var UserActions = require('actions/UserActions');
+import connectToStores from 'alt-utils/lib/connectToStores';
+
 
 @connectToStores
 @changeHandler
@@ -18,7 +19,6 @@ export default class BrowserEncryptionWidget extends React.Component {
       form: {
         password: ''
       },
-      verified: this.is_verified(),
       form_showing: false
     }
 
@@ -26,54 +26,19 @@ export default class BrowserEncryptionWidget extends React.Component {
   }
 
   static getStores() {
-    return [UserStore];
+    return [UserStore]
   }
 
   static getPropsFromStores() {
-    var st = UserStore.getState();
-    return st;
-  }
-
-  stored() {
-    return this.encryption_key() != null
-  }
-
-  encryption_key() {
-    let {user} = this.props
-    let encryption_key = sessionStorage[`encr_password_uid:${user.id}`]
-    return encryption_key
-  }
-
-  is_verified() {
-    let {user} = this.props
-    return sessionStorage[`encr_verified_uid:${user.id}`]
-  }
-
-  store_key(key) {
-    let {user} = this.props
-    sessionStorage[`encr_password_uid:${user.id}`] = key
-  }
-
-  store_verified(verified) {
-    let {user} = this.props
-    sessionStorage[`encr_verified_uid:${user.id}`] = verified
-    this.setState({verified: verified})
-  }
-
-  encrypt(text) {
-    let key = this.encryption_key()
-    return AES.encrypt(text, key)
-  }
-
-  decrypt(encrypted) {
-    let key = this.encryption_key()
-    return AES.decrypt(encrypted, key)
+    return UserStore.getState()
   }
 
   clear() {
-    this.store_verified(false)
-    this.store_key(null)
-    this.forceUpdate()
+    UserActions.storeVerifiedEncryptionKey(null)
+  }
+
+  verified() {
+    return this.props.user_encryption_key != null
   }
 
   verify() {
@@ -83,8 +48,7 @@ export default class BrowserEncryptionWidget extends React.Component {
       let sha = sha256(key)
       api.post("/api/user/encryption/validate_password", {encr_pw_sha: sha}, (res) => {
         this.setState({form_showing: false, form: {password: ''}}, () => {
-          this.store_key(key)
-          this.store_verified(true)
+          UserActions.storeVerifiedEncryptionKey(key)
         })
       }, (res) => {
         this.clear()
@@ -93,11 +57,11 @@ export default class BrowserEncryptionWidget extends React.Component {
   }
 
   handleClick() {
-    let {form_showing, verified} = this.state
+    let {form_showing} = this.state
     if (form_showing) {
       this.verify()
     } else {
-      if (verified) {
+      if (this.verified()) {
         this.clear()
       } else {
         this.setState({form_showing: true})
@@ -106,8 +70,9 @@ export default class BrowserEncryptionWidget extends React.Component {
   }
 
   render() {
-    let {form_showing, form, verified} = this.state
+    let {form_showing, form} = this.state
     let {user} = this.props
+    let verified = this.verified()
     let text, icon
     if (form_showing) {
       text = "Enable"
@@ -144,4 +109,12 @@ export default class BrowserEncryptionWidget extends React.Component {
       return null
     }
   }
+}
+
+BrowserEncryptionWidget.defaultProps = {
+  user: null
+}
+
+BrowserEncryptionWidget.propTypes = {
+  user: PropTypes.object
 }

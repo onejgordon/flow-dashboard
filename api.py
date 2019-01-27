@@ -785,6 +785,7 @@ class JournalAPI(handlers.JsonRequestHandler):
             json=['data'],
             lists=['tags']
         )
+        logging.debug(params)
         jrnl = None
         if params.get('data'):
             if not params.get('tags'):
@@ -808,7 +809,7 @@ class JournalAPI(handlers.JsonRequestHandler):
             self.message = "Malformed request - data param required"
         self.set_response({
             'journal': jrnl.json() if jrnl else None
-        })
+        }, debug=True)
 
 
 class SnapshotAPI(handlers.JsonRequestHandler):

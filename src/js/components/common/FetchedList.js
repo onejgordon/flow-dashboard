@@ -1,4 +1,6 @@
 var React = require('react');
+import PropTypes from 'prop-types';
+
 var api = require('utils/api');
 import {IconButton, List, ListItem, FlatButton, TextField} from 'material-ui';
 import {clone} from 'lodash';
@@ -13,6 +15,7 @@ export default class FetchedList extends React.Component {
     params: {},
     listProp: 'items',
     labelProp: 'label',
+    processAfterFetch: null,
     subProp: null,
     listStyle: 'list', // or 'mui'
     autofetch: false,
@@ -63,8 +66,9 @@ export default class FetchedList extends React.Component {
   }
 
   fetchData() {
-    if (this.props.url) {
-      var params = clone(this.props.params);
+    let {processAfterFetched, url, params} = this.props
+    if (url) {
+      params = clone(params);
       if (this.props.paging_enabled) {
         params.page = this.state.page;
         params.max = this.props.per_page;
@@ -72,8 +76,9 @@ export default class FetchedList extends React.Component {
       this.setState({loading: true}, () => {
         api.get(this.props.url, params, (res) => {
           if (res.success) {
-            var fetched_items = res[this.props.listProp];
-            var st = {loading: false};
+            let fetched_items = res[this.props.listProp];
+            if (processAfterFetched != null) fetched_items = fetched_items.map(processAfterFetched)
+            let st = {loading: false};
             if (this.props.paging_enabled) {
               st.items = this.state.items.concat(fetched_items);
               st.page = params.page + 1;
@@ -205,4 +210,8 @@ export default class FetchedList extends React.Component {
       </div>
     );
   }
+}
+
+FetchedList.propTypes = {
+  processAfterFetch: PropTypes.func
 }

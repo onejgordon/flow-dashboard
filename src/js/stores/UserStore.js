@@ -2,18 +2,25 @@ var alt = require('config/alt');
 var UserActions = require('actions/UserActions');
 import { browserHistory } from 'react-router';
 var AppConstants = require('constants/AppConstants');
+var CryptoJS = require("crypto-js")
 
 class UserStore {
     constructor() {
         this.bindActions(UserActions);
         this.user = null;
+        this.user_encryption_key = null;
         this.error = null;
 
         this.exportPublicMethods({
             get_user: this.get_user,
             admin: this.admin,
             plugin_enabled: this.plugin_enabled,
-            request_scopes: this.request_scopes
+            request_scopes: this.request_scopes,
+            encrypt_text: this.encrypt_text,
+            decrypt_text: this.decrypt_text,
+            encryption_key_verified: this.encryption_key_verified,
+            encrypt_journal_text: this.encrypt_journal_text,
+            decrypt_journal_text: this.decrypt_journal_text
         });
     }
 
@@ -21,8 +28,11 @@ class UserStore {
         this.user = user;
         this.error = null;
         console.log("Stored user "+user.email);
-        // api.updateToken(user.token);
         localStorage.setItem(AppConstants.USER_STORAGE_KEY, JSON.stringify(user));
+    }
+
+    storeVerifiedEncryptionKey(key) {
+        this.user_encryption_key = key
     }
 
     request_scopes(scopes_array, cb, cb_fail) {
@@ -60,13 +70,14 @@ class UserStore {
 
     clearUser() {
         console.log("Clearing user after signout");
-        this.user = null;
+        this.user = null
+        this.user_encryption_key = null
         localStorage.removeItem(AppConstants.USER_STORAGE_KEY);
     }
 
     onLogout(data) {
         if (data.success) {
-            this.clearUser();
+            this.clearUser()
             this.error = null;
             console.log('Signed out of Flow');
             var auth2 = gapi.auth2.getAuthInstance();
@@ -98,6 +109,41 @@ class UserStore {
 
     admin() {
         return this.getState().user.level == AppConstants.USER_ADMIN;
+    }
+
+    // Public methods for in-browser text encryption
+
+
+    encryption_key_verified() {
+        let key = this.getState().user_encryption_key
+        return key != null
+    }
+
+    encrypt_journal_text(questions, form_data) {
+        questions.forEach((q) => {
+            if (q.response_type == 'text') form_data[q.name] = this.encrypt_text(form_data[q.name]) // Replace with AES encrypted text
+        })
+        return form_data
+    }
+
+    decrypt_journal_text(questions, journal_data) {
+        questions.forEach((q) => {
+            let r = journal_data[q.name]
+            if (q.response_type == 'text') journal_data[q.name] = this.decrypt_text(r)
+        })
+        return journal_data
+    }
+
+    encrypt_text(text) {
+        let key = this.getState().user_encryption_key
+        if (key != null) return CryptoJS.AES.encrypt(text, key).toString()
+        else return null
+    }
+
+    decrypt_text(ciphertext) {
+        let key = this.getState().user_encryption_key
+        if (key != null) return CryptoJS.AES.decrypt(ciphertext, key).toString(CryptoJS.enc.Utf8)
+        else return '[ENCRYPTED]'
     }
 
 }

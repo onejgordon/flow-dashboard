@@ -3,6 +3,8 @@ var JournalLI = require('components/list_items/JournalLI');
 var util = require('utils/util');
 import {DatePicker, Paper, Dialog, FlatButton, RaisedButton} from 'material-ui';
 import {changeHandler} from 'utils/component-utils';
+import connectToStores from 'alt-utils/lib/connectToStores';
+var UserStore = require('stores/UserStore');
 import {clone, get} from 'lodash';
 var FetchedList = require('components/common/FetchedList');
 var JournalEditor = require('components/JournalEditor');
@@ -10,6 +12,7 @@ var BrowserEncryptionWidget = require('components/common/BrowserEncryptionWidget
 var api = require('utils/api');
 import Select from 'react-select'
 
+@connectToStores
 @changeHandler
 export default class JournalHistory extends React.Component {
     static defaultProps = {};
@@ -23,6 +26,16 @@ export default class JournalHistory extends React.Component {
             editor_form: {},
             editing_journal: null
         };
+
+        this.maybe_decrypt = this.maybe_decrypt.bind(this)
+    }
+
+    static getStores() {
+        return [UserStore]
+    }
+
+    static getPropsFromStores() {
+        return UserStore.getState()
     }
 
     componentDidMount() {
@@ -45,9 +58,18 @@ export default class JournalHistory extends React.Component {
 
     save_journal() {
         let {editing_journal, editor_form} = this.state;
-        let params = this.refs.je.get_params();
+        let encrypt = UserStore.encryption_key_verified()
+        if (encrypt) {
+            // Do encryption of all text fields
+            UserStore.encrypt_journal_text(this.refs.je.text_questions(), editor_form)
+        }
+        let params = this.refs.je.get_params(editor_form);
+        params.encrypted = encrypt ? 1 : 0
         params.id = editing_journal.id;
         api.post("/api/journal", params, (res) => {
+            if (res.journal.encrypted) {
+                res.journal.data = UserStore.decrypt_journal_text(this.get_questions(), res.journal.data)
+            }
             this.refs.journals.update_item_by_key(res.journal, 'id');
             this.setState({submitted: true, open: false, editing_journal: null, editor_form: {}})
         });
@@ -67,6 +89,13 @@ export default class JournalHistory extends React.Component {
         this.setState({editor_form: form_data});
     }
 
+    maybe_decrypt(journal) {
+        if (journal.encrypted) {
+            journal.data = UserStore.decrypt_journal_text(this.get_questions(), journal.data)
+        }
+        return journal
+    }
+
     render() {
         let {form, editing_journal, editor_form} = this.state;
         let {user} = this.props;
@@ -81,7 +110,7 @@ export default class JournalHistory extends React.Component {
             { value: 50, label: 50 }
         ]
         let journal_editor_actions = [
-            <BrowserEncryptionWidget />,
+            <BrowserEncryptionWidget ref="encryption_widget" user={user} />,
             <RaisedButton primary={true} label="Save" onClick={this.save_journal.bind(this)} />,
             <FlatButton label="Dismiss" onClick={this.open_editor.bind(this, null)} />,
         ];
@@ -124,11 +153,14 @@ export default class JournalHistory extends React.Component {
                     </div>
                 </Paper>
 
+                <BrowserEncryptionWidget user={user} />
+
                 <FetchedList ref="journals"
                             url="/api/journal"
                             params={params}
                             listStyle="mui" listProp="journals"
                             per_page={20}
+                            processAfterFetched={this.maybe_decrypt}
                             renderItem={this.render_journal.bind(this)}
                             autofetch={true}/>
 

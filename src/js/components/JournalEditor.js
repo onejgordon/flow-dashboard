@@ -49,12 +49,12 @@ export default class JournalEditor extends React.Component {
     })
   }
 
-  get_params() {
+  get_params(form_data) {
     let {questions} = this.props;
-    let {form} = this.props;
-    let params = {data: JSON.stringify(form)};
+    if (form_data == null) form_data = this.props.form
+    let params = {data: JSON.stringify(form_data)};
     questions.forEach((q) => {
-      if (q.parse_tags) params.tags_from_text = form[q.name];
+      if (q.parse_tags) params.tags_from_text = form_data[q.name];
     });
     return params;
   }

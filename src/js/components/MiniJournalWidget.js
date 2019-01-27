@@ -8,13 +8,17 @@ import { TextField, IconMenu,
   FlatButton, RaisedButton, IconButton, FontIcon,
   DropDownMenu,
   MenuItem } from 'material-ui';
+import connectToStores from 'alt-utils/lib/connectToStores';
 var util = require('utils/util');
 import {changeHandler} from 'utils/component-utils';
 var JournalEditor = require('components/JournalEditor');
 var api = require('utils/api');
 var toastr = require('toastr');
 import {clone, merge, without} from 'lodash';
+var UserStore = require('stores/UserStore');
 
+
+@connectToStores
 @changeHandler
 export default class MiniJournalWidget extends React.Component {
   static propTypes = {
@@ -49,6 +53,14 @@ export default class MiniJournalWidget extends React.Component {
       this.MAX_TASKS = 3;
       this.NOTIFY_CHECK_MINS = 5;
       this.notify_checker_id = null; // For interval
+  }
+
+  static getStores() {
+    return [UserStore]
+  }
+
+  static getPropsFromStores() {
+    return UserStore.getState()
   }
 
   componentDidMount() {
@@ -120,12 +132,21 @@ export default class MiniJournalWidget extends React.Component {
     }
   }
 
+  decrypt_data_if_needed(journal) {
+    if (journal.encrypted) {
+      journal.data = UserStore.decrypt_journal_text(this.props.questions, journal.data)
+    }
+    return journal.data
+  }
+
   check_if_not_submitted() {
     // If not yet submitted for day, show dialog
     api.get("/api/journal/today", {}, (res) => {
       let not_submitted = !res.journal || (res.journal && !res.journal.data);
       let st = {submitted_date: not_submitted ? null : res.journal.iso_date}
-      if (res.journal != null) st.today_data = res.journal.data
+      if (res.journal != null) {
+        st.today_data = this.decrypt_data_if_needed(res.journal)
+      }
       this.setState(st, () => {
         if (not_submitted) this.open_journal_dialog();
       });
@@ -159,24 +180,22 @@ export default class MiniJournalWidget extends React.Component {
 
   submit() {
     let {position, tasks, historical, historical_date, historical_incomplete_dates} = this.state;
-    let _form = this.state.form;
-    let form = clone(_form);
-    let params = this.refs.je.get_params();
-    merge(params, form);
+    let {questions} = this.props
+    let form_data = clone(this.state.form)
+    let encrypt = UserStore.encryption_key_verified()
+    if (encrypt) {
+        // Do encryption of all text fields
+        UserStore.encrypt_journal_text(questions, form_data)
+    }
+    let params = this.refs.je.get_params(form_data);
     if (position) {
       params.lat = position.lat;
       params.lon = position.lon;
     }
+    params.encrypted = encrypt ? 1 : 0
     if (historical && historical_date != null) params.date = historical_date;
     if (tasks) {
       params.tasks = JSON.stringify(tasks)
-    }
-    if (this.refs.encryption_widget.is_verified()) {
-      // Do encryption of all text fields
-      this.refs.je.text_questions().forEach((q) => {
-        params[q.name] = this.refs.encryption_widget.encrypt(params[q.name]) // Replace with AES encrypted text
-      })
-      params.encrypted = true
     }
     api.post("/api/journal/submit", params, (res) => {
       let st = {submitted_date: util.iso_from_date(this.current_submission_date()), open: false, historical: false, historical_date: null}
@@ -185,7 +204,7 @@ export default class MiniJournalWidget extends React.Component {
         let incomplete_dates = without(historical_incomplete_dates, historical_date)
         st.historical_incomplete_dates = incomplete_dates
       } else {
-        st.today_data = res.journal.data
+        st.today_data = this.decrypt_data_if_needed(res.journal)
       }
       this.setState(st)
     });
@@ -313,10 +332,10 @@ export default class MiniJournalWidget extends React.Component {
 
   render() {
     let {form, open, submitted_date} = this.state;
-    let {questions} = this.props;
-    let in_window = this.in_journal_window();
+    let {questions, user} = this.props
+    let in_window = this.in_journal_window()
     let actions = [
-      <BrowserEncryptionWidget ref="encryption_widget" />,
+      <BrowserEncryptionWidget ref="encryption_widget" user={user} />,
       <RaisedButton label="Save Journal" primary={true} onClick={this.submit.bind(this)} />,
       <FlatButton label="Dismiss" onClick={this.dismiss.bind(this)} />
     ]

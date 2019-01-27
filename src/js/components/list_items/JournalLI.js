@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import {changeHandler} from 'utils/component-utils';
 var ProgressLine = require('components/common/ProgressLine');
 
-
 @changeHandler
 export default class JournalLI extends React.Component {
   static propTypes = {
@@ -23,6 +22,15 @@ export default class JournalLI extends React.Component {
     this.state = {}
   }
 
+
+  static getStores() {
+    return [UserStore]
+  }
+
+  static getPropsFromStores() {
+    return UserStore.getState()
+  }
+
   handle_edit_click() {
     this.props.onEditClick();
   }
@@ -32,9 +40,9 @@ export default class JournalLI extends React.Component {
     let data = journal.data;
     let responses = questions.map((q, i) => {
       let q_response = data[q.name];
+      let rt = q.response_type;
       let q_response_rendered = "N/A";
       let reverse = q.value_reverse || false;
-      let rt = q.response_type;
       let min_color = reverse ? "#4FECF9" : "#FC004E"
       let color = reverse ? "#FC004E" : "#4FECF9"
       if (q_response != null) {
