@@ -154,6 +154,7 @@ export default class Settings extends React.Component {
             { name: 'location_capture', title: 'Capture lat/lon upon submission', type: 'checkbox', default_value: false },
             { name: 'journal_start_hour', title: 'Hour after which to collect daily journal', type: 'number', default_value: AppConstants.JOURNAL_START_HOUR },
             { name: 'journal_end_hour', title: 'Hour to stop collecting daily journal', type: 'number', default_value: AppConstants.JOURNAL_END_HOUR },
+            { name: 'journal_notification', title: 'Receive journal notification in browser at start of window', type: 'checkbox', default_value: false },
         ];
         let task_pref_atts = [
             { name: 'same_day_hour', title: 'Hour after which to set new tasks for tomorrow', type: 'number', default_value: 16 },
