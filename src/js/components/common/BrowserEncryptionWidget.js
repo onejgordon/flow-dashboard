@@ -34,11 +34,18 @@ export default class BrowserEncryptionWidget extends React.Component {
   }
 
   clear() {
+    let {onClear} = this.props
     UserActions.storeVerifiedEncryptionKey(null)
+    if (onClear != null) onClear()
+    // this.forceUpdate()
   }
 
   verified() {
-    return this.props.user_encryption_key != null
+    let {user_encryption_key} = this.props
+    console.log(this.props)
+    // console.log(`verified key: ${user_encryption_key}`)
+    // return user_encryption_key != null
+    return UserStore.encryption_key_verified()
   }
 
   verify() {
@@ -73,14 +80,14 @@ export default class BrowserEncryptionWidget extends React.Component {
 
   render() {
     let {form_showing, form} = this.state
-    let {user} = this.props
+    let {user, labels} = this.props
     let verified = this.verified()
     let text, icon
     if (form_showing) {
       text = "Enable"
       icon = 'check'
     } else {
-      text = verified ? "Encryption enabled" : "Encryption disabled"
+      text = verified ? labels[0] : labels[1]
       icon = verified ? 'lock' : 'lock_open'
     }
     let icon_st = {
@@ -115,10 +122,14 @@ export default class BrowserEncryptionWidget extends React.Component {
 
 BrowserEncryptionWidget.defaultProps = {
   user: null,
-  onVerify: null
+  onVerify: null,
+  onClear: null,
+  labels: ["Encryption Enabled", "Encryption Disabled"]
 }
 
 BrowserEncryptionWidget.propTypes = {
   user: PropTypes.object,
-  onVerify: PropTypes.func
+  onVerify: PropTypes.func,
+  onClear: PropTypes.func,
+  labels: PropTypes.array
 }

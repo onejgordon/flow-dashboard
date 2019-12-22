@@ -96,7 +96,7 @@ export default class AnalysisGoals extends React.Component {
         let el = els[0]
         if (el != null) {
             let idx = els[0]._index
-            if (idx) {
+            if (idx != null) {
                 let g = goals[util.goal_id(goal_year, idx <= 11 ? idx+1 : null)]
                 if (g) this.setState({goal_detail: g})
             }

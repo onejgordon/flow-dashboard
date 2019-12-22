@@ -158,7 +158,11 @@ export default class JournalHistory extends React.Component {
                     </div>
                 </Paper>
 
-                <BrowserEncryptionWidget user={user} onVerify={this.refresh} />
+                <BrowserEncryptionWidget
+                        user={user}
+                        labels={["Decrypting", "Enable Decryption"]}
+                        onVerify={this.refresh}
+                        onClear={this.refresh} />
 
                 <FetchedList ref="journals"
                             url="/api/journal"

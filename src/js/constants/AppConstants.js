@@ -5,6 +5,7 @@ var AppConstants = {
     AUTHOR_URL: "http://jgordon.io",
     PERSISTENCE: "bootstrap",
     USER_STORAGE_KEY: 'flowUser',
+    USER_LOCAL_ENCRYPTION_KEY: 'flow_user_encryption',
     DEFAULT_WEEK_START: 0, // Sunday (d.getDay())
     HABIT_ACTIVE_LIMIT: 20,
     // Journals

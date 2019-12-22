@@ -335,7 +335,10 @@ export default class MiniJournalWidget extends React.Component {
     let {questions, user} = this.props
     let in_window = this.in_journal_window()
     let actions = [
-      <BrowserEncryptionWidget ref="encryption_widget" user={user} />,
+      <BrowserEncryptionWidget
+          ref="encryption_widget"
+          labels={["Encrypting", "Not Encrypting"]}
+          user={user} />,
       <RaisedButton label="Save Journal" primary={true} onClick={this.submit.bind(this)} />,
       <FlatButton label="Dismiss" onClick={this.dismiss.bind(this)} />
     ]

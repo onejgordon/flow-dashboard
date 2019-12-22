@@ -8,7 +8,7 @@ class UserStore {
     constructor() {
         this.bindActions(UserActions);
         this.user = null;
-        this.user_encryption_key = null;
+        this.user_encryption_key = sessionStorage.getItem(AppConstants.USER_LOCAL_ENCRYPTION_KEY)
         this.error = null;
 
         this.exportPublicMethods({
@@ -18,6 +18,7 @@ class UserStore {
             request_scopes: this.request_scopes,
             encrypt_text: this.encrypt_text,
             decrypt_text: this.decrypt_text,
+            encryption_key: this.encryption_key,
             encryption_key_verified: this.encryption_key_verified,
             encrypt_journal_text: this.encrypt_journal_text,
             decrypt_journal_text: this.decrypt_journal_text
@@ -33,6 +34,7 @@ class UserStore {
 
     storeVerifiedEncryptionKey(key) {
         this.user_encryption_key = key
+        sessionStorage.setItem(AppConstants.USER_LOCAL_ENCRYPTION_KEY, key)
     }
 
     request_scopes(scopes_array, cb, cb_fail) {
@@ -53,7 +55,6 @@ class UserStore {
     }
 
     loadLocalUser() {
-        var user;
         try {
             switch (AppConstants.PERSISTENCE) {
                 case "bootstrap":
@@ -72,6 +73,7 @@ class UserStore {
         console.log("Clearing user after signout");
         this.user = null
         this.user_encryption_key = null
+        sessionStorage.removeItem(AppConstants.USER_LOCAL_ENCRYPTION_KEY)
         localStorage.removeItem(AppConstants.USER_STORAGE_KEY);
     }
 
@@ -113,10 +115,13 @@ class UserStore {
 
     // Public methods for in-browser text encryption
 
+    encryption_key() {
+        let key = this.getState().user_encryption_key
+        return key
+    }
 
     encryption_key_verified() {
-        let key = this.getState().user_encryption_key
-        return key != null
+        return this.encryption_key() != null
     }
 
     encrypt_journal_text(questions, form_data) {
@@ -135,13 +140,13 @@ class UserStore {
     }
 
     encrypt_text(text) {
-        let key = this.getState().user_encryption_key
+        let key = this.encryption_key()
         if (key != null) return CryptoJS.AES.encrypt(text, key).toString()
         else return null
     }
 
     decrypt_text(ciphertext) {
-        let key = this.getState().user_encryption_key
+        let key = this.encryption_key()
         if (key != null) return CryptoJS.AES.decrypt(ciphertext, key).toString(CryptoJS.enc.Utf8)
         else return '[ENCRYPTED]'
     }
