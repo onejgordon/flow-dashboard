@@ -65,7 +65,7 @@
     "browserify": "^13.3.0",
     "browserify-resolutions": "^1.0.6",
     "browserify-shim": "^3.8.10",
-    "eslint": "^3.17.1",
+    "eslint": "^4.18.2",
     "eslint-plugin-react": "^6.10.0",
     "gulp": "^3.8.10",
     "gulp-hash-src": "^0.1.6",
