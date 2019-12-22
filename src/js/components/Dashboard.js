@@ -91,12 +91,14 @@ export default class Dashboard extends React.Component {
         let {user} = this.props;
         let journal_qs = [];
         let journal_location = false;
+        let journal_notification = false;
         let journal_window_start = AppConstants.JOURNAL_START_HOUR;
         let journal_window_end = AppConstants.JOURNAL_END_HOUR;
         let goal_slots = AppConstants.GOAL_DEFAULT_SLOTS;
         if (user) {
             journal_qs = get(user, 'settings.journals.questions', []);
             journal_location = get(user, 'settings.journals.preferences.location_capture', false);
+            journal_notification = get(user, 'settings.journals.preferences.journal_notification', false);
             journal_window_start = parseInt(get(user, 'settings.journals.preferences.journal_start_hour', AppConstants.JOURNAL_START_HOUR));
             journal_window_end = parseInt(get(user, 'settings.journals.preferences.journal_end_hour', AppConstants.JOURNAL_END_HOUR));
             goal_slots = parseInt(get(user, 'settings.goals.preferences.slots', AppConstants.GOAL_DEFAULT_SLOTS));
@@ -127,6 +129,7 @@ export default class Dashboard extends React.Component {
                            questions={journal_qs}
                            window_start_hr={journal_window_start}
                            window_end_hr={journal_window_end}
+                           journal_notification={journal_notification}
                            include_location={journal_location} />
                     </div>
                 </div>

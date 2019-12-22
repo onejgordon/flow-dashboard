@@ -21,13 +21,15 @@ export default class MiniJournalWidget extends React.Component {
     tomorrow_top_tasks: PropTypes.bool,
     questions: PropTypes.array,
     window_start_hr: PropTypes.number,
-    window_end_hr: PropTypes.number
+    window_end_hr: PropTypes.number,
+    journal_notification: PropTypes.bool
   }
 
   static defaultProps = {
     questions: [],
     include_location: true,
-    tomorrow_top_tasks: true
+    tomorrow_top_tasks: true,
+    journal_notification: false
   }
 
   constructor(props) {
@@ -109,12 +111,16 @@ export default class MiniJournalWidget extends React.Component {
   }
 
   should_notify() {
+    let {open} = this.state
     let d = new Date();
-    return !this.submitted() && d.getMinutes() <= this.NOTIFY_CHECK_MINS && this.in_journal_window()
+    let notification_enabled = this.props.journal_notification
+    return (notification_enabled && !open && !this.submitted() &&
+      d.getMinutes() <= this.NOTIFY_CHECK_MINS && this.in_journal_window())
   }
 
   maybe_check_if_not_submitted() {
-    if (this.in_journal_window()) {
+    let {open} = this.state
+    if (this.in_journal_window() && !open) {
       this.check_if_not_submitted();
     }
   }
