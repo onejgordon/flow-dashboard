@@ -1,0 +1,26 @@
+{
+  "short_name": "Flow",
+  "name": "Flow",
+  "description": "A personal dashboard to focus on what matters",
+  "theme_color":"#333333",
+  "background_color":"#000000",  
+  "icons": [
+    {
+      "src": "favicon-16x16.png",
+      "type": "image/png",
+      "sizes": "16x16"
+    },
+    {
+      "src": "favicon-32x32.png",
+      "type": "image/png",
+      "sizes": "32x32"
+    },
+    {
+      "src": "favicon-96x96.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    }
+  ],
+  "start_url": "/app/dashboard",
+  "display":"standalone"
+}
