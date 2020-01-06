@@ -6,7 +6,7 @@ from base_test_case import BaseTestCase
 from models import Goal
 from flow import app as tst_app
 from constants import USER, TASK
-from models import Habit, Task, Project, Event, Readable, Quote, Snapshot
+from models import Habit, HabitDay, Task, Project, Event, Readable, Quote, Snapshot
 from services.agent import ConversationAgent
 import json
 import tools
@@ -30,6 +30,7 @@ class APITestCase(BaseTestCase):
         h = Habit.Create(u)
         h.Update(name="Run")
         h.put()
+        done, hd = HabitDay.Toggle(h, datetime.today())
         t = Task.Create(u, "Dont forget the milk")
         t.put()
         g = Goal.CreateMonthly(u, date=datetime.today().date())
@@ -83,7 +84,7 @@ class APITestCase(BaseTestCase):
         habitdays = response.get('habitdays')
         self.assertTrue(hd.get('id') in habitdays)
 
-        # Recent
+        # Recent range
         params = {
             'start_date': tools.iso_date(today - timedelta(days=2)),
             'end_date': tools.iso_date(today)
@@ -95,7 +96,11 @@ class APITestCase(BaseTestCase):
         # Delete
         response = self.post_json("/api/habit/delete", {'id': h.get('id')}, headers=self.api_headers)
         h = Habit.get_by_id(h.get('id'), parent=self.u.key)
-        self.assertIsNone(h)  # Confirm deletion
+        self.assertIsNone(h)  # Confirm habit deleted
+        self.execute_tasks_until_empty()  # History deletion runs in background
+        response = self.get_json("/api/habit/recent", {'days': 3}, headers=self.api_headers)
+        habitdays = response.get('habitdays')
+        self.assertEqual(len(habitdays), 0)  # Confirm habit history deleted
 
     def test_goal_calls(self):
         response = self.get_json("/api/goal", {}, headers=self.api_headers)

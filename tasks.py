@@ -1,5 +1,5 @@
 import logging
-from models import User, TrackingDay
+from models import User, TrackingDay, HabitDay
 import handlers
 from google.appengine.ext import ndb
 from datetime import datetime, timedelta, time
@@ -136,3 +136,18 @@ def backgroundReportRun(rkey, start_cursor=None):
     r = rkey.get()
     if r:
         r.run(start_cursor=start_cursor)
+
+
+def backgroundHabitDayDeletion(hkey, start_cursor=None):
+    hkey = ndb.Key(urlsafe=hkey)
+    done = False
+    maxit = 50
+    its = 0
+    while not done and its < maxit:
+        hds = HabitDay.All(hkey)
+        if hds:
+            ndb.delete_multi(hds)
+            logging.debug("Deleted %d habit days from hkey=%s" % (len(hds), hkey))
+        else:
+            done = True
+        its += 1
