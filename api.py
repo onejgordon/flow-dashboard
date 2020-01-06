@@ -348,9 +348,10 @@ class HabitAPI(handlers.JsonRequestHandler):
         id = self.request.get_range('id')
         habit = self.user.get(Habit, id=id)
         if habit:
-            habit = Habit.get_by_id(int(id), parent=self.user.key)
+            habit.delete_history()
             habit.key.delete()
             self.success = True
+            self.message = "Deleted %s, removing history in background..." % habit.name
         self.set_response()
 
 

@@ -3,3 +3,5 @@ queue:
   rate: 1/s
 - name: report-queue
   rate: 2/s
+- name: background-deletion-queue
+  rate: 2/s
