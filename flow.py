@@ -61,6 +61,7 @@ app = webapp2.WSGIApplication(
         webapp2.Route('/api/habit/toggle', handler=api.HabitAPI, handler_method="toggle", methods=["POST"]),
         webapp2.Route('/api/habit/increment', handler=api.HabitAPI, handler_method="increment", methods=["POST"]),
         webapp2.Route('/api/habit/commit', handler=api.HabitAPI, handler_method="commit", methods=["POST"]),
+        webapp2.Route('/api/habit/delete', handler=api.HabitAPI, handler_method="delete", methods=["POST"]),
         webapp2.Route('/api/habit', handler=api.HabitAPI, handler_method="update", methods=["POST"]),
         webapp2.Route('/api/habit/delete', handler=api.HabitAPI, handler_method="delete", methods=["POST"]),
         webapp2.Route('/api/habit/<id>', handler=api.HabitAPI, handler_method="detail", methods=["GET"]),
