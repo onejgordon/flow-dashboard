@@ -81,7 +81,10 @@ To avoid conflicts sometimes seen with gcloud and google.cloud python libs it is
 
 ### Deploy
 
-`./scripts/deploy.sh 0-1` to deploy a new version 0-1 and set is as default
+* `cd scripts`
+* `./deploy.sh 0-1` to deploy a new version 0-1 and set is as default
+
+If you get a permission denied error on a logs directory during deploy, you may need to run the above command wish sudo.
 
 Visit `https://[project-id].appspot.com` to see the app live.
 
