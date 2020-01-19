@@ -37,6 +37,12 @@ class UserSearchable(ndb.Model):
         '''Override'''
         return None
 
+    def valid_atom_value(self, val):
+        valid = val is not None and len(val) < 500
+        if not valid:
+            logging.debug("Invalid %s atom field '%s' of size %d" % (self._get_kind(), af, len(val)))
+        return valid
+
     def doc_from_fields(self, text_fields=None, atom_fields=None, repeated_attom_fields=None):
         fields = []
         if text_fields:
@@ -44,13 +50,16 @@ class UserSearchable(ndb.Model):
                 fields.append(search.TextField(name=tf, value=getattr(self, tf)))
         if atom_fields:
             for af in atom_fields:
-                fields.append(search.AtomField(name=af, value=getattr(self, af)))
+                val = getattr(self, af)
+                if self.valid_atom_value(val):
+                    fields.append(search.AtomField(name=af, value=val))
         if repeated_attom_fields:
             for raf in repeated_attom_fields:
                 values = getattr(self, raf)
                 if values:
                     for val in values:
-                        fields.append(search.AtomField(name=raf, value=val))
+                        if self.valid_atom_value(val):
+                            fields.append(search.AtomField(name=raf, value=val))
         sd = search.Document(doc_id=self.get_doc_id(), fields=fields, language='en')
         return sd
 

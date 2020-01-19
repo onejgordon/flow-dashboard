@@ -287,7 +287,7 @@ export default class Integrations extends React.Component {
                 <Tabs>
                     <Tab label="Pocket" style={this.tab_style('pocket')}>
 
-                        <p className="lead">Your reading list will be synced daily from Pocket.</p>
+                        <p className="lead">Your reading list will be synced daily from Pocket. Initial sync will include items added in the last 7 days.</p>
 
                         <FlatButton label={ pocket_connected ? "Connected" : "Connect" } onClick={this.start_pocket_authentication.bind(this)} disabled={pocket_connected}/>
                         <div hidden={!pocket_connected}>

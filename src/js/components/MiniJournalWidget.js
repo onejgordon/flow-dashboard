@@ -39,8 +39,6 @@ export default class MiniJournalWidget extends React.Component {
         form: this.initial_form_state(),
         tasks: [""],
         open: false,
-        all_activities: [],
-        selected_activities: [],
         historical: false,
         historical_date: null,
         historical_incomplete_dates: [],
@@ -177,7 +175,8 @@ export default class MiniJournalWidget extends React.Component {
       params.tasks = JSON.stringify(tasks)
     }
     api.post("/api/journal/submit", params, (res) => {
-      let st = {submitted_date: util.iso_from_date(this.current_submission_date()), open: false, historical: false, historical_date: null}
+      let st = {open: false, historical: false, historical_date: null}
+      if (!this.submitted() && res.journal != null) st.submitted_date = res.journal.iso_date
       if (historical && historical_date != null) {
         st.form = this.initial_form_state()
         let incomplete_dates = without(historical_incomplete_dates, historical_date)
@@ -260,6 +259,7 @@ export default class MiniJournalWidget extends React.Component {
     if (historical) {
       let today = util.printDateObj(this.current_submission_date());
       let opts = [<MenuItem key='today' value={today} primaryText={`Today (${today})`} />];
+      historical_incomplete_dates = without(historical_incomplete_dates, today)
       opts = opts.concat(historical_incomplete_dates.map((iso) => {
         return <MenuItem key={iso} value={iso} primaryText={iso} />
       }));
