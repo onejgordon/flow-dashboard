@@ -72,7 +72,7 @@ export default class Feedback extends React.Component {
 
                     </div>
                     <div className="col-sm-6">
-                        <h3 className="vspace">Or, want to support me and Flow's continued development?</h3>
+                        <h3 className="vspace">Or, want to support Flow's server costs and continued development?</h3>
 
                         <p className="lead">Any amount of support is tremendously appreciated.</p>
 
