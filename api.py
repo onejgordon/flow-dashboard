@@ -404,7 +404,7 @@ class EventAPI(handlers.JsonRequestHandler):
 
     @authorized.role('user')
     def list(self, d):
-        page, max, offset = tools.paging_params(self.request)
+        page, max, offset = tools.paging_params(self.request, limit_default=200)
         events = Event.Fetch(self.user, limit=max, offset=offset)
         self.set_response({
             'events': [event.json() for event in events]
