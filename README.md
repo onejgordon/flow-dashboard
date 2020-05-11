@@ -1,3 +1,4 @@
+
 # Flow Dashboard
 
 [![Build Status](https://travis-ci.org/onejgordon/flow-dashboard.svg?branch=master)](https://travis-ci.org/onejgordon/flow-dashboard)
@@ -38,8 +39,9 @@ Create a new project and choose a unique project ID. You will not need a billing
 gcloud config configurations create [my-flow-config-name]
 gcloud config set project [project-id]
 gcloud config set account [my email]
-
 ```
+
+To activate this configuration: `gcloud config configurations activate [my-flow-config-name]`.
 
 ### Fork the repo
 
@@ -170,6 +172,14 @@ To create a new messenger bot for your own instance of Flow, see the Facebook qu
 
 (Beta / admin only currently) Push daily panel data to BigQuery for additional analysis, e.g. run regressions
 with TensorFlow, etc.
+
+## Admin Operations Cheatsheet
+
+### User data deletion
+
+* In console run GQL query
+* GQL: `SELECT * WHERE __key__ HAS ANCESTOR KEY(User, [user_id])`
+* Delete all entities
 
 ## Contributing
 
