@@ -4,7 +4,7 @@ from models import Project, Habit, HabitDay, Goal, MiniJournal, User, Task, \
     Readable, TrackingDay, Event, JournalTag, Report, Quote, Snapshot
 from constants import READABLE, GOAL
 from google.appengine.ext import ndb
-from google.appengine.api import mail
+from google.appengine.api import mail, memcache
 from oauth2client import client
 import authorized
 import handlers
@@ -1300,7 +1300,8 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
         notebook_guid = self.request.get('notebookGuid')
         reason = self.request.get('reason')
         data = {}
-        if reason in ENABLED_REASONS:
+        mc_key = "user:%s-notebook:%s" % (evernote_id, notebook_guid)
+        if reason in ENABLED_REASONS and memcache.get(mc_key) != 'ignore':
             user = User.query().filter(User.evernote_id == evernote_id).get()
             if user:
                 config_notebook_ids = user.get_integration_prop('evernote_notebook_ids', default='').split(',')  # Comma sep
@@ -1324,11 +1325,12 @@ class IntegrationsAPI(handlers.JsonRequestHandler):
                     else:
                         self.message = "Failed to parse note"
                 else:
-                    logging.warning("Note from ignored notebook")
+                    logging.warning("Note from ignored notebook, caching...")
+                    memcache.set(mc_key, 'ignore', time=60*60*48)  # remember ignored for 12 hrs
             else:
                 logging.warning("User not found")
         else:
-            logging.debug("Ignoring, reason: %s not enabled" % reason)
+            logging.debug("Ignoring, reason: %s not enabled, or notebook ignored" % reason)
         self.set_response(data=data, debug=True)
 
 
