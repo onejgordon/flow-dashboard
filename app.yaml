@@ -5,7 +5,7 @@ threadsafe: true
 default_expiration: "1d"
 
 inbound_services:
-- warmup
+# - warmup
 
 handlers:
 - url: /favicon.ico
