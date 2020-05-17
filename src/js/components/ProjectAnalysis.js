@@ -136,8 +136,9 @@ export default class ProjectAnalysis extends React.Component {
     let ms_duration = end - project.ts_created;
     let days = ms_duration / 1000 / 60 / 60 / 24.0;
     if (project.progress > -1) {
+      // Progress enabled
       let denom = days < 1 ? 1 : days;
-      rate = project.progress * 10 / denom;
+      rate = (project.progress * 10 / denom).toFixed(1);
     }
     let projected_completion_text = projected_completion ? util.printDateObj(new Date(projected_completion)) : "--";
     return (
@@ -147,7 +148,7 @@ export default class ProjectAnalysis extends React.Component {
             <Line data={progressData} options={opts} width={1000} height={450}/>
           </div>
           <div className="col-sm-4">
-            <BigProp label="Overall rate (%/day)" value={rate.toFixed(1)} />
+            <BigProp label="Overall rate (%/day)" value={rate} />
             <BigProp label="Duration (days)" value={days.toFixed(2)} />
             <div hidden={complete}>
               <BigProp label="Projected Completion" value={projected_completion_text} />
