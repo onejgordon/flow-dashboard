@@ -4,8 +4,12 @@ threadsafe: true
 
 default_expiration: "1d"
 
+automatic_scaling:
+  max_instances: 2
+  max_pending_latency: 200ms  # default 30ms
+
 inbound_services:
-# - warmup
+- warmup
 
 handlers:
 - url: /favicon.ico
