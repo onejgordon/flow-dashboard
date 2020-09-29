@@ -151,8 +151,13 @@ export default class HabitAnalysis extends React.Component {
       <FlatButton label="Edit" onClick={this.handle_edit.bind(this)} primary />,
       <FlatButton label="Dismiss" onClick={this.dismiss.bind(this)} />
     ];
-    let content;
-    if (habit) content = this.render_content()
+    let content, description;
+    if (habit) {
+      if (habit.description != null && habit.description.length > 0) {
+        description = <div style={{marginTop: 8}}><b>Description:</b> { habit.description }</div>
+      }
+      content = this.render_content()
+    }
     return (
       <Dialog
           open={!!habit}
@@ -160,6 +165,8 @@ export default class HabitAnalysis extends React.Component {
           autoScrollBodyContent={true}
           onRequestClose={this.dismiss.bind(this)}
           actions={actions}>
+
+          { description }
 
           <ReactTooltip place="top" effect="solid" />
 
