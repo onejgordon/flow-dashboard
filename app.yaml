@@ -5,7 +5,7 @@ threadsafe: true
 default_expiration: "1d"
 
 automatic_scaling:
-  max_instances: 2
+  max_instances: 1
   max_pending_latency: 200ms  # default 30ms
 
 inbound_services:
