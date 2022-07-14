@@ -124,7 +124,10 @@ class GCSReportWorker(object):
                     else:
                         continue
                     if self.report.ftype == REPORT.CSV:
-                        csv.writer(self.gcs_file).writerow(tools.normalize_list_to_ascii(ed))
+                        do_normalize = not self.specs.get('dont_normalize_to_ascii')
+                        if do_normalize:
+                            ed = tools.normalize_list_to_ascii(ed)
+                        csv.writer(self.gcs_file).writerow(ed)
                     self.gcs_file.flush()
 
                     total_i += 1

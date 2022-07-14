@@ -2,7 +2,7 @@ var React = require('react');
 
 var UserStore = require('stores/UserStore');
 import {RaisedButton, Tabs, Tab, FontIcon, DatePicker,
-    IconMenu, ListItem, MenuItem, IconButton} from 'material-ui';
+    IconMenu, ListItem, MenuItem, IconButton, Checkbox} from 'material-ui';
 var api = require('utils/api');
 var util = require('utils/util');
 import connectToStores from 'alt-utils/lib/connectToStores';
@@ -21,7 +21,8 @@ export default class Reports extends React.Component {
         d.setDate(d.getDate() - 7);
         this.state = {
             form: {
-                start: d
+                start: d,
+                dont_normalize_to_ascii: false
             }
         };
         this.REPORT_DONE = 3;
@@ -50,9 +51,10 @@ export default class Reports extends React.Component {
         var specs = clone(this.state.form);
         if (specs.start) specs.start = specs.start.getTime();
         if (specs.end) specs.end = specs.end.getTime();
+        specs.dont_normalize_to_ascii = specs.dont_normalize_to_ascii ? 1 : 0
         var data = {
             type: type_int,
-            specs_json: JSON.stringify(specs)
+            specs_json: JSON.stringify(specs)   
         }
         api.post("/api/report/generate", data, function(res) {
         })
@@ -96,6 +98,10 @@ export default class Reports extends React.Component {
               </div>
               <div className="col-sm-6">
                 <DatePicker onChange={this.changeHandlerNilVal.bind(this, 'form', 'end')} value={form.end} autoOk={true} hintText="End" />
+              </div>
+              <div className="col-sm-6">
+                <Checkbox onCheck={this.changeHandlerNilVal.bind(this, 'form', 'dont_normalize_to_ascii')} checked={form.dont_normalize_to_ascii} label="Don't normalize to ascii" />
+                <label>Advanced: don't normalize to ascii (keep unchecked unless exporting non-standard characters)</label>
               </div>
             </div>
         )
