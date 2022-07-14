@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Usage: ./deploy.sh 0-1 [app.yaml]
 
