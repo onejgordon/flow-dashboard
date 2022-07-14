@@ -35,11 +35,7 @@ deploy(){
 	build_js
 	cd ../
 	gcloud config configurations activate flow
-	if [ "$env" == "staging" ]; then
-		gcloud app deploy $deploy_configs --quiet --version=$version --no-promote
-	else
-		gcloud app deploy $deploy_configs --quiet --version=$version
-	fi
+	gcloud app deploy $deploy_configs --quiet --version=$version --no-promote
 }
 
 cancel_deploy(){
