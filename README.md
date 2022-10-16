@@ -22,6 +22,7 @@ The docs are still a work in progress. Check out the current docs at http://docs
 ## Setup
 
 To deploy a new instance of Flow, use the following instructions.
+Note that Flow uses the Python 2.7 runtime in GCP, which is now deprecated! 
 
 ### Obtain Google App Engine SDK
 
@@ -47,7 +48,10 @@ To activate this configuration: `gcloud config configurations activate [my-flow-
 
 Branch or fork this repository into a project directory.
 
-Ensure you have npm and gulp installed.
+### Setup dependencies
+
+* Node v11.15.0 (recommend using nvm)
+* Ensure you have npm and gulp installed.
 
 ```
 npm install -g gulp
