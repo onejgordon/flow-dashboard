@@ -117,7 +117,7 @@ Visit `https://[project-id].appspot.com` to see the app live.
 	* View 'burn-up' chart of completion progress over time
 * Analysis
 	* Show summary charts of all data reported to platform
-* Google Assitant / Home / Facebook Messenger integration for actions like:
+* Google Assistant / Home / Facebook Messenger integration for actions like:
 	* "How am I doing"
 	* "What are my goals for this month"
 	* "Mark 'run' as complete"
