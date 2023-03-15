@@ -2,7 +2,7 @@ var React = require('react');
 import {Link} from 'react-router';
 var AppConstants = require('constants/AppConstants');
 var api = require('utils/api');
-import GoogleLogin from 'react-google-login';
+import GoogleLoginCompat from 'components/common/GoogleLoginCompat';
 var client_secrets = require('constants/client_secrets');
 import {RaisedButton} from 'material-ui';
 var toastr = require('toastr');
@@ -75,7 +75,7 @@ export default class Auth extends React.Component {
                     <p>Or</p>
 
                     <div className="vpad">
-                        <GoogleLogin
+                        <GoogleLoginCompat
                             clientId={client_secrets.G_OAUTH_CLIENT_ID}
                             buttonText="Login"
                             scope="profile email"
