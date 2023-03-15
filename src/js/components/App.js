@@ -60,27 +60,6 @@ export default class Private extends React.Component {
     console.log('Signin state changed to ', val);
   }
 
-  userChanged(gUser) {
-    if (gUser && gUser.isSignedIn()) {
-      var profile = gUser.getBasicProfile();
-      var id_token = gUser.getAuthResponse().id_token;
-      let {user} = this.props;
-      let new_user = !user || profile.getEmail() != user.email;
-      if (new_user) {
-        let data = {token: id_token};
-        this.setState({signing_in: true}, () => {
-          api.post('/api/auth/google_login', data, (res) => {
-            UserActions.storeUser(res.user);
-            browserHistory.push('/app/dashboard');
-            this.setState({signing_in: false});
-          }, (res_fail) => {
-            this.setState({signing_in: false});
-          })
-        });
-      }
-    }
-  }
-
   signout() {
     this.setState({ln_open: false});
     UserActions.logout();

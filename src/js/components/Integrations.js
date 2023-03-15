@@ -148,9 +148,8 @@ export default class Integrations extends React.Component {
     }
 
     google_disconnect() {
-        var auth2 = gapi.auth2.getAuthInstance();
-        auth2.disconnect();
-        toastr.success("Disconnected Google authorization.")
+        // var auth2 = gapi.auth2.getAuthInstance();
+        // auth2.disconnect();
     }
 
     handleSnackClose() {
