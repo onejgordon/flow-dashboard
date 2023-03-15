@@ -34,8 +34,11 @@ deploy(){
 	check_tests
 	build_js
 	cd ../
-	gcloud config configurations activate flow
-	gcloud app deploy $deploy_configs --quiet --version=$version --no-promote
+	# Avoid deploy if config not setup
+	if gcloud config configurations activate flow
+	then
+		gcloud app deploy $deploy_configs --quiet --version=$version --no-promote
+	fi
 }
 
 cancel_deploy(){

@@ -4,6 +4,7 @@ var util = require('utils/util');
 var UserStore = require('stores/UserStore');
 var UserActions = require('actions/UserActions');
 var AppConstants = require('constants/AppConstants');
+import GoogleButton from 'react-google-button'
 import {Tabs, Tab, FontIcon, FlatButton, RaisedButton,
     IconMenu, MenuItem, Toggle, TextField, Snackbar, IconButton} from 'material-ui';
 var api = require('utils/api');
@@ -360,11 +361,15 @@ export default class Integrations extends React.Component {
                     </Tab>
 
                     <Tab label="Google Fit" style={this.tab_style('gfit')}>
-                        <FlatButton label="Authenticate with Fit" onClick={this.authenticate_google_service.bind(this, 'fit')} />
+                        
+                        <GoogleButton
+                            style={{marginTop: 10}}
+                            onClick={this.authenticate_google_service.bind(this, 'fit')}
+                        />
 
                         <h4>Configure Activity Capture</h4>
 
-                        <p className="lead">Flow can capture one ore more activities pulled from Google Fit.
+                        <p className="lead">Flow can capture daily durations for one ore more activities from your Google Fit account.
                             Enter a comma separated list of keywords (to match against Fit activity name and description).
                             This keyword will also be used as the tracking variable name.
                             For each variable, the day's total activity duration (in seconds) will be stored.</p>
@@ -372,7 +377,7 @@ export default class Integrations extends React.Component {
                         <b>Current Activity Keywords:</b> <ul>{ gfit_activities.map((act, i) => {
                             return <li key={i}>{ act }</li>
                         }) }</ul><br/>
-                        <TextField name="gfit_activities" placeholder="Fit Activity Keywords (comma separated)" value={form.gfit_activities||''} onChange={this.changeHandler.bind(this, 'form', 'gfit_activities')} fullWidth /><br/>
+                        <TextField name="gfit_activities" placeholder="Google Fit Activity Keywords (comma separated)" value={form.gfit_activities||''} onChange={this.changeHandler.bind(this, 'form', 'gfit_activities')} fullWidth /><br/>
 
                         <RaisedButton label="Save" onClick={this.save_integration_props.bind(this, ['gfit_activities'])} />
 

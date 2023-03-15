@@ -1,4 +1,5 @@
 # Install with pip install -t lib -r requirements.txt (into lib/)
+rsa==4.0
 beautifulsoup4
 evernote==1.25.2
 oauth2client==3.0.0

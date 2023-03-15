@@ -85,6 +85,18 @@ To avoid conflicts sometimes seen with gcloud and google.cloud python libs it is
 * Run `gulp` in another terminal to build JS etc
 * Visit localhost:8080 to run the app, and localhost:8000 to view the local dev server console.
 
+#### Support for python 2.7 and libraries on M1 Macs
+
+Tested method on M1 Pro as per [this SO answer](https://stackoverflow.com/a/67569068).
+
+```
+CONDA_SUBDIR=osx-64 conda create -n py27 python=2.7  # include other packages here
+
+# ensure that future package installs in this env stick to 'osx-64'
+conda activate py27
+conda config --env --set subdir osx-64
+```
+
 ### Deploy
 
 * `cd scripts`

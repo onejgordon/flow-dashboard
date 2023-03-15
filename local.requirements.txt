@@ -1,4 +1,4 @@
-# Install with pip install -r requirements.txt (local machine)
+# Install with pip install -r local.requirements.txt (local machine)
 funcsigs==1.0.2
 pbr==1.10.0
 mock==2.0.0
