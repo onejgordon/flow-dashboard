@@ -26,9 +26,9 @@ class UserStore {
     }
 
     request_scopes(scopes_array, cb, cb_fail) {
-        var auth2 = gapi.auth2.getAuthInstance();
-        var guser = auth2.currentUser.get();
-        let granted_scopes = guser.getGrantedScopes();
+        // "An ID token has replaced OAuth2 access tokens and scopes."
+        // See https://developers.google.com/identity/gsi/web/guides/migration
+        let granted_scopes = []; 
         console.log('granted', granted_scopes);
         let scopes_needed = [];
         scopes_array.forEach((scope) => {
@@ -69,11 +69,7 @@ class UserStore {
             this.clearUser();
             this.error = null;
             console.log('Signed out of Flow');
-            var auth2 = gapi.auth2.getAuthInstance();
-            auth2.signOut().then(function () {
-                console.log('Signed out of Google');
-                browserHistory.push('/app');
-            });
+            browserHistory.push('/app');
         }
     }
 

@@ -1,7 +1,7 @@
 var React = require('react');
 var AppConstants = require('constants/AppConstants');
 import {Link} from 'react-router';
-import GoogleLogin from 'react-google-login';
+import GoogleLoginCompat from 'components/common/GoogleLoginCompat';
 import {RaisedButton, Snackbar} from 'material-ui';
 import {G_OAUTH_CLIENT_ID, DEV_G_OAUTH_CLIENT_ID, DEV_GOOGLE_API_KEY, GOOGLE_API_KEY} from 'constants/client_secrets';
 var client_secrets = require('constants/client_secrets');
@@ -44,7 +44,7 @@ export default class Splash extends React.Component {
 
                     <div hidden={user}>
 
-                        <GoogleLogin
+                        <GoogleLoginCompat
                             clientId={oauth_client_id}
                             buttonText="Sign In"
                             scope="profile email"

@@ -36,49 +36,28 @@ export default class Private extends React.Component {
   }
 
   componentDidMount() {
-    gapi.load('client:auth2', this.init_google.bind(this));
+    // gapi.load('client:auth2', this.init_google.bind(this));
   }
 
   componentWillUnmount() {
   }
 
   init_google() {
-    gapi.client.init({
-      apiKey: GOOGLE_API_KEY,
-      client_id: constants.dev ? DEV_G_OAUTH_CLIENT_ID || G_OAUTH_CLIENT_ID : G_OAUTH_CLIENT_ID,
-      scope: 'profile'
-    }).then(() => {
-      gapi.auth2.getAuthInstance().isSignedIn.listen(this.signinChanged.bind(this));
-      gapi.auth2.getAuthInstance().currentUser.listen(this.userChanged.bind(this));
-    }, (err) => {
-      console.log(err);
-      toastr.error("Failed to initialize Google Client -- Check that 'block third-party cookies and site data' is not enabled.")
-    })
+    // gapi.client.init({
+    //   apiKey: GOOGLE_API_KEY,
+    //   client_id: constants.dev ? DEV_G_OAUTH_CLIENT_ID || G_OAUTH_CLIENT_ID : G_OAUTH_CLIENT_ID,
+    //   scope: 'profile'
+    // }).then(() => {
+    //   gapi.auth2.getAuthInstance().isSignedIn.listen(this.signinChanged.bind(this));
+    //   gapi.auth2.getAuthInstance().currentUser.listen(this.userChanged.bind(this));
+    // }, (err) => {
+    //   console.log(err);
+    //   toastr.error("Failed to initialize Google Client -- Check that 'block third-party cookies and site data' is not enabled.")
+    // })
   }
 
   signinChanged(val) {
     console.log('Signin state changed to ', val);
-  }
-
-  userChanged(gUser) {
-    if (gUser && gUser.isSignedIn()) {
-      var profile = gUser.getBasicProfile();
-      var id_token = gUser.getAuthResponse().id_token;
-      let {user} = this.props;
-      let new_user = !user || profile.getEmail() != user.email;
-      if (new_user) {
-        let data = {token: id_token};
-        this.setState({signing_in: true}, () => {
-          api.post('/api/auth/google_login', data, (res) => {
-            UserActions.storeUser(res.user);
-            browserHistory.push('/app/dashboard');
-            this.setState({signing_in: false});
-          }, (res_fail) => {
-            this.setState({signing_in: false});
-          })
-        });
-      }
-    }
   }
 
   signout() {
