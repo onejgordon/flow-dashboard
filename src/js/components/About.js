@@ -33,6 +33,8 @@ export default class About extends React.Component {
 
                     <h2 style={{marginTop: "40px", marginBottom: "60px"}}>About Flow</h2>
 
+                    <p className="lead" style={{fontSize: "1.45em", color: "orange" }}>{ AppConstants.DEPRECATION }</p>
+
                     <p className="lead" style={{fontSize: "1.45em"}}>{ AppConstants.TAGLINE }</p>
 
                     <div className="row">
@@ -56,13 +58,6 @@ export default class About extends React.Component {
                         <p className="lead" style={{fontSize: "1.45em"}}>...progress towards weekly targets, and more.</p>
 
                         <img src="/images/screenshots/habit_trend.png" className="img-responsive" />
-
-                        <h3>Flow Snapshot (beta).</h3>
-
-                        <p className="lead" style={{fontSize: "1.45em"}}>Snapshots are a short questionnaire collected at random times throughout the day via your smartphone.</p>
-
-                        <img src="/images/screenshots/snapshots.png" className="img-responsive" />
-
 
                         <h3>Your timeline.</h3>
 

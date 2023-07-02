@@ -323,20 +323,6 @@ export default class Settings extends React.Component {
                                 addButtonLabel="Add Link"
                                 primaryProp="label" secondaryProp="url" />
 
-                            <h3>Configure Flashcards</h3>
-
-                            <p className="lead">
-                                Currently, you can configure flashcards to show randomly chosen rows from a Google Spreadsheet.
-                            </p>
-
-                            <ReactJsonEditor title="Flashcards"
-                                array={true} data={get(settings, ['flashcards'], [])}
-                                attributes={flashcard_atts}
-                                onChange={this.handle_settings_change.bind(this, ['flashcards'])}
-                                addButtonLabel="Add Flashcard"
-                                icon="help_outline"
-                                primaryProp="card_title" secondaryProp="id" />
-
                         </div>
 
                         <div hidden={subtab != "advanced"}>

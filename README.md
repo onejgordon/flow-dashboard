@@ -1,11 +1,7 @@
 
-# Flow Dashboard
+# Flow Dashboard (UNMAINTAINED)
 
-[![Build Status](https://travis-ci.org/onejgordon/flow-dashboard.svg?branch=master)](https://travis-ci.org/onejgordon/flow-dashboard)
-[![Code Climate](https://lima.codeclimate.com/github/onejgordon/flow-dashboard/badges/gpa.svg)](https://lima.codeclimate.com/github/onejgordon/flow-dashboard)
-[![Coverage Status](https://coveralls.io/repos/github/onejgordon/flow-dashboard/badge.svg?branch=master)](https://coveralls.io/github/onejgordon/flow-dashboard?branch=master)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://jeremy.mit-license.org)
-[![Gitter chat](https://badges.gitter.im/onejgordon/flow-dashboard.png)](https://gitter.im/flow-dashboard)
+Flow is no longer maintained. We are disabling new account creation, and recommend exporting user data to ensure future access.
 
 ## Purpose
 

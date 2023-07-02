@@ -18,6 +18,7 @@ var AppConstants = {
     DASHBOARD_PAGE_TITLE: "Dashboard",
     SECURE_BASE: "https://flowdash.co",
     TAGLINE: "Flow is a habit tracker and personal data analytics app that lets you keep focus on what matters. Flow owns none of your data. That's yours.",
+    DEPRECATION: "Flow is no longer being maintained. We recommend exporting user data.",
     INTEGRATIONS: [
         { value: 'pocket', label: "Pocket" },
         { value: 'goodreads', label: "Goodreads" },

@@ -917,7 +917,8 @@ class AuthenticationAPI(handlers.JsonRequestHandler):
         if ok:
             u = User.GetByEmail(_email)
             if not u:
-                u = User.Create(email=_email, name=name)
+                self.message = "Flow is no longer accepting new signups for the hosted version"
+                # u = User.Create(email=_email, name=name)
             if u:
                 u.login_dt = datetime.now()
                 u.put()
